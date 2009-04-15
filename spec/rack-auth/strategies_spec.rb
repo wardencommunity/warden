@@ -27,12 +27,8 @@ describe Rack::Auth::Strategies do
   end
   
   it "should allow me to add a strategy with the required methods" do
-    class MyStrategy
-      def initialize(env, config = {}); end
-      def _run!; end
-      def status; end
-      def headers; end
-      def user; end
+    class MyStrategy < Rack::Auth::Strategies::Base
+      def authenticate!; end
     end
     lambda do
       Rack::Auth::Strategies.add(:strategy4, MyStrategy)

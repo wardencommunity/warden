@@ -2,10 +2,6 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 describe "standard authentication hooks" do
   
-  before(:each) do
-    
-  end
-  
   describe "after_set_user" do
     before(:each) do
       RAM = Rack::Auth::Manager unless defined?(RAM)

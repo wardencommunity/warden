@@ -3,20 +3,9 @@ module Rack
     module Strategies
       class << self
         def add(label, strategy = nil, &blk)
-          strategy = if strategy.nil? 
-            t = Class.new(Rack::Auth::Strategies::Base, &blk)
-            # Need to check that the strategy implements and authenticate! method
-            raise NoMethodError, "authenticate! is not declared in the #{label} strategy" if !t.instance_methods.include?("authenticate!")
-            t
-          else
-            if Class === strategy && block_given?
-              Class.new(strategy, &blk)
-            elsif [:_run!, :user, :status, :headers].all?{ |m| strategy.instance_methods.include?(m.to_s) }
-              strategy
-            else
-              raise "This is not a valid strategy"
-            end
-          end
+          strategy = strategy.nil? ? Class.new(Rack::Auth::Strategies::Base, &blk) : strategy
+          raise NoMethodError, "authenitate! is not declared in the #{label} strategy" if !strategy.instance_methods.include?("authenticate!")
+          raise "#{label.inspect} is Not a Rack::Auth::Strategy::Base" if !strategy.ancestors.include?(Rack::Auth::Strategies::Base)
           _strategies[label] = strategy
         end
         
