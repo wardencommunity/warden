@@ -25,5 +25,9 @@ module Rack::Auth::Spec
     def failure_app
       lambda{|e|[401, {"Content-Type" => "text/plain"}, ["You Fail!"]] }
     end
+    
+    def success_app
+      lambda{|e| [200, {"Content-Type" => "text/plain"}, ["You Win"]]}
+    end
   end
 end

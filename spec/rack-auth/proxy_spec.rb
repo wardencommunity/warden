@@ -94,6 +94,46 @@ describe Rack::Auth::Proxy do
         end
         setup_rack(app).call(env)
       end
+      
+      it "should look for an active user in the session with authenticate!" do
+        app = lambda do |env|
+          env['rack.session']["user.default.key"] = "foo as a user"
+          env['auth'].authenticate!(:pass)
+          valid_response
+        end
+        Rack::Auth::Manager.should_receive(:user_from_session).with("foo as a user").and_return("foo as a user")
+        env = env_with_params
+        setup_rack(app).call(env)
+        env['auth'].user.should == "foo as a user"
+      end
+      
+      it "should look for an active user in the session with authenticate?" do
+        app = lambda do |env|
+          env['rack.session']['user.foo_scope.key'] = "a foo user"
+          env['auth'].authenticated?(:pass, :scope => :foo_scope)
+          valid_response
+        end
+        Rack::Auth::Manager.should_receive(:user_from_session).with("a foo user").and_return("a foo user")
+        env = env_with_params
+        setup_rack(app).call(env)
+        env['auth'].user(:foo_scope).should == "a foo user"
+      end
+      
+      it "should login 2 different users from the session" do
+        app = lambda do |env|
+          env['rack.session']['user.foo.key'] = 'foo user'
+          env['rack.session']['user.bar.key'] = 'bar user'
+          env['auth'].authenticated?(:pass, :scope => :foo).should be_true
+          env['auth'].authenticated?(:pass, :scope => :bar).should be_true
+          env['auth'].authenticated?(:password).should be_false
+          valid_response
+        end
+        env = env_with_params
+        setup_rack(app).call(env)
+        env['auth'].user(:foo).should == 'foo user'
+        env['auth'].user(:bar).should == 'bar user'
+        env['auth'].user.should be_nil
+      end
     end
   end # describe "authentication"
   
@@ -103,12 +143,11 @@ describe Rack::Auth::Proxy do
       app = lambda do |env|
         env['auth'].should be_authenticated(:pass)
         env['auth'].user.should == "Valid User"
-        env['rack.session']["user.default"].should == "Valid User"
+        env['rack.session']["user.default.key"].should == "Valid User"
         valid_response
       end
       setup_rack(app).call(env)
     end
-    
-    
   end
+
 end

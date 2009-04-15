@@ -8,7 +8,7 @@ module Rack
       extend ::Forwardable
       include ::Rack::Auth::Mixins::Common
             
-      def_delegators :winning_strategy, :headers, :message
+      def_delegators :winning_strategy, :headers, :message, :_status, :custom_response
       
       def initialize(env, config = {})
         @env = env
@@ -19,21 +19,25 @@ module Rack
       end
       
       def authenticated?(*args)
-        !_perform_authentication(*args).user.nil?
+        scope = scope_from_args(args)
+        _perform_authentication(*args)
+        !user(scope).nil?
       end # authenticated?
       
       def authenticate(*args)
         _perform_authentication(*args)
+        winning_strategy
       end
       
       def authenticate!(*args)
+        scope = scope_from_args(args)
         _perform_authentication(*args)
-        throw(:auth, :action => :unauthenticated) if winning_strategy.result != :success
+        throw(:auth, :action => :unauthenticated) if !user(scope)
       end
       
       def set_user(user, opts = {})
         scope = opts.fetch(:scope, :default)
-        Rack::Auth::Manager.store_user(user, scope, session) # Get the user into the session
+        Rack::Auth::Manager._store_user(user, session, scope) # Get the user into the session
         @users[scope] = user # Store the user in the proxy user object
       end
 
@@ -41,24 +45,36 @@ module Rack
         @users[scope]
       end
       
-      def result; winning_strategy.result; end
-      def _status; winning_strategy._status; end
-      def custom_response; winning_strategy.custom_response; end
+      # proxy methods through to the winning strategy
+      def result; winning_strategy.nil? ? nil : winning_strategy.result; end
       
       private 
       def _perform_authentication(*args)
-        opts  = Hash === args.last ? args.pop : {}
-        scope = opts.fetch(:scope, :default) 
+        scope = scope_from_args(args)
+        opts = opts_from_args(args)
+        # Look for an existing user in the session for this scope
+        if @users[scope] || @users[scope] = Rack::Auth::Manager._fetch_user(session, scope)
+          return @users[scope]
+        end
         
+        # If there was no user in the session.  See if we can get one from the request
         strategies = args.empty? ? @strategies : args
         raise "No Strategies Found" if strategies.empty?
         strategies.each do |s|
           result = Rack::Auth::Strategies[s].new(@env, @config)._run!
-          self.winning_strategy = result
+          self.winning_strategy = result 
           break if result.halted?
         end
         set_user(winning_strategy.user, opts) unless winning_strategy.user.nil?
         winning_strategy
+      end
+      
+      def scope_from_args(args)
+        Hash === args.last ? args.last.fetch(:scope, :default) : :default
+      end
+      
+      def opts_from_args(args)
+        Hash === args.last ? args.pop : {}
       end
 
     end # Proxy

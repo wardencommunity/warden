@@ -19,7 +19,7 @@ module Rack
         result = catch(:auth) do
           @app.call(env)
         end
-        
+        result ||= {}
         case result
         when Array
           if result.first != 401
@@ -44,25 +44,24 @@ module Rack
       end
       
       class << self
-        def store_user(user, scope, session)
-          session["user.#{scope}"] = user_session_key(user)
+        def _store_user(user, session, scope = :default)
+          session["user.#{scope}.key"] = user_session_key(user)
+        end
+        
+        def _fetch_user(session, scope = :default)
+          user_from_session(session["user.#{scope}.key"])
         end
         
         def user_session_key(user)
           user
         end
+        
+        def user_from_session(key)
+          key
+        end                      
       end
       
       private 
-      def failure_response(env)
-        auth = env['auth']
-        [401, auth.headers, [auth.message]]
-      end
-      
-      def redirect_response(env)
-        auth = env['auth']
-      end
-      
       def call_failure_app(env, opts = {})
         env["PATH_INFO"] = "/#{opts[:action]}"
         @failure_app.call(env)

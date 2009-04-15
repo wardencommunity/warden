@@ -1,3 +1,2 @@
-* Actually make rack-auth get users from the session
 * Allow a spec / test mode where a _spec_authenticate! method is called on a strategy instead if present
 * Document the crap out of it
