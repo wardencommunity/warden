@@ -3,7 +3,7 @@ module Rack
     module Strategies
       class Base
         attr_accessor :user, :message, :result, :custom_response
-        attr_reader   :_status
+        attr_reader   :_status, :env
         include ::Rack::Auth::Mixins::Common
         
         def initialize(env, config = {})

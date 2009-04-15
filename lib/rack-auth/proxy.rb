@@ -4,6 +4,7 @@ module Rack
 
     class Proxy
       attr_accessor :winning_strategy
+      attr_reader :env
       
       extend ::Forwardable
       include ::Rack::Auth::Mixins::Common
@@ -38,6 +39,10 @@ module Rack
       def set_user(user, opts = {})
         scope = opts.fetch(:scope, :default)
         Rack::Auth::Manager._store_user(user, session, scope) # Get the user into the session
+        
+        # Run the after hooks for setting the user
+        Rack::Auth::Manager._after_set_user.each{|hook| hook.call(user, self, opts)}
+        
         @users[scope] = user # Store the user in the proxy user object
       end
 
@@ -65,7 +70,14 @@ module Rack
           self.winning_strategy = result 
           break if result.halted?
         end
-        set_user(winning_strategy.user, opts) unless winning_strategy.user.nil?
+        
+        if winning_strategy.user
+          set_user(winning_strategy.user, opts)
+        
+          # Run the after_authentication hooks
+          Rack::Auth::Manager._after_authentication.each{|hook| hook.call(winning_strategy.user, self, opts)}
+        end
+        
         winning_strategy
       end
       

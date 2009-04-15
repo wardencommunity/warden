@@ -64,6 +64,10 @@ module Rack
       private 
       def call_failure_app(env, opts = {})
         env["PATH_INFO"] = "/#{opts[:action]}"
+        
+        # Call the before failure callbacks
+        Rack::Auth::Manager._before_failure.each{|hook| hook.call(env,opts)}
+        
         @failure_app.call(env)
       end # call_failure_app
     end
