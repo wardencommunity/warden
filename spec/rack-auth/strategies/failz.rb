@@ -1,8 +1,8 @@
 Rack::Auth::Strategies.add(:failz) do
   
   def authenticate!
-    request.env['rack.auth.spec.strategies'] ||= []
-    request.env['rack.auth.spec.strategies'] << :failz
+    request.env['auth.spec.strategies'] ||= []
+    request.env['auth.spec.strategies'] << :failz
     fail!("You Fail!")
   end
   

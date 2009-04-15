@@ -33,17 +33,6 @@ describe Rack::Auth::Strategies::Base do
     end
   end
   
-  it "should have a status" do
-    RAS.add(:foobar) do
-      def authenticate!
-        self.status = 504
-      end
-    end
-    strategy = RAS[:foobar].new(env_with_params)
-    strategy._run!
-    strategy.status.should == 504
-  end
-  
   it "should have a user object" do
     RAS.add(:foobar) do
       def authenticate!
@@ -73,7 +62,7 @@ describe Rack::Auth::Strategies::Base do
       end
     end
     env = env_with_params
-    env['rack.auth.errors'] = Rack::Auth::Proxy::Errors.new
+    env['auth.errors'] = Rack::Auth::Proxy::Errors.new
     strategy = RAS[:foobar].new(env)
     strategy._run!
     strategy.errors.on(:foo).should == ["foo has an error"]
@@ -164,15 +153,15 @@ describe Rack::Auth::Strategies::Base do
       str.message.should == "You are being redirected foo"
     end
     
-    it "shoudl return a correct rack response with custom headers" do
+    it "should set the action as :redirect" do
       RAS.add(:foobar) do
         def authenticate!
-          redirect!("/foo/bar", {:foo => "bar"}, :message => "I am the foo")
+          redirect!("/foo/bar", {:foo => "bar"}, :message => "foo")
         end
       end
       str = RAS[:foobar].new(env_with_params)
       str._run!
-      str.rack_response.should == [302, {"Location" => "/foo/bar?foo=bar"}, ["I am the foo"]] 
+      str.result.should == :redirect
     end
   end
   
@@ -202,14 +191,9 @@ describe Rack::Auth::Strategies::Base do
       @str.message.should == "You are not cool enough"
     end
     
-    it "should set the status to 401" do
+    it "should set the action as :failure" do
       @str._run!
-      @str.status.should == 401
-    end
-    
-    it "should return a correct rack response with custom headers" do
-      @str._run!
-      @str.rack_response.should == [401, {}, ["You are not cool enough"]]
+      @str.result.should == :failure
     end
   end
   
@@ -236,13 +220,18 @@ describe Rack::Auth::Strategies::Base do
       @str._run!
       @str.user.should == "Foo User"
     end
+    
+    it "should set the action as :success" do
+      @str._run!
+      @str.result.should == :success
+    end    
   end
   
   describe "custom response" do
     before(:each) do
       RAS.add(:foobar) do
         def authenticate!
-          custom!([521, {"foo" => "bar"}, "BAD"])
+          custom!([521, {"foo" => "bar"}, ["BAD"]])
         end
       end
       @str = RAS[:foobar].new(env_with_params)
@@ -258,19 +247,12 @@ describe Rack::Auth::Strategies::Base do
     end
     
     it "should provide access to the custom rack response" do
-      @str.rack_response.should == [521, {"foo" => "bar"}, ["BAD"]]
+      @str.custom_response.should == [521, {"foo" => "bar"}, ["BAD"]]
     end
     
-    it "should set the headers" do
-      @str.headers.should == {"foo" => "bar"}
-    end
-    
-    it "should set the status" do 
-      @str.status.should == 521
-    end
-    
-    it "should set the message" do
-      @str.message.should == "BAD"
+    it "should set the action as :custom" do
+      @str._run!
+      @str.result.should == :custom
     end
   end
 

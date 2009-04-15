@@ -28,7 +28,7 @@ module Rack
       
       def authenticate!(*args)
         _perform_authentication(*args)
-        throw(:unauthenticated, winning_strategy.status) if !winning_strategy.user
+        throw(:auth, :action => :unauthenticated) if winning_strategy.result != :success
       end
       
       def set_user(user, opts = {})
@@ -41,14 +41,10 @@ module Rack
         @users[scope]
       end
       
-      def rack_response
-        if winning_strategy
-          winning_strategy.rack_response
-        else
-          [401,{"Content-Type" => "text/plain"}, "Authentication Required"]
-        end
-      end
-
+      def result; winning_strategy.result; end
+      def _status; winning_strategy._status; end
+      def custom_response; winning_strategy.custom_response; end
+      
       private 
       def _perform_authentication(*args)
         opts  = Hash === args.last ? args.pop : {}

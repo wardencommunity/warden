@@ -7,7 +7,8 @@ module Rack::Auth::Spec
                                      'REQUEST_METHOD' => "#{method}")
     end
     
-    def setup_rack(app, opts = {})
+    def setup_rack(app = nil, opts = {}, &block)
+      app ||= block if block_given?
       opts[:default] ||= [:password]
       opts[:failure_app] ||= failure_app
       Rack::Builder.new do 

@@ -9,7 +9,7 @@ describe Rack::Auth::Proxy do
   before(:each) do
     @basic_app = lambda{|env| [200,{'Content-Type' => 'text/plain'},'OK']}
     @authd_app = lambda do |e| 
-      if e['rack.auth'].authenticated?
+      if e['auth'].authenticated?
         [200,{'Content-Type' => 'text/plain'},"OK"]
       else
         [401,{'Content-Type' => 'text/plain'},"You Fail"]
@@ -50,16 +50,16 @@ describe Rack::Auth::Proxy do
       it "should allow authentication in my application" do
         env = env_with_params('/', :username => "fred", :password => "sekrit")
         app = lambda do |env|
-          env['rack.auth'].should be_authenticated
-          env['rack.auth.spec.strategies'].should == [:password]
+          env['auth'].should be_authenticated
+          env['auth.spec.strategies'].should == [:password]
         end
       end
       
       it "should be false in my application" do
         env = env_with_params("/", :foo => "bar")
         app = lambda do |env|
-          env['rack.auth'].should_not be_authenticated
-          env['rack.auth.spec.strategies'].should == [:password]
+          env['auth'].should_not be_authenticated
+          env['auth.spec.strategies'].should == [:password]
           valid_response
         end
         setup_rack(app).call(env)
@@ -68,8 +68,8 @@ describe Rack::Auth::Proxy do
       it "should allow me to select which strategies I use in my appliction" do
         env = env_with_params("/", :foo => "bar")
         app = lambda do |env|
-          env['rack.auth'].should_not be_authenticated(:failz)
-          env['rack.auth.spec.strategies'].should == [:failz]
+          env['auth'].should_not be_authenticated(:failz)
+          env['auth.spec.strategies'].should == [:failz]
           valid_response
         end
         setup_rack(app).call(env)
@@ -78,8 +78,8 @@ describe Rack::Auth::Proxy do
       it "should allow me to get access to the user at auth.user" do
         env = env_with_params("/")
         app = lambda do |env|
-          env['rack.auth'].should be_authenticated(:pass)
-          env['rack.auth.spec.strategies'].should == [:pass]
+          env['auth'].should be_authenticated(:pass)
+          env['auth.spec.strategies'].should == [:pass]
           valid_response
         end
         setup_rack(app).call(env)
@@ -88,8 +88,8 @@ describe Rack::Auth::Proxy do
       it "should try multiple authentication strategies" do
         env = env_with_params("/")
         app = lambda do |env|
-          env['rack.auth'].should be_authenticated(:password, :pass)
-          env['rack.auth.spec.strategies'].should == [:password, :pass]
+          env['auth'].should be_authenticated(:password, :pass)
+          env['auth.spec.strategies'].should == [:password, :pass]
           valid_response
         end
         setup_rack(app).call(env)
@@ -101,8 +101,8 @@ describe Rack::Auth::Proxy do
     it "should store the user into the session" do
       env = env_with_params("/")
       app = lambda do |env|
-        env['rack.auth'].should be_authenticated(:pass)
-        env['rack.auth'].user.should == "Valid User"
+        env['auth'].should be_authenticated(:pass)
+        env['auth'].user.should == "Valid User"
         env['rack.session']["user.default"].should == "Valid User"
         valid_response
       end

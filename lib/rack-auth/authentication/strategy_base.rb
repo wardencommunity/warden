@@ -2,13 +2,13 @@ module Rack
   module Auth
     module Strategies
       class Base
-        attr_accessor :user, :message
-        attr_writer   :status
+        attr_accessor :user, :message, :result, :custom_response
+        attr_reader   :_status
         include ::Rack::Auth::Mixins::Common
         
         def initialize(env, config = {})
           @config = config
-          @env, @status, @headers = env, nil, {}
+          @env, @_status, @headers = env, nil, {}
           @halted = false       
         end
         
@@ -22,13 +22,9 @@ module Rack
           @headers.merge! header
           @headers
         end
-        
-        def status
-          @status ||= 401
-        end
-        
+      
         def errors
-          @env['rack.auth.errors']
+          @env['auth.errors']
         end
         
         def halt!
@@ -42,42 +38,35 @@ module Rack
         def pass; end
         
         def success!(user)
+          halt!
           @user   = user
-          @status = 200
+          @result = :success
         end
         
         def fail!(message = "Failed to Login")
-          @message = message
-          @status = 401
           halt!
+          @message = message
+          @result = :failure
         end
         
         def redirect!(url, params = {}, opts = {})
+          halt!
+          @_status = opts[:permanent] ? 301 : 302
           headers["Location"] = url
           headers["Location"] << "?" << Rack::Utils.build_query(params) unless params.empty?
-          
-          @status = 302
-          
+            
           @message = opts[:message].nil? ? "You are being redirected to #{headers["Location"]}" : opts[:message]
           
-          halt!
+          @result = :redirect
+
           headers["Location"]
         end
         
         def custom!(response)
           halt!
-          @status = response[0]
-          
-          headers.clear
-          headers.merge! response[1]
-          
-          @message = response[2]
-          response
-        end
-        
-        def rack_response
-          [@status, @headers, [@message]]
-        end       
+          @custom_response = response
+          @result = :custom
+        end  
         
       end # Base
     end # Strategies

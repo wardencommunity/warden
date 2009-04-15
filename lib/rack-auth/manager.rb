@@ -15,24 +15,31 @@ module Rack
       end
       
       def call(env)
-        env['rack.auth'] = Proxy.new(env, @config)
-        result = catch(:unauthenticated) do
+        env['auth'] = Proxy.new(env, @config)
+        result = catch(:auth) do
           @app.call(env)
         end
         
-        if Array === result
+        case result
+        when Array
           if result.first != 401
-            result
+            return result
           else
-            @failure_app.call(env)
+            call_failure_app(env)
           end
-        else # The unauthenticated symbol was thrown
-          t = env['rack.auth'].rack_response
-          if t.first == 401 # If nothing is found
-            @failure_app.call(env)
-          else
-            t
-          end
+        when Hash
+          if (result[:action] ||= :unauthenticated) == :unauthenticated
+            case env['auth'].result
+            when :failure
+              call_failure_app(env, result)
+            when :redirect
+              [env['auth']._status, env['auth'].headers, env['auth'].message || "You are being redirected to #{env['auth'].headers['Location']}"]
+            when :custom
+              env['auth'].custom_response
+            when nil
+              call_failure_app(env, result)
+            end # case env['auth'].result
+          end # case result
         end
       end
       
@@ -48,14 +55,18 @@ module Rack
       
       private 
       def failure_response(env)
-        auth = env['rack.auth']
+        auth = env['auth']
         [401, auth.headers, [auth.message]]
       end
       
       def redirect_response(env)
-        auth = env['rack.auth']
+        auth = env['auth']
       end
-
+      
+      def call_failure_app(env, opts = {})
+        env["PATH_INFO"] = "/#{opts[:action]}"
+        @failure_app.call(env)
+      end # call_failure_app
     end
   end
 end
