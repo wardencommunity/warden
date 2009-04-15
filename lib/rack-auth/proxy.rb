@@ -66,6 +66,8 @@ module Rack
         strategies = args.empty? ? @strategies : args
         raise "No Strategies Found" if strategies.empty?
         strategies.each do |s|
+          strategy = Rack::Auth::Strategies[s].new(@env, @conf)
+          next unless strategy.valid?
           result = Rack::Auth::Strategies[s].new(@env, @config)._run!
           self.winning_strategy = result 
           break if result.halted?

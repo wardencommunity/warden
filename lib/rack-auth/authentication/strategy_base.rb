@@ -17,6 +17,8 @@ module Rack
           self
         end
         
+        def valid?; true; end
+        
         def headers(header = {})
           @headers ||= {}
           @headers.merge! header
