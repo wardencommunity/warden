@@ -5,21 +5,21 @@ describe Rack::Auth::Manager do
   it "should insert a Base object into the rack env" do
     env = env_with_params
     setup_rack(success_app).call(env)
-    env["auth"].should be_an_instance_of(Rack::Auth::Proxy)
+    env["rack-auth"].should be_an_instance_of(Rack::Auth::Proxy)
   end
   
   describe "user storage" do
     it "should take a user and store it in the provided session" do
       session = {}
       Rack::Auth::Manager._store_user("The User", session, "some_scope")
-      session["user.some_scope.key"].should == "The User"
+      session["rack-auth.user..some_scope.key"].should == "The User"
     end
     
     it "should use the use the user_session_key method to encode the user into the session" do
       session = {}
       Rack::Auth::Manager.should_receive(:user_session_key).with("The User").and_return(:keyed_user_for_session)
       Rack::Auth::Manager._store_user("The User", session, "some_scope")
-      session["user.some_scope.key"].should == :keyed_user_for_session
+      session["rack-auth.user..some_scope.key"].should == :keyed_user_for_session
     end
   end
 
@@ -27,7 +27,7 @@ describe Rack::Auth::Manager do
     before(:each) do
       @basic_app = lambda{|env| [200,{'Content-Type' => 'text/plain'},'OK']}
       @authd_app = lambda do |e| 
-        if e['auth'].authenticated? 
+        if e['rack-auth'].authenticated? 
           [200,{'Content-Type' => 'text/plain'},"OK"]
         else
           [401,{'Content-Type' => 'text/plain'},"You Fail"]
@@ -41,7 +41,7 @@ describe Rack::Auth::Manager do
       it "should respond with a 401 response if the strategy fails authentication" do
          env = env_with_params("/", :foo => "bar")
          app = lambda do |env|
-           env['auth'].authenticate(:failz)
+           env['rack-auth'].authenticate(:failz)
            throw(:auth, :action => :unauthenticated)
          end
          result = setup_rack(app, :failure_app => @fail_app).call(env)
@@ -51,7 +51,7 @@ describe Rack::Auth::Manager do
       it "should use the failure message given to the failure method" do
         env = env_with_params("/", {})
         app = lambda do |env|
-          env['auth'].authenticate(:failz)
+          env['rack-auth'].authenticate(:failz)
           throw(:auth, :action => :unauthenticated)
         end
         result = setup_rack(app, :failure_app => @fail_app).call(env)
@@ -60,7 +60,7 @@ describe Rack::Auth::Manager do
       
       it "should render the failure app when there's a failure" do
         app = lambda do |e| 
-          throw(:auth, :action => :unauthenticated) unless e['auth'].authenticated?(:failz)
+          throw(:auth, :action => :unauthenticated) unless e['rack-auth'].authenticated?(:failz)
         end
         fail_app = lambda do |e|
           [401, {"Content-Type" => "text/plain"}, ["Failure App"]]
@@ -77,7 +77,7 @@ describe Rack::Auth::Manager do
       RAS = Rack::Auth::Strategies unless defined?(RAS)
       Rack::Auth::Strategies.clear!
       @app = setup_rack do |env|
-        env['auth'].authenticate!(:foobar)
+        env['rack-auth'].authenticate!(:foobar)
         [200, {"Content-Type" => "text/plain"}, ["Foo Is A Winna"]]        
       end
     end

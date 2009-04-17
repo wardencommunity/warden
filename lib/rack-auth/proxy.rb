@@ -50,11 +50,18 @@ module Rack
         @users[scope]
       end
       
-      def logout(scope = nil)
-        if scope.nil?
+      def data(scope = :default)
+        session["rack-auth.user..#{scope}.data"] ||= {}
+      end
+      
+      def logout(*scopes)
+        if scopes.empty?
           session.clear
         else
-          session["user.#{scope}.key"] = nil
+          scopes.each do |s|
+            session["rack-auth.user..#{s}.key"] = nil
+            session["rack-auth.user..#{s}.data"] = nil
+          end
         end
       end
       

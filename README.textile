@@ -61,7 +61,7 @@ You can also declare a strategy like this:
 
 And use it like
 <pre><code>
-  env['auth'].authenticated?(:label)
+  env['rack-auth'].authenticated?(:label)
 </code></pre>
 
 The strategy is a class so you can mixin any logic you need to.
@@ -111,12 +111,12 @@ rack-auth injects a lazy object into the env.  If you don't use it it doesn't do
 
 Asking for authentication:
 <pre><code>
-  stuff if env['auth'].authenticated?(:strategy1, :strategy2)
+  stuff if env['rack-auth'].authenticated?(:strategy1, :strategy2)
 </code></pre>
 
 Insisting on authentication
 <pre><code>
-  env['auth'].authenticate!(:strategy1, :strategy2)
+  env['rack-auth'].authenticate!(:strategy1, :strategy2)
 </code></pre>
 
 When you insist on authentication, if no strategy is found to authenticate, an :auth symbol is thrown.  This causes the failure app (login form) to be called.
@@ -168,12 +168,12 @@ You can have multiple logins in a single session with rack-auth by using scopes.
 
 <pre><code>
   # getting scoped users
-  env['auth'].user #=> default user
-  env['auth'].user(:sudo) #=> :sudo user
+  env['rack-auth'].user #=> default user
+  env['rack-auth'].user(:sudo) #=> :sudo user
   
   # setting scoped users
-  env['auth'].authenticate!(:password, :basic, :scope => :sudo)
-  env['auth'].set_user(@user, :scope => :secure)
+  env['rack-auth'].authenticate!(:password, :basic, :scope => :sudo)
+  env['rack-auth'].set_user(@user, :scope => :secure)
 </code></pre>
 
 h2. Errors
@@ -189,10 +189,10 @@ rack-auth provides an error system that works with helpers like @error_messages_
   end
   
   # In your merb helper
-  error_messages_for env['auth']
+  error_messages_for env['rack-auth']
   
   # In your specs
-  env['auth'].errors.on(:login).should == ["That login didn't work foo!"] 
+  env['rack-auth'].errors.on(:login).should == ["That login didn't work foo!"] 
 </code></pre>
 
 h2. Hooks

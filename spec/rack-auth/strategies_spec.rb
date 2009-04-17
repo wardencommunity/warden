@@ -46,8 +46,8 @@ describe Rack::Auth::Strategies do
   it "should allow me to inherit from a class when providing a block and class" do
     class MyStrategy
       def call
-        request.env['auth.spec.strategies'] ||= []
-        request.env['auth.spec.strategies'] << :inherited
+        request.env['rack-auth.spec.strategies'] ||= []
+        request.env['rack-auth.spec.strategies'] << :inherited
       end
     end
 

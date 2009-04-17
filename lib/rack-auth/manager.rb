@@ -15,7 +15,7 @@ module Rack
       end
       
       def call(env)
-        env['auth'] = Proxy.new(env, @config)
+        env['rack-auth'] = Proxy.new(env, @config)
         result = catch(:auth) do
           @app.call(env)
         end
@@ -30,27 +30,27 @@ module Rack
           end
         when Hash
           if (result[:action] ||= :unauthenticated) == :unauthenticated
-            case env['auth'].result
+            case env['rack-auth'].result
             when :failure
               call_failure_app(env, result)
             when :redirect
-              [env['auth']._status, env['auth'].headers, [env['auth'].message || "You are being redirected to #{env['auth'].headers['Location']}"]]
+              [env['rack-auth']._status, env['rack-auth'].headers, [env['rack-auth'].message || "You are being redirected to #{env['rack-auth'].headers['Location']}"]]
             when :custom
-              env['auth'].custom_response
+              env['rack-auth'].custom_response
             when nil
               call_failure_app(env, result)
-            end # case env['auth'].result
+            end # case env['rack-auth'].result
           end # case result
         end
       end
       
       class << self
         def _store_user(user, session, scope = :default)
-          session["user.#{scope}.key"] = user_session_key(user)
+          session["rack-auth.user..#{scope}.key"] = user_session_key(user)
         end
         
         def _fetch_user(session, scope = :default)
-          user_from_session(session["user.#{scope}.key"])
+          user_from_session(session["rack-auth.user..#{scope}.key"])
         end
         
         def user_session_key(user)

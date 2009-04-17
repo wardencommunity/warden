@@ -2,7 +2,7 @@ module Rack
   module Auth
     class Proxy  
       def errors
-        @env['auth.errors'] ||= Errors.new
+        @env['rack-auth.errors'] ||= Errors.new
       end
 
       # Lifted from DataMapper's dm-validations plugin :)

@@ -26,7 +26,7 @@ module Rack
         end
       
         def errors
-          @env['auth.errors']
+          @env['rack-auth.errors']
         end
         
         def halt!

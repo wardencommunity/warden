@@ -26,13 +26,13 @@ describe "standard authentication hooks" do
     end
     
     it "should run each after_set_user hook after the user is set" do
-      RAM.after_set_user{|u,a,o| a.env['auth.spec.hook.foo'] = "run foo"}
-      RAM.after_set_user{|u,a,o| a.env['auth.spec.hook.bar'] = "run bar"}
-      app = lambda{|e| e['auth'].set_user("foo"); valid_response}
+      RAM.after_set_user{|u,a,o| a.env['rack-auth.spec.hook.foo'] = "run foo"}
+      RAM.after_set_user{|u,a,o| a.env['rack-auth.spec.hook.bar'] = "run bar"}
+      app = lambda{|e| e['rack-auth'].set_user("foo"); valid_response}
       env = env_with_params
       setup_rack(app).call(env)
-      env['auth.spec.hook.foo'].should == "run foo"
-      env['auth.spec.hook.bar'].should == "run bar"
+      env['rack-auth.spec.hook.foo'].should == "run foo"
+      env['rack-auth.spec.hook.bar'].should == "run bar"
     end
   end
   
@@ -58,13 +58,13 @@ describe "standard authentication hooks" do
     end
     
     it "should run each after_authentication hook after authentication is run" do
-      RAM.after_authentication{|u,a,o| a.env['auth.spec.hook.baz'] = "run baz"}
-      RAM.after_authentication{|u,a,o| a.env['auth.spec.hook.paz'] = "run paz"}
-      app = lambda{|e| e['auth'].authenticated?(:pass); valid_response}
+      RAM.after_authentication{|u,a,o| a.env['rack-auth.spec.hook.baz'] = "run baz"}
+      RAM.after_authentication{|u,a,o| a.env['rack-auth.spec.hook.paz'] = "run paz"}
+      app = lambda{|e| e['rack-auth'].authenticated?(:pass); valid_response}
       env = env_with_params
       setup_rack(app).call(env)
-      env['auth.spec.hook.baz'].should == 'run baz'
-      env['auth.spec.hook.paz'].should == 'run paz'
+      env['rack-auth.spec.hook.baz'].should == 'run baz'
+      env['rack-auth.spec.hook.paz'].should == 'run paz'
     end
   end
   
@@ -90,13 +90,13 @@ describe "standard authentication hooks" do
     end
     
     it "should run each before_failure hooks before failing" do
-      RAM.before_failure{|e,o| e['auth.spec.before_failure.foo'] = "foo"}
-      RAM.before_failure{|e,o| e['auth.spec.before_failure.bar'] = "bar"}
-      app = lambda{|e| e['auth'].authenticate!(:failz); valid_response}
+      RAM.before_failure{|e,o| e['rack-auth.spec.before_failure.foo'] = "foo"}
+      RAM.before_failure{|e,o| e['rack-auth.spec.before_failure.bar'] = "bar"}
+      app = lambda{|e| e['rack-auth'].authenticate!(:failz); valid_response}
       env = env_with_params
       setup_rack(app).call(env)
-      env['auth.spec.before_failure.foo'].should == "foo"
-      env['auth.spec.before_failure.bar'].should  == "bar"
+      env['rack-auth.spec.before_failure.foo'].should == "foo"
+      env['rack-auth.spec.before_failure.bar'].should  == "bar"
     end
   end
   

@@ -62,7 +62,7 @@ describe Rack::Auth::Strategies::Base do
       end
     end
     env = env_with_params
-    env['auth.errors'] = Rack::Auth::Proxy::Errors.new
+    env['rack-auth.errors'] = Rack::Auth::Proxy::Errors.new
     strategy = RAS[:foobar].new(env)
     strategy._run!
     strategy.errors.on(:foo).should == ["foo has an error"]
