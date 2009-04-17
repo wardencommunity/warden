@@ -97,11 +97,10 @@ describe Rack::Auth::Proxy do
       
       it "should look for an active user in the session with authenticate!" do
         app = lambda do |env|
-          env['rack.session']["rack-auth.user..default.key"] = "foo as a user"
+          env['rack.session']["rack-auth.user.default.key"] = "foo as a user"
           env['rack-auth'].authenticate!(:pass)
           valid_response
         end
-        Rack::Auth::Manager.should_receive(:user_from_session).with("foo as a user").and_return("foo as a user")
         env = env_with_params
         setup_rack(app).call(env)
         env['rack-auth'].user.should == "foo as a user"
@@ -109,11 +108,10 @@ describe Rack::Auth::Proxy do
       
       it "should look for an active user in the session with authenticate?" do
         app = lambda do |env|
-          env['rack.session']['rack-auth.user..foo_scope.key'] = "a foo user"
+          env['rack.session']['rack-auth.user.foo_scope.key'] = "a foo user"
           env['rack-auth'].authenticated?(:pass, :scope => :foo_scope)
           valid_response
         end
-        Rack::Auth::Manager.should_receive(:user_from_session).with("a foo user").and_return("a foo user")
         env = env_with_params
         setup_rack(app).call(env)
         env['rack-auth'].user(:foo_scope).should == "a foo user"
@@ -121,8 +119,8 @@ describe Rack::Auth::Proxy do
       
       it "should login 2 different users from the session" do
         app = lambda do |env|
-          env['rack.session']['rack-auth.user..foo.key'] = 'foo user'
-          env['rack.session']['rack-auth.user..bar.key'] = 'bar user'
+          env['rack.session']['rack-auth.user.foo.key'] = 'foo user'
+          env['rack.session']['rack-auth.user.bar.key'] = 'bar user'
           env['rack-auth'].authenticated?(:pass, :scope => :foo).should be_true
           env['rack-auth'].authenticated?(:pass, :scope => :bar).should be_true
           env['rack-auth'].authenticated?(:password).should be_false
@@ -143,7 +141,7 @@ describe Rack::Auth::Proxy do
       app = lambda do |env|
         env['rack-auth'].should be_authenticated(:pass)
         env['rack-auth'].user.should == "Valid User"
-        env['rack.session']["rack-auth.user..default.key"].should == "Valid User"
+        env['rack.session']["rack-auth.user.default.key"].should == "Valid User"
         valid_response
       end
       setup_rack(app).call(env)
@@ -154,7 +152,7 @@ describe Rack::Auth::Proxy do
 
     before(:each) do
       @env = env = env_with_params
-      @env['rack.session'] = {"rack-auth.user..default.key" => "default key", "rack-auth.user..foo.key" => "foo key", :foo => "bar"}
+      @env['rack.session'] = {"rack-auth.user.default.key" => "default key", "rack-auth.user.foo.key" => "foo key", :foo => "bar"}
       app = lambda do |e|
         e['rack-auth'].logout(env['rack-auth.spec.which_logout'])
         valid_response
@@ -165,16 +163,16 @@ describe Rack::Auth::Proxy do
     it "should logout only the scoped foo user" do
       @env['rack-auth.spec.which_logout'] = :foo
       @app.call(@env)
-      @env['rack.session']['rack-auth.user..default.key'].should == "default key"
-      @env['rack.session']['rack-auth.user..foo.key'].should be_nil
+      @env['rack.session']['rack-auth.user.default.key'].should == "default key"
+      @env['rack.session']['rack-auth.user.foo.key'].should be_nil
       @env['rack.session'][:foo].should == "bar"
     end
     
     it "should logout only the scoped default user" do 
       @env['rack-auth.spec.which_logout'] = :default
       @app.call(@env)
-      @env['rack.session']['rack-auth.user..default.key'].should be_nil
-      @env['rack.session']['rack-auth.user..foo.key'].should == "foo key"
+      @env['rack.session']['rack-auth.user.default.key'].should be_nil
+      @env['rack.session']['rack-auth.user.foo.key'].should == "foo key"
       @env['rack.session'][:foo].should == "bar"
     end
     

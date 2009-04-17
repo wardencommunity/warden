@@ -5,16 +5,22 @@ module Rack
     # The middleware injects an authentication object into 
     # the rack environment hash
     class Manager
-      attr_accessor :config
+      attr_accessor :config, :failure_app
       
+      # initialize the middleware.
+      # Provide a :failure_app in the options to setup an application to run when there is a failure
+      # :api: public 
       def initialize(app, config = {})
         @app = app
         @failure_app = config[:failure_app]
-        raise "You must specify a :failure_app for authentication" unless @failure_app
         @config = config
       end
       
-      def call(env)
+      # :api: private
+      def call(env) # :nodoc:
+        # if this is downstream from another rack-auth instance, don't do anything.
+        return @app.call(env) unless env['rack-auth'].nil? 
+        
         env['rack-auth'] = Proxy.new(env, @config)
         result = catch(:auth) do
           @app.call(env)
@@ -30,39 +36,71 @@ module Rack
           end
         when Hash
           if (result[:action] ||= :unauthenticated) == :unauthenticated
-            case env['rack-auth'].result
-            when :failure
-              call_failure_app(env, result)
-            when :redirect
-              [env['rack-auth']._status, env['rack-auth'].headers, [env['rack-auth'].message || "You are being redirected to #{env['rack-auth'].headers['Location']}"]]
-            when :custom
-              env['rack-auth'].custom_response
-            when nil
-              call_failure_app(env, result)
-            end # case env['rack-auth'].result
+            process_unauthenticated(result,env)
           end # case result
         end
       end
       
       class << self
-        def _store_user(user, session, scope = :default)
-          session["rack-auth.user..#{scope}.key"] = user_session_key(user)
+        # Does the work of storing the user in the session
+        # :api: private
+        def _store_user(user, session, scope = :default) # :nodoc: 
+          session["rack-auth.user.#{scope}.key"] = user_session_key.call(user)
         end
         
-        def _fetch_user(session, scope = :default)
-          user_from_session(session["rack-auth.user..#{scope}.key"])
+        # Does the work of fetching the user from the session
+        # :api: private
+        def _fetch_user(session, scope = :default) # :nodoc:
+          user_from_session.call(session["rack-auth.user.#{scope}.key"])
         end
         
-        def user_session_key(user)
-          user
+        # Prepares the user to serialize into the session.
+        # Any object that can be serialized into the session in some way can be used as a "user" object
+        # Generally however complex object should not be stored in the session.  
+        # If possible store only a "key" of the user object that will allow you to reconstitute it.
+        #
+        # Example:
+        #   Rack::Auth::Manager.user_session_key{ |user| user.id }
+        #
+        # :api: public
+        def user_session_key(&block)
+          @user_session_key = block if block_given?
+          @user_session_key ||= lambda{|user| user}
         end
         
-        def user_from_session(key)
-          key
+        # Reconstitues the user from the session.
+        # Use the results of user_session_key to reconstitue the user from the session on requests after the initial login
+        # 
+        # Example:
+        #   Rack::Auth::Manager.user_from_session{ |id| User.get(id) }
+        #
+        # :api: public
+        def user_from_session(&blk)
+          @user_from_session = blk if block_given?
+          @user_from_session ||= lambda{|key| key}
         end                      
       end
       
-      private 
+      private
+      # When a request is unauthentiated, here's where the processing occurs.  
+      # It looks at the result of the proxy to see if it's been executed and what action to take.
+      # :api: private
+      def process_unauthenticated(result, env)
+        case env['rack-auth'].result
+        when :failure
+          call_failure_app(env, result)
+        when :redirect
+          [env['rack-auth']._status, env['rack-auth'].headers, [env['rack-auth'].message || "You are being redirected to #{env['rack-auth'].headers['Location']}"]]
+        when :custom
+          env['rack-auth'].custom_response
+        when nil
+          call_failure_app(env, result)
+        end # case env['rack-auth'].result
+      end
+      
+      # Calls the failure app.
+      # The before_failure hooks are run on each failure
+      # :api: private
       def call_failure_app(env, opts = {})
         env["PATH_INFO"] = "/#{opts[:action]}"
         

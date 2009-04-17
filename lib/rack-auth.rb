@@ -11,5 +11,6 @@ require 'rack-auth/authentication/strategies'
 
 module Rack
   module Auth
+    class NotAuthenticated < StandardError; end
   end
 end

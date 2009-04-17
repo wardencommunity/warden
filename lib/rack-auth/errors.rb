@@ -1,6 +1,7 @@
 module Rack
   module Auth
-    class Proxy  
+    class Proxy 
+      # :api: public
       def errors
         @env['rack-auth.errors'] ||= Errors.new
       end

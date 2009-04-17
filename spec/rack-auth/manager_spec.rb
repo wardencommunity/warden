@@ -12,14 +12,7 @@ describe Rack::Auth::Manager do
     it "should take a user and store it in the provided session" do
       session = {}
       Rack::Auth::Manager._store_user("The User", session, "some_scope")
-      session["rack-auth.user..some_scope.key"].should == "The User"
-    end
-    
-    it "should use the use the user_session_key method to encode the user into the session" do
-      session = {}
-      Rack::Auth::Manager.should_receive(:user_session_key).with("The User").and_return(:keyed_user_for_session)
-      Rack::Auth::Manager._store_user("The User", session, "some_scope")
-      session["rack-auth.user..some_scope.key"].should == :keyed_user_for_session
+      session["rack-auth.user.some_scope.key"].should == "The User"
     end
   end
 

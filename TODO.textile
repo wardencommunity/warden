@@ -1,5 +1,3 @@
-* Implement logout
-* Implement authenticated data store
 * Allow a spec / test mode where a _spec_authenticate! method is called on a strategy instead if present
 * Implement back urls
 * Document the crap out of it
