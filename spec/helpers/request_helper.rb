@@ -12,7 +12,7 @@ module Rack::Auth::Spec
       opts[:default] ||= [:password]
       opts[:failure_app] ||= failure_app
       Rack::Builder.new do 
-        use Rack::Session::Cookie
+        use Rack::Auth::Spec::Helpers::Session
         use Rack::Auth::Manager, opts
         run app
       end
@@ -29,5 +29,17 @@ module Rack::Auth::Spec
     def success_app
       lambda{|e| [200, {"Content-Type" => "text/plain"}, ["You Win"]]}
     end
+    
+    class Session
+      attr_accessor :app
+      def initialize(app,configs = {})
+        @app = app
+      end
+      
+      def call(e)
+        e['rack.session'] ||= {}      
+        @app.call(e)
+      end
+    end # session
   end
 end

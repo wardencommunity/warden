@@ -150,4 +150,43 @@ describe Rack::Auth::Proxy do
     end
   end
 
+  describe "logout" do
+
+    before(:each) do
+      @env = env = env_with_params
+      @env['rack.session'] = {"user.default.key" => "default key", "user.foo.key" => "foo key", :foo => "bar"}
+      app = lambda do |e|
+        e['auth'].logout(env['auth.spec.which_logout'])
+        valid_response
+      end
+      @app = setup_rack(app)
+    end
+    
+    it "should logout only the scoped foo user" do
+      @env['auth.spec.which_logout'] = :foo
+      @app.call(@env)
+      @env['rack.session']['user.default.key'].should == "default key"
+      @env['rack.session']['user.foo.key'].should be_nil
+      @env['rack.session'][:foo].should == "bar"
+    end
+    
+    it "should logout only the scoped default user" do 
+      @env['auth.spec.which_logout'] = :default
+      @app.call(@env)
+      @env['rack.session']['user.default.key'].should be_nil
+      @env['rack.session']['user.foo.key'].should == "foo key"
+      @env['rack.session'][:foo].should == "bar"
+    end
+    
+    it "should clear the session when no argument is given to logout" do
+      @env['rack.session'].should_not be_nil
+      app = lambda do |e|
+        e['auth'].logout
+        valid_response
+      end
+      setup_rack(app).call(@env)
+      @env['rack.session'].should be_empty
+    end
+  end
+  
 end

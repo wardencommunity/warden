@@ -55,7 +55,7 @@ describe Rack::Auth::Manager do
           throw(:auth, :action => :unauthenticated)
         end
         result = setup_rack(app, :failure_app => @fail_app).call(env)
-        result.last.body.should == ["You Fail!"]
+        result.last.should == ["You Fail!"]
       end
       
       it "should render the failure app when there's a failure" do
@@ -66,7 +66,7 @@ describe Rack::Auth::Manager do
           [401, {"Content-Type" => "text/plain"}, ["Failure App"]]
         end
         result = setup_rack(app, :failure_app => fail_app).call(env_with_params)
-        result.last.body.should == ["Failure App"]
+        result.last.should == ["Failure App"]
       end
     end # failure
     
@@ -93,7 +93,7 @@ describe Rack::Auth::Manager do
         result = @app.call(env_with_params)
         result[0].should == 302
         result[1]["Location"].should == "/foo/bar?foo=bar"
-        result[2].body.should == ["custom redirection message"]
+        result[2].should == ["custom redirection message"]
       end
       
       it "should redirect with a default message" do
@@ -105,7 +105,7 @@ describe Rack::Auth::Manager do
         result = @app.call(env_with_params)
         result[0].should == 302
         result[1]['Location'].should == "/foo/bar?foo=bar"
-        result[2].body.should == ["You are being redirected to /foo/bar?foo=bar"]
+        result[2].should == ["You are being redirected to /foo/bar?foo=bar"]
       end
       
       it "should redirect with a permanent redirect" do
@@ -129,7 +129,7 @@ describe Rack::Auth::Manager do
         env = env_with_params
         result = @app.call(env)
         result[0].should == 401
-        result[2].body.should == ["You Fail!"]
+        result[2].should == ["You Fail!"]
         env['PATH_INFO'].should == "/unauthenticated"
       end
     end # failing
@@ -144,7 +144,7 @@ describe Rack::Auth::Manager do
         result = @app.call(env_with_params)
         result[0].should == 523
         result[1]["Custom-Header"].should == "foo"
-        result[2].body.should == ["Custom Stuff"]
+        result[2].should == ["Custom Stuff"]
       end
     end
   
@@ -158,7 +158,7 @@ describe Rack::Auth::Manager do
         env = env_with_params
         result = @app.call(env)
         result[0].should == 200
-        result[2].body.should == ["Foo Is A Winna"]
+        result[2].should == ["Foo Is A Winna"]
       end
     end
   end # integrated strategies

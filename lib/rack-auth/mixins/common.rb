@@ -4,13 +4,7 @@ module Rack
       module Common
         
         def session
-          @session = begin
-             if @env['rack.session']
-               @env['rack.session']
-             else
-               raise "No Session Found"
-             end
-           end
+          @env['rack.session']
         end # session
         
         def request

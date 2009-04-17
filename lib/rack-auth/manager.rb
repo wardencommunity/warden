@@ -19,6 +19,7 @@ module Rack
         result = catch(:auth) do
           @app.call(env)
         end
+
         result ||= {}
         case result
         when Array
@@ -33,7 +34,7 @@ module Rack
             when :failure
               call_failure_app(env, result)
             when :redirect
-              [env['auth']._status, env['auth'].headers, env['auth'].message || "You are being redirected to #{env['auth'].headers['Location']}"]
+              [env['auth']._status, env['auth'].headers, [env['auth'].message || "You are being redirected to #{env['auth'].headers['Location']}"]]
             when :custom
               env['auth'].custom_response
             when nil

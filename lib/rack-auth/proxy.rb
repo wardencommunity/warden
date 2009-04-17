@@ -50,6 +50,14 @@ module Rack
         @users[scope]
       end
       
+      def logout(scope = nil)
+        if scope.nil?
+          session.clear
+        else
+          session["user.#{scope}.key"] = nil
+        end
+      end
+      
       # proxy methods through to the winning strategy
       def result; winning_strategy.nil? ? nil : winning_strategy.result; end
       
