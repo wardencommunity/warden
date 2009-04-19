@@ -5,10 +5,11 @@ module Rack
     # The middleware injects an authentication object into 
     # the rack environment hash
     class Manager
-      attr_accessor :config, :failure_app
+      attr_accessor :config, :failure_app  
       
       # initialize the middleware.
       # Provide a :failure_app in the options to setup an application to run when there is a failure
+      # The manager is yielded when initialized with a block.  This is useful when declaring it in Rack::Builder
       # :api: public 
       def initialize(app, config = {})
         @app = app
@@ -20,6 +21,16 @@ module Rack
         raise "No Failure App provided" unless @failure_app
         self
       end 
+      
+      # Set the default strategies to use.
+      # :api: public
+      def default_strategies(*strategies)
+        if strategies.empty?
+          @config[:default_strategies]
+        else
+          @config[:default_strategies] = strategies.flatten
+        end
+      end
       
       # :api: private
       def call(env) # :nodoc:
@@ -46,17 +57,19 @@ module Rack
         end
       end
       
-      class << self
+      class << self   
+          
+        
         # Does the work of storing the user in the session
         # :api: private
         def _store_user(user, session, scope = :default) # :nodoc: 
-          session["rack-auth.user.#{scope}.key"] = user_session_key.call(user)
+          session["rack-auth.user.#{scope}.key"] = serialize_into_session.call(user)
         end
         
         # Does the work of fetching the user from the session
         # :api: private
         def _fetch_user(session, scope = :default) # :nodoc:
-          user_from_session.call(session["rack-auth.user.#{scope}.key"])
+          serialize_from_session.call(session["rack-auth.user.#{scope}.key"])
         end
         
         # Prepares the user to serialize into the session.
@@ -65,24 +78,24 @@ module Rack
         # If possible store only a "key" of the user object that will allow you to reconstitute it.
         #
         # Example:
-        #   Rack::Auth::Manager.user_session_key{ |user| user.id }
+        #   Rack::Auth::Manager.serialize_into_session{ |user| user.id }
         #
         # :api: public
-        def user_session_key(&block)
-          @user_session_key = block if block_given?
-          @user_session_key ||= lambda{|user| user}
+        def serialize_into_session(&block)
+          @serialize_into_session = block if block_given?
+          @serialize_into_session ||= lambda{|user| user}
         end
         
         # Reconstitues the user from the session.
         # Use the results of user_session_key to reconstitue the user from the session on requests after the initial login
         # 
         # Example:
-        #   Rack::Auth::Manager.user_from_session{ |id| User.get(id) }
+        #   Rack::Auth::Manager.serialize_from_session{ |id| User.get(id) }
         #
         # :api: public
-        def user_from_session(&blk)
-          @user_from_session = blk if block_given?
-          @user_from_session ||= lambda{|key| key}
+        def serialize_from_session(&blk)
+          @serialize_from_session = blk if block_given?
+          @serialize_from_session ||= lambda{|key| key}
         end                      
       end
       
@@ -108,6 +121,7 @@ module Rack
       # :api: private
       def call_failure_app(env, opts = {})
         env["PATH_INFO"] = "/#{opts[:action]}"
+        env["rack-auth.options"] = opts
         
         # Call the before failure callbacks
         Rack::Auth::Manager._before_failure.each{|hook| hook.call(env,opts)}

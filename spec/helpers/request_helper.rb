@@ -12,14 +12,13 @@ module Rack::Auth::Spec
     
     def setup_rack(app = nil, opts = {}, &block)
       app ||= block if block_given?
-      opts[:default] ||= [:password]
+      # opts[:default_strategies] ||= [:password]
       # opts[:failure_app] ||= failure_app
       Rack::Builder.new do 
         use Rack::Auth::Spec::Helpers::Session
         use Rack::Auth::Manager, opts do |manager|
           manager.failure_app = Rack::Auth::Spec::Helpers::FAILURE_APP
-          puts manager.inspect
-          
+          manager.default_strategies :password        
         end
         run app
       end

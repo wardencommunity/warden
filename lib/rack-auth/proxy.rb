@@ -20,7 +20,7 @@ module Rack
       def initialize(env, config = {}) # :nodoc:
         @env = env
         @config = config
-        @strategies = @config.fetch(:default, [])
+        @strategies = @config.fetch(:default_strategies, [])
         @users = {}
         errors # setup the error object in the session
       end
