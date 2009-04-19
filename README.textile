@@ -1,1 +1,1 @@
-Please see the Rack::Auth Wiki for overview documentation at http://wiki.github.com/hassox/rack-auth
+Please see the "Rack::Auth Wiki":http://wiki.github.com/hassox/rack-auth for overview documentation.
