@@ -12,6 +12,7 @@ module Rack
       
       extend ::Forwardable
       include ::Rack::Auth::Mixins::Common
+      alias_method :_session, :session
             
       # :api: private
       def_delegators :winning_strategy, :headers, :message, :_status, :custom_response
@@ -78,7 +79,7 @@ module Rack
       # :api: public
       def set_user(user, opts = {})
         scope = (opts[:scope] ||= :default)
-        Rack::Auth::Manager._store_user(user, session, scope) # Get the user into the session
+        Rack::Auth::Manager._store_user(user, _session, scope) # Get the user into the session
         
         # Run the after hooks for setting the user
         Rack::Auth::Manager._after_set_user.each{|hook| hook.call(user, self, opts)}
@@ -101,7 +102,7 @@ module Rack
         @users[scope]
       end
       
-      # Provides a scoped data repository for authenticated users.
+      # Provides a scoped session data for authenticated users.
       # Rack::Auth manages clearing out this data when a user logs out
       #
       # Example
@@ -112,9 +113,9 @@ module Rack
       #  env['rack-auth'].data(:sudo)[:foo] = "bar"
       #
       # :api: public
-      def data(scope = :default)
+      def session(scope = :default)
         raise NotAuthenticated, "#{scope.inspect} user is not logged in" unless authenticated?(:scope => scope)
-        session["rack-auth.user.#{scope}.data"] ||= {}
+        _session["rack-auth.user.#{scope}.session"] ||= {}
       end
       
       # Provides logout functionality. 
@@ -136,11 +137,11 @@ module Rack
       # :api: public
       def logout(*scopes)
         if scopes.empty?
-          session.clear
+          _session.clear
         else
           scopes.each do |s|
-            session["rack-auth.user.#{s}.key"] = nil
-            session["rack-auth.user.#{s}.data"] = nil
+            _session["rack-auth.user.#{s}.key"] = nil
+            _session["rack-auth.user.#{s}.session"] = nil
           end
         end
       end
@@ -157,7 +158,7 @@ module Rack
         scope = scope_from_args(args)
         opts = opts_from_args(args)
         # Look for an existing user in the session for this scope
-        if @users[scope] || set_user(Rack::Auth::Manager._fetch_user(session, scope), :scope => scope)
+        if @users[scope] || set_user(Rack::Auth::Manager._fetch_user(_session, scope), :scope => scope)
           return @users[scope]
         end
         
