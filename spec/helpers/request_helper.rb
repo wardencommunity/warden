@@ -1,5 +1,8 @@
 module Rack::Auth::Spec
   module Helpers
+    
+    FAILURE_APP = lambda{|e|[401, {"Content-Type" => "text/plain"}, ["You Fail!"]] }
+    
     def env_with_params(path = "/", params = {})
       method = params.fetch(:method, "GET")
       Rack::MockRequest.env_for(path, :input => Rack::Utils.build_query(params),
@@ -10,10 +13,14 @@ module Rack::Auth::Spec
     def setup_rack(app = nil, opts = {}, &block)
       app ||= block if block_given?
       opts[:default] ||= [:password]
-      opts[:failure_app] ||= failure_app
+      # opts[:failure_app] ||= failure_app
       Rack::Builder.new do 
         use Rack::Auth::Spec::Helpers::Session
-        use Rack::Auth::Manager, opts
+        use Rack::Auth::Manager, opts do |manager|
+          manager.failure_app = Rack::Auth::Spec::Helpers::FAILURE_APP
+          puts manager.inspect
+          
+        end
         run app
       end
     end
@@ -23,7 +30,7 @@ module Rack::Auth::Spec
     end
     
     def failure_app
-      lambda{|e|[401, {"Content-Type" => "text/plain"}, ["You Fail!"]] }
+      Rack::Auth::Spec::Helpers::FAILURE_APP
     end
     
     def success_app

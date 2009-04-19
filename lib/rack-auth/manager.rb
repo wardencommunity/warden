@@ -12,9 +12,14 @@ module Rack
       # :api: public 
       def initialize(app, config = {})
         @app = app
-        @failure_app = config[:failure_app]
         @config = config
-      end
+        yield self if block_given?
+        
+        # should ensure there is a failure application defined.
+        @failure_app = config[:failure_app] if config[:failure_app]
+        raise "No Failure App provided" unless @failure_app
+        self
+      end 
       
       # :api: private
       def call(env) # :nodoc:
