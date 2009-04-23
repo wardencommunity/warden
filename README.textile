@@ -1,1 +1,1 @@
-Please see the "Rack::Auth Wiki":http://wiki.github.com/hassox/rack-auth for overview documentation.
+Please see the "Warden Wiki":http://wiki.github.com/hassox/warden for overview documentation.

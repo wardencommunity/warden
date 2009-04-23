@@ -1,4 +1,4 @@
-module Rack::Auth::Spec
+module Warden::Spec
   module Helpers
     
     FAILURE_APP = lambda{|e|[401, {"Content-Type" => "text/plain"}, ["You Fail!"]] }
@@ -15,9 +15,9 @@ module Rack::Auth::Spec
       # opts[:default_strategies] ||= [:password]
       # opts[:failure_app] ||= failure_app
       Rack::Builder.new do 
-        use Rack::Auth::Spec::Helpers::Session
-        use Rack::Auth::Manager, opts do |manager|
-          manager.failure_app = Rack::Auth::Spec::Helpers::FAILURE_APP
+        use Warden::Spec::Helpers::Session
+        use Warden::Manager, opts do |manager|
+          manager.failure_app = Warden::Spec::Helpers::FAILURE_APP
           manager.default_strategies :password        
         end
         run app
@@ -29,7 +29,7 @@ module Rack::Auth::Spec
     end
     
     def failure_app
-      Rack::Auth::Spec::Helpers::FAILURE_APP
+      Warden::Spec::Helpers::FAILURE_APP
     end
     
     def success_app

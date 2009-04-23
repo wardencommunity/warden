@@ -1,18 +1,18 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
-describe Rack::Auth::Manager do
+describe Warden::Manager do
 
   it "should insert a Base object into the rack env" do
     env = env_with_params
     setup_rack(success_app).call(env)
-    env["rack-auth"].should be_an_instance_of(Rack::Auth::Proxy)
+    env["warden"].should be_an_instance_of(Warden::Proxy)
   end
   
   describe "user storage" do
     it "should take a user and store it in the provided session" do
       session = {}
-      Rack::Auth::Manager._store_user("The User", session, "some_scope")
-      session["rack-auth.user.some_scope.key"].should == "The User"
+      Warden::Manager._store_user("The User", session, "some_scope")
+      session["warden.user.some_scope.key"].should == "The User"
     end
   end
 
@@ -20,7 +20,7 @@ describe Rack::Auth::Manager do
     before(:each) do
       @basic_app = lambda{|env| [200,{'Content-Type' => 'text/plain'},'OK']}
       @authd_app = lambda do |e| 
-        if e['rack-auth'].authenticated? 
+        if e['warden'].authenticated? 
           [200,{'Content-Type' => 'text/plain'},"OK"]
         else
           [401,{'Content-Type' => 'text/plain'},"You Fail"]
@@ -34,8 +34,8 @@ describe Rack::Auth::Manager do
       it "should respond with a 401 response if the strategy fails authentication" do
          env = env_with_params("/", :foo => "bar")
          app = lambda do |env|
-           env['rack-auth'].authenticate(:failz)
-           throw(:auth, :action => :unauthenticated)
+           env['warden'].authenticate(:failz)
+           throw(:warden, :action => :unauthenticated)
          end
          result = setup_rack(app, :failure_app => @fail_app).call(env)
          result.first.should == 401
@@ -44,8 +44,8 @@ describe Rack::Auth::Manager do
       it "should use the failure message given to the failure method" do
         env = env_with_params("/", {})
         app = lambda do |env|
-          env['rack-auth'].authenticate(:failz)
-          throw(:auth, :action => :unauthenticated)
+          env['warden'].authenticate(:failz)
+          throw(:warden, :action => :unauthenticated)
         end
         result = setup_rack(app, :failure_app => @fail_app).call(env)
         result.last.should == ["You Fail!"]
@@ -53,7 +53,7 @@ describe Rack::Auth::Manager do
       
       it "should render the failure app when there's a failure" do
         app = lambda do |e| 
-          throw(:auth, :action => :unauthenticated) unless e['rack-auth'].authenticated?(:failz)
+          throw(:warden, :action => :unauthenticated) unless e['warden'].authenticated?(:failz)
         end
         fail_app = lambda do |e|
           [401, {"Content-Type" => "text/plain"}, ["Failure App"]]
@@ -67,10 +67,10 @@ describe Rack::Auth::Manager do
   
   describe "integrated strategies" do
     before(:each) do
-      RAS = Rack::Auth::Strategies unless defined?(RAS)
-      Rack::Auth::Strategies.clear!
+      RAS = Warden::Strategies unless defined?(RAS)
+      Warden::Strategies.clear!
       @app = setup_rack do |env|
-        env['rack-auth'].authenticate!(:foobar)
+        env['warden'].authenticate!(:foobar)
         [200, {"Content-Type" => "text/plain"}, ["Foo Is A Winna"]]        
       end
     end

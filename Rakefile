@@ -4,11 +4,11 @@ require 'rubygems/specification'
 require 'date'
 require 'spec/rake/spectask'
 
-GEM = "rack-auth"
-GEM_VERSION = "0.0.1"
+GEM = "warden"
+GEM_VERSION = "0.1.0"
 AUTHOR = "Daniel Neighman"
 EMAIL = "has.sox@gmail.com"
-HOMEPAGE = "http://github.com/hassox/rack-auth"
+HOMEPAGE = "http://github.com/hassox/warden"
 SUMMARY = "Rack middleware that provides authentication and authorization for rack applications"
 
 spec = Gem::Specification.new do |s|

@@ -1,31 +1,31 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
-describe Rack::Auth::Strategies::Base do
+describe Warden::Strategies::Base do
 
   before(:each) do
-    RAS = Rack::Auth::Strategies unless defined?(RAS)
-    Rack::Auth::Strategies.clear!
+    RAS = Warden::Strategies unless defined?(RAS)
+    Warden::Strategies.clear!
   end
   
   describe "headers" do
     it "should have headers" do
-      Rack::Auth::Strategies.add(:foo) do
+      Warden::Strategies.add(:foo) do
         def authenticate!
           headers("foo" => "bar")
         end
       end
-      strategy = Rack::Auth::Strategies[:foo].new(env_with_params)
+      strategy = Warden::Strategies[:foo].new(env_with_params)
       strategy._run!
       strategy.headers["foo"].should == "bar"
     end
     
     it "should allow us to clear the headers" do
-      Rack::Auth::Strategies.add(:foo) do
+      Warden::Strategies.add(:foo) do
         def authenticate!
           headers("foo" => "bar")
         end
       end
-      strategy = Rack::Auth::Strategies[:foo].new(env_with_params)
+      strategy = Warden::Strategies[:foo].new(env_with_params)
       strategy._run!
       strategy.headers["foo"].should == "bar"
       strategy.headers.clear
@@ -62,7 +62,7 @@ describe Rack::Auth::Strategies::Base do
       end
     end
     env = env_with_params
-    env['rack-auth.errors'] = Rack::Auth::Proxy::Errors.new
+    env['warden.errors'] = Warden::Proxy::Errors.new
     strategy = RAS[:foobar].new(env)
     strategy._run!
     strategy.errors.on(:foo).should == ["foo has an error"]

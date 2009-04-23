@@ -1,9 +1,9 @@
 require File.join(File.dirname(__FILE__), "..", 'spec_helper.rb')
 
-describe Rack::Auth::Proxy::Errors do
+describe Warden::Proxy::Errors do
  
   before(:each) do
-    @errors = Rack::Auth::Proxy::Errors.new
+    @errors = Warden::Proxy::Errors.new
   end
  
   it "should report that it is empty on first creation" do

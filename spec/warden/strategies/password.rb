@@ -1,7 +1,7 @@
-Rack::Auth::Strategies.add(:password) do
+Warden::Strategies.add(:password) do
   def authenticate!
-    request.env['rack-auth.spec.strategies'] ||= []
-    request.env['rack-auth.spec.strategies'] << :password
+    request.env['warden.spec.strategies'] ||= []
+    request.env['warden.spec.strategies'] << :password
     if params["password"] || params["username"]
       params["password"] == "sekrit" && params["username"] == "fred" ?
         success!("Authenticated User") : fail!("Username or password is incorrect")
