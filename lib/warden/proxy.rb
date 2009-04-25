@@ -53,8 +53,9 @@ module Warden
     #   env['auth'].authenticate(:password, :basic, :scope => :sudo)
     # :api: public
     def authenticate(*args)
+      scope = scope_from_args(args)
       _perform_authentication(*args)
-      winning_strategy
+      user(scope)
     end
     
     # The same as +authenticate+ except on failure it will throw an :warden symbol causing the request to be halted
@@ -68,6 +69,7 @@ module Warden
       scope = scope_from_args(args)
       _perform_authentication(*args)
       throw(:warden, :action => :unauthenticated) if !user(scope)
+      user(scope)
     end
     
     # Manually set the user into the session and auth proxy
@@ -166,14 +168,14 @@ module Warden
       raise "No Strategies Found" if strategies.empty? || !(strategies - Warden::Strategies._strategies.keys).empty?
       strategies.each do |s|
         strategy = Warden::Strategies[s].new(@env, @conf)
+        self.winning_strategy = strategy
         next unless strategy.valid?
-        result = Warden::Strategies[s].new(@env, @config)._run!
-        self.winning_strategy = result 
-        break if result.halted?
+        strategy._run!
+        break if strategy.halted?
       end
       
       
-      if winning_strategy.user
+      if winning_strategy && winning_strategy.user
         set_user(winning_strategy.user, opts)
       
         # Run the after_authentication hooks

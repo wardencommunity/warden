@@ -187,4 +187,32 @@ describe Warden::Proxy do
     end
   end
   
+  describe "when all strategies are not valid?" do
+    it "should return false for authenticated when there are no valid? strategies" do
+     @env['rack.session'] = {}
+     app = lambda do |e|
+       e['warden'].authenticated?(:invalid).should be_false
+     end
+     setup_rack(app).call(@env)
+    end
+    
+    it "should return nil for authenticate when there are no valid strategies" do
+      @env['rack.session'] = {}
+      app = lambda do |e|
+        e['warden'].authenticate(:invalid).should be_nil
+      end
+      setup_rack(app).call(@env)
+    end
+    
+    it "should respond with a 401 when authenticate! cannot find any valid strategies" do
+      @env['rack.session'] = {}
+      app = lambda do |e| 
+        e['warden'].authenticate!(:invalid)
+      end
+      result = setup_rack(app).call(@env)
+      result.first.should == 401
+    end
+    
+  end
+  
 end
