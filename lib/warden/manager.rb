@@ -62,13 +62,16 @@ module Warden
       # Does the work of storing the user in the session
       # :api: private
       def _store_user(user, session, scope = :default) # :nodoc: 
+        return nil if user.nil?
         session["warden.user.#{scope}.key"] = serialize_into_session.call(user)
       end
       
       # Does the work of fetching the user from the session
       # :api: private
       def _fetch_user(session, scope = :default) # :nodoc:
-        serialize_from_session.call(session["warden.user.#{scope}.key"])
+        key = session["warden.user.#{scope}.key"]
+        return nil if key.nil?
+        serialize_from_session.call(key)
       end
       
       # Prepares the user to serialize into the session.
