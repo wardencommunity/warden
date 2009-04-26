@@ -9,7 +9,7 @@ GEM_VERSION = "0.1.1"
 AUTHOR = "Daniel Neighman"
 EMAIL = "has.sox@gmail.com"
 HOMEPAGE = "http://github.com/hassox/warden"
-SUMMARY = "Rack middleware that provides authentication and authorization for rack applications"
+SUMMARY = "Rack middleware that provides authentication for rack applications"
 
 spec = Gem::Specification.new do |s|
   s.name = GEM
