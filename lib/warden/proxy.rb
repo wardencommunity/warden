@@ -66,9 +66,10 @@ module Warden
     #
     # :api: public
     def authenticate!(*args)
+      opts = opts_from_args(args)
       scope = scope_from_args(args)
       _perform_authentication(*args)
-      throw(:warden, :action => :unauthenticated) if !user(scope)
+      throw(:warden, opts.merge(:action => :unauthenticated)) if !user(scope)
       user(scope)
     end
     

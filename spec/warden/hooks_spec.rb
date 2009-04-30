@@ -99,5 +99,36 @@ describe "standard authentication hooks" do
       env['warden.spec.before_failure.bar'].should  == "bar"
     end
   end
+  describe "after_failure" do
+    before(:each) do
+      RAM = Warden::Manager unless defined?(RAM)
+      RAM._after_failure.clear
+    end
+    
+    after(:each) do
+      RAM._after_failure.clear
+    end
+    
+    it "should allow me to add a after_failure hook" do
+      RAM.after_failure{|result| [-1, result[1], result[2]]}
+      RAM._after_failure.should have(1).item
+    end
+    
+    it "should allow me to add multiple after_failure hooks" do
+      RAM.after_failure{|result| [-5, result[1], result[2]]}
+      RAM.after_failure{|result| [-1, result[1], result[2]]}
+      RAM._after_failure.should have(2).items
+    end
+    
+    it "should run each before_failure hooks after failing" do
+      RAM.after_failure{|result| result[0] = -42; result}
+      RAM.after_failure{|result| result[1] = {:foo => :bar}; result}
+      app = lambda{|e| e['warden'].authenticate!(:failz); valid_response}
+      env = env_with_params
+      result = setup_rack(app).call(env)
+      result[0].should == -42
+      result[1].should  == {:foo => :bar}
+    end
+  end
   
 end

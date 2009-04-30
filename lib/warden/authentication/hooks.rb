@@ -91,6 +91,34 @@ module Warden
       def _before_failure
         @_before_failure ||= []
       end
+      
+      # A callback that runs just after to the failur application being called.  
+      # This callback is primarily included for Rails 2.3 since Rails 2.3 controllers are not pure Rack Applications
+      # Return whatever you want to be returned for the actual rack response array
+      # 
+      # Parameters:
+      # <block> A block to contain logic for the callback
+      #   Block Parameters: |user, auth, opts|
+      #     result - The result of the rack application
+      #     opts - any options passed into the authenticate call includeing :scope
+      #
+      # Example:
+      #   # Rails 2.3 after_failure
+      #   Warden::Manager.after_failure do |result|
+      #    result.to_a
+      #   end
+      # 
+      # :api: public
+      def after_failure(&block)
+        _after_failure << block
+      end
+      
+      # Provides access to the callback array for after_failure
+      # :api: private
+      def _after_failure
+        @_after_failure ||= []
+      end
+      
     end
     
   end # Manager
