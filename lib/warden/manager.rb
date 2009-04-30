@@ -128,9 +128,7 @@ module Warden
       # Call the before failure callbacks
       Warden::Manager._before_failure.each{|hook| hook.call(env,opts)}
       
-      result = @failure_app.call(env)
-      
-      Warden::Manager._after_failure.inject(result){|_, hook| hook.call(result)}
+      @failure_app.call(env).to_a
     end # call_failure_app
   end
 end # Warden
