@@ -31,7 +31,7 @@ module Warden
       # :api: public
       def add(label, strategy = nil, &blk)
         strategy = strategy.nil? ? Class.new(Warden::Strategies::Base, &blk) : strategy
-        raise NoMethodError, "authenitate! is not declared in the #{label} strategy" if !strategy.instance_methods.include?("authenticate!")
+        raise NoMethodError, "authenticate! is not declared in the #{label} strategy" if !strategy.method_defined?(:authenticate!)
         raise "#{label.inspect} is Not a Warden::Strategy::Base" if !strategy.ancestors.include?(Warden::Strategies::Base)
         _strategies[label] = strategy
       end

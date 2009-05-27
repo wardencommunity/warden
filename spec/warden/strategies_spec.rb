@@ -44,7 +44,11 @@ describe Warden::Strategies do
   end
 
   it "should allow me to inherit from a class when providing a block and class" do
-    class MyStrategy
+    class MyStrategy < Warden::Strategies::Base
+      def authenticate!
+        self.call
+      end
+      
       def call
         request.env['warden.spec.strategies'] ||= []
         request.env['warden.spec.strategies'] << :inherited
