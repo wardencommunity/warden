@@ -5,7 +5,7 @@ require 'date'
 require 'spec/rake/spectask'
 
 GEM = "warden"
-GEM_VERSION = "0.2.0"
+GEM_VERSION = "0.2.1"
 AUTHOR = "Daniel Neighman"
 EMAIL = "has.sox@gmail.com"
 HOMEPAGE = "http://github.com/hassox/warden"
