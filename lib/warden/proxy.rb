@@ -26,18 +26,17 @@ module Warden
 
     # Check to see if there is an authenticated user for the given scope.
     # When scope is not specified, :default is assumed.
+    # This will not try to reconstitute the user from the session and will simply check for the 
+    # existance of a session key
     # 
     # Parameters: 
-    #   args - a list of symbols (labels) that name the strategies to attempt
-    #   opts - an options hash that contains the :scope of the user to check
+    #   scope - the scope to check for authentication.  Defaults to :default
     #
     # Example: 
-    #   env['warden'].authenticated?(:password, :scope => :admin)
+    #   env['warden'].authenticated?(:admin)
     # :api: public
-    def authenticated?(*args)
-      scope = scope_from_args(args)
-      _perform_authentication(*args)
-      !user(scope).nil?
+    def authenticated?(scope = :default)
+      !_session["warden.user.#{scope}.key"].nil?
     end # authenticated?
     
     # Run the authentiation strategies for the given strategies.  
@@ -101,7 +100,7 @@ module Warden
     #
     # :api: public
     def user(scope = :default)
-      @users[scope]
+      @users[scope] ||= lookup_user_from_session(scope)
     end
     
     # Provides a scoped session data for authenticated users.
@@ -116,7 +115,7 @@ module Warden
     #
     # :api: public
     def session(scope = :default)
-      raise NotAuthenticated, "#{scope.inspect} user is not logged in" unless authenticated?(:scope => scope)
+      raise NotAuthenticated, "#{scope.inspect} user is not logged in" unless authenticated?(scope)
       _session["warden.user.#{scope}.session"] ||= {}
     end
     
@@ -159,9 +158,10 @@ module Warden
     def _perform_authentication(*args)
       scope = scope_from_args(args)
       opts = opts_from_args(args)
+      
       # Look for an existing user in the session for this scope
-      if @users[scope] || set_user(Warden::Manager._fetch_user(_session, scope), :scope => scope)
-        return @users[scope]
+      if the_user = user(scope)
+        return the_user
       end
       
       # If there was no user in the session.  See if we can get one from the request
@@ -196,5 +196,9 @@ module Warden
       Hash === args.last ? args.pop : {}
     end
 
+    # :api: private
+    def lookup_user_from_session(scope)
+      set_user(Warden::Manager._fetch_user(_session, scope), :scope => scope)
+    end
   end # Proxy
 end # Warden

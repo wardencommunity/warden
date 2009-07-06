@@ -13,8 +13,10 @@ describe "authenticated data store" do
   
   it "should store data for the default scope" do
     app = lambda do |e|
-      e['warden'].should be_authenticated(:pass)
-      e['warden'].should be_authenticated(:pass, :scope => :foo)
+      e['warden'].authenticate(:pass)
+      e['warden'].authenticate(:pass, :scope => :foo)
+      e['warden'].should be_authenticated
+      e['warden'].should be_authenticated(:foo)
       
       # Store the data for :deafult
       e['warden'].session[:key] = "value"

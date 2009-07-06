@@ -60,7 +60,7 @@ describe "standard authentication hooks" do
     it "should run each after_authentication hook after authentication is run" do
       RAM.after_authentication{|u,a,o| a.env['warden.spec.hook.baz'] = "run baz"}
       RAM.after_authentication{|u,a,o| a.env['warden.spec.hook.paz'] = "run paz"}
-      app = lambda{|e| e['warden'].authenticated?(:pass); valid_response}
+      app = lambda{|e| e['warden'].authenticate(:pass); valid_response}
       env = env_with_params
       setup_rack(app).call(env)
       env['warden.spec.hook.baz'].should == 'run baz'
