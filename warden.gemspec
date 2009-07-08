@@ -49,6 +49,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/hassox/warden}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
+  s.rubyforge_project = %q{warden}
   s.rubygems_version = %q{1.3.3}
   s.summary = %q{Rack middleware that provides authentication for rack applications}
   s.test_files = [
