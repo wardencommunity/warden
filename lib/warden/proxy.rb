@@ -139,10 +139,12 @@ module Warden
     def logout(*scopes)
       if scopes.empty?
         _session.clear
+        @users.clear
       else
         scopes.each do |s|
           _session["warden.user.#{s}.key"] = nil
           _session["warden.user.#{s}.session"] = nil
+          @users.delete(s)
         end
       end
     end

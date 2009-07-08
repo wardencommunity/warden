@@ -237,6 +237,32 @@ describe Warden::Proxy do
       setup_rack(app).call(@env)
       @env['rack.session'].should be_empty
     end
+    
+    it "should clear the user when logging out" do
+      @env['rack.session'].should_not be_nil
+      app = lambda do |e|
+        e['warden'].user.should_not be_nil
+        e['warden'].logout
+        e['warden'].should_not be_authenticated
+        e['warden'].user.should be_nil
+        valid_response
+      end
+      setup_rack(app).call(@env)
+      @env['warden'].user.should be_nil
+      
+    end
+    require 'ruby-debug'
+    it "should clear the session data when logging out" do
+      @env['rack.session'].should_not be_nil
+      app = lambda do |e|
+        # debugger
+        e['warden'].user.should_not be_nil
+        e['warden'].session[:foo] = :bar
+        e['warden'].logout
+        valid_response
+      end
+      setup_rack(app).call(@env)
+    end
   end
   
   describe "when all strategies are not valid?" do
