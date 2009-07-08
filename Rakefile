@@ -17,6 +17,7 @@ begin
     gem.email = EMAIL
     gem.homepage = HOMEPAGE
     gem.authors = AUTHORS
+    gem.rubyforge_project = "warden"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
  
     gem.add_dependency "rack", ">= 1.0.0"
