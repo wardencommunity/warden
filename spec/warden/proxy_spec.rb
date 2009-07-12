@@ -293,4 +293,6 @@ describe Warden::Proxy do
     
   end
   
+
+  
 end

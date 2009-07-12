@@ -23,7 +23,7 @@ describe Warden::Manager do
         if e['warden'].authenticated? 
           [200,{'Content-Type' => 'text/plain'},"OK"]
         else
-          [401,{'Content-Type' => 'text/plain'},"You Fail"]
+          [401,{'Content-Type' => 'text/plain'},"Fail From The App"]
         end
       end
       @env = Rack::MockRequest.
@@ -125,6 +125,27 @@ describe Warden::Manager do
         result[2].should == ["You Fail!"]
         env['PATH_INFO'].should == "/unauthenticated"
       end
+      
+      it "should allow you to customize the response" do
+        app = lambda do |e|
+          e['warden'].custom_failure!
+          [401,{'Content-Type' => 'text/plain'},["Fail From The App"]]
+        end
+        env = env_with_params
+        result = setup_rack(app).call(env)
+        result[0].should == 401
+        result[2].should == ["Fail From The App"]
+      end
+      
+      it "should render the failure application for a 401 if no custom_failure flag is set" do
+        app = lambda do |e|
+          [401,{'Content-Type' => 'text/plain'},["Fail From The App"]]
+        end
+        result = setup_rack(app).call(env_with_params)
+        result[0].should == 401
+        result[2].should == ["You Fail!"]
+      end
+      
     end # failing
     
     describe "custom rack response" do
@@ -155,4 +176,5 @@ describe Warden::Manager do
       end
     end
   end # integrated strategies
+
 end

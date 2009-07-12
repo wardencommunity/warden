@@ -155,6 +155,19 @@ module Warden
        winning_strategy.nil? ? nil : winning_strategy.result
     end
     
+    # Provides a way to return a 401 without warden defering to the failure app
+    # The result is a direct passthrough of your own response
+    # :api: public
+    def custom_failure!
+      @custom_failure = true
+    end
+    
+    # Check to see if the custom failur flag has been set
+    # :api: public
+    def custom_failure?
+      !!@custom_failure
+    end
+    
     private 
     # :api: private
     def _perform_authentication(*args)

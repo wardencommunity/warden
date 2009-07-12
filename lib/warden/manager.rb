@@ -47,7 +47,7 @@ module Warden
         if result.first != 401
           return result
         else
-          call_failure_app(env)
+          call_failure_app(env, :original_response => result)
         end
       when Hash
         if (result[:action] ||= :unauthenticated) == :unauthenticated
@@ -122,13 +122,17 @@ module Warden
     # The before_failure hooks are run on each failure
     # :api: private
     def call_failure_app(env, opts = {})
-      env["PATH_INFO"] = "/#{opts[:action]}"
-      env["warden.options"] = opts
+      if env['warden'].custom_failure?
+        opts[:original_response]
+      else
+        env["PATH_INFO"] = "/#{opts[:action]}"
+        env["warden.options"] = opts
       
-      # Call the before failure callbacks
-      Warden::Manager._before_failure.each{|hook| hook.call(env,opts)}
+        # Call the before failure callbacks
+        Warden::Manager._before_failure.each{|hook| hook.call(env,opts)}
       
-      @failure_app.call(env).to_a
+        @failure_app.call(env).to_a
+      end
     end # call_failure_app
   end
 end # Warden
