@@ -43,7 +43,8 @@ Gem::Specification.new do |s|
      "spec/warden/strategies/password.rb",
      "spec/warden/strategies_spec.rb",
      "spec/warden/strategy_base_spec.rb",
-     "spec/warden_spec.rb"
+     "spec/warden_spec.rb",
+     "warden.gemspec"
   ]
   s.homepage = %q{http://github.com/hassox/warden}
   s.rdoc_options = ["--charset=UTF-8"]
