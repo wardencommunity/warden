@@ -174,7 +174,7 @@ describe Warden::Manager do
         result[0].should == 200
         result[2].should == ["Foo Is A Winna"]
       end
-    end
+    end    
   end # integrated strategies
 
 end

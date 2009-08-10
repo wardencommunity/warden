@@ -14,7 +14,7 @@ module Warden
     alias_method :_session, :session
           
     # :api: private
-    def_delegators :winning_strategy, :headers, :message, :_status, :custom_response
+    def_delegators :winning_strategy, :headers, :_status, :custom_response
 
     def initialize(env, config = {}) # :nodoc:
       @env = env
@@ -153,6 +153,12 @@ module Warden
     # :api: private
     def result # :nodoc: 
        winning_strategy.nil? ? nil : winning_strategy.result
+    end
+    
+    # Proxy through to the authentication strategy to find out the message that was generated.
+    # :api: public
+    def message
+      winning_strategy.nil? ? "" : winning_strategy.message
     end
     
     # Provides a way to return a 401 without warden defering to the failure app

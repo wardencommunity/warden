@@ -251,7 +251,7 @@ describe Warden::Proxy do
       @env['warden'].user.should be_nil
       
     end
-    require 'ruby-debug'
+
     it "should clear the session data when logging out" do
       @env['rack.session'].should_not be_nil
       app = lambda do |e|
@@ -262,6 +262,28 @@ describe Warden::Proxy do
         valid_response
       end
       setup_rack(app).call(@env)
+    end
+  end
+  
+  describe "messages" do
+    
+    it "should allow access to the failure message" do
+      failure = lambda do |e|
+        [401, {"Content-Type" => "text/plain"}, [e['warden'].message]]
+      end
+      app = lambda do |e|
+        e['warden'].authenticate! :failz
+      end
+      result = setup_rack(app, :failure_app => failure).call(env_with_params)
+      result.last.should == ["The Fails Strategy Has Failed You"]
+    end
+    
+    it "should not die when accessing a message from a source where no authentication has occured" do
+      app = lambda do |e|
+        [200, {"Content-Type" => "text/plain"}, [e['warden'].message]]
+      end
+      result = setup_rack(app).call(env_with_params)
+      result[2].should == [""]
     end
   end
   
