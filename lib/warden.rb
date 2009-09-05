@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'forwardable'
 $:.unshift File.join(File.dirname(__FILE__))
 require 'warden/mixins/common'

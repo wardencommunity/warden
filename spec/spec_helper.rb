@@ -1,7 +1,7 @@
 $TESTING=true
-$:.push File.join(File.dirname(__FILE__), '..', 'lib')
 require 'rubygems'
 require 'rack'
+$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 require 'warden'
 
 Dir[File.join(File.dirname(__FILE__), "warden", "strategies", "**/*.rb")].each do |f|

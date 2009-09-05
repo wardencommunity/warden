@@ -1,3 +1,4 @@
+# encoding: utf-8
 module Warden
   module Strategies
     class Base
