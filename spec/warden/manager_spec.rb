@@ -110,6 +110,30 @@ describe Warden::Manager do
         result = @app.call(env_with_params)
         result[0].should == 301
       end
+      
+      it "should redirect with a content type" do
+        RAS.add(:foobar) do
+          def authenticate!
+            redirect!("/foo/bar", {:foo => "bar"}, :content_type => "text/xml")
+          end
+        end
+        result = @app.call(env_with_params)
+        result[0].should == 302
+        result[1]["Location"].should == "/foo/bar?foo=bar"
+        result[1]["Content-Type"].should == "text/xml"
+      end
+      
+      it "should redirect with a default content type" do
+        RAS.add(:foobar) do
+          def authenticate!
+            redirect!("/foo/bar", {:foo => "bar"})
+          end
+        end
+        result = @app.call(env_with_params)
+        result[0].should == 302
+        result[1]["Location"].should == "/foo/bar?foo=bar"
+        result[1]["Content-Type"].should == "text/plain"
+      end
     end
   
     describe "failing" do
