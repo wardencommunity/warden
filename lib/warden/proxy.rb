@@ -189,7 +189,7 @@ module Warden
       strategies = args.empty? ? @strategies : args
       raise "No Strategies Found" if strategies.empty? || !(strategies - Warden::Strategies._strategies.keys).empty?
       strategies.each do |s|
-        strategy = Warden::Strategies[s].new(@env, @conf)
+        strategy = Warden::Strategies[s].new(@env, scope, @conf)
         self.winning_strategy = strategy
         next unless strategy.valid?
         strategy._run!

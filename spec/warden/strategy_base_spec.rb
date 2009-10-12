@@ -44,6 +44,15 @@ describe Warden::Strategies::Base do
     strategy.user.should == "foo"
   end
   
+  it "should set the scope" do
+    RAS.add(:foobar) do
+      def authenticate!
+        self.scope.should == :user
+      end
+    end
+    strategy = RAS[:foobar].new(env_with_params, :user)
+  end
+  
   it "should allow you to set a message" do
     RAS.add(:foobar) do
       def authenticate!

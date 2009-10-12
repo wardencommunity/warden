@@ -14,14 +14,14 @@ module Warden
       
       # Accessor for the rack env
       # :api: public 
-      attr_reader   :env
+      attr_reader   :env, :scope
       include ::Warden::Mixins::Common
       
       # :api: private
-      def initialize(env, config = {}) # :nodoc:
-        @config = config
+      def initialize(env, scope=nil, config={}) # :nodoc:
+        @scope, @config = scope, config
         @env, @_status, @headers = env, nil, {}
-        @halted = false       
+        @halted = false
       end
       
       # The method that is called from above.  This method calls the underlying authetniate! method
