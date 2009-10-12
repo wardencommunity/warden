@@ -52,8 +52,7 @@ module Warden
     #   env['auth'].authenticate(:password, :basic, :scope => :sudo)
     # :api: public
     def authenticate(*args)
-      scope = scope_from_args(args)
-      _perform_authentication(*args)
+      scope, opts = _perform_authentication(*args)
       user(scope)
     end
 
@@ -65,9 +64,7 @@ module Warden
     #
     # :api: public
     def authenticate!(*args)
-      scope = scope_from_args(args)
-      opts = opts_from_args(args)
-      _perform_authentication(*args)
+      scope, opts = _perform_authentication(*args)
       throw(:warden, opts.merge(:action => :unauthenticated)) if !user(scope)
       user(scope)
     end
@@ -181,13 +178,12 @@ module Warden
       opts = opts_from_args(args)
 
       # Look for an existing user in the session for this scope
-      if the_user = user(scope)
-        return the_user
-      end
+      return scope, opts if the_user = user(scope)
 
       # If there was no user in the session.  See if we can get one from the request
       strategies = args.empty? ? @strategies : args
       raise "No Strategies Found" if strategies.empty? || !(strategies - Warden::Strategies._strategies.keys).empty?
+
       strategies.each do |s|
         strategy = Warden::Strategies[s].new(@env, scope, @conf)
         self.winning_strategy = strategy
@@ -196,7 +192,6 @@ module Warden
         break if strategy.halted?
       end
 
-
       if winning_strategy && winning_strategy.user
         set_user(winning_strategy.user, opts)
 
@@ -204,7 +199,7 @@ module Warden
         Warden::Manager._after_authentication.each{|hook| hook.call(winning_strategy.user, self, opts)}
       end
 
-      winning_strategy
+      [scope, opts]
     end
 
     # :api: private
