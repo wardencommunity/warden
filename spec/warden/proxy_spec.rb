@@ -90,6 +90,17 @@ describe Warden::Proxy do
         setup_rack(app).call(env)
       end
 
+      it "should properly sent the scope to the strategy" do
+        env = env_with_params("/")
+        app = lambda do |env|
+          env['warden'].authenticate!(:pass, :scope => :failz)
+          env['warden'].should_not be_authenticated
+          env['warden.spec.strategies'].should == [:pass]
+          valid_response
+        end
+        setup_rack(app).call(env)
+      end
+
       it "should try multiple authentication strategies" do
         env = env_with_params("/")
         app = lambda do |env|
