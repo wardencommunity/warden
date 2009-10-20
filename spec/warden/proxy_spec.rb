@@ -335,8 +335,148 @@ describe Warden::Proxy do
       result.first.should == 401
     end
 
+    describe "authenticated?" do
+      describe "positive authentication" do
+        before do
+          @env['rack.session'] = {'warden.user.default.key' => 'defult_key'}
+          $captures = []
+        end
+
+        it "should return true when authenticated in the session" do
+          app = lambda do |e|
+            e['warden'].should be_authenticated
+          end
+          result = setup_rack(app).call(@env)
+        end
+
+        it "should yield to a block when the block is passed and authenticated" do
+          app = lambda do |e|
+            e['warden'].authenticated? do
+              $captures << :in_the_block
+            end
+          end
+          setup_rack(app).call(@env)
+          $captures.should == [:in_the_block]
+        end
+
+        it "should authenticate for a user in a different scope" do
+          @env['rack.session'] = {'warden.user.foo.key' => 'foo_key'}
+          app = lambda do |e|
+            e['warden'].authenticated?(:foo) do
+              $captures << :in_the_foo_block
+            end
+          end
+          setup_rack(app).call(@env)
+          $captures.should == [:in_the_foo_block]
+        end
+      end
+
+      describe "negative authentication" do
+        before do
+          @env['rack.session'] = {'warden.foo.default.key' => 'foo_key'}
+          $captures = []
+        end
+
+        it "should return false when authenticated in the session" do
+          app = lambda do |e|
+            e['warden'].should_not be_authenticated
+          end
+          result = setup_rack(app).call(@env)
+        end
+
+        it "should not yield to a block when the block is passed and authenticated" do
+          app = lambda do |e|
+            e['warden'].authenticated? do
+              $captures << :in_the_block
+            end
+          end
+          setup_rack(app).call(@env)
+          $captures.should == []
+        end
+
+        it "should not yield for a user in a different scope" do
+          app = lambda do |e|
+            e['warden'].authenticated?(:bar) do
+              $captures << :in_the_bar_block
+            end
+          end
+          setup_rack(app).call(@env)
+          $captures.should == []
+        end
+      end
+    end
+
+
+    describe "unauthenticated?" do
+      describe "negative unauthentication" do
+        before do
+          @env['rack.session'] = {'warden.user.default.key' => 'defult_key'}
+          $captures = []
+        end
+
+        it "should return false when authenticated in the session" do
+          app = lambda do |e|
+            e['warden'].should_not be_unauthenticated
+          end
+          result = setup_rack(app).call(@env)
+        end
+
+        it "should not yield to a block when the block is passed and authenticated" do
+          app = lambda do |e|
+            e['warden'].unauthenticated? do
+              $captures << :in_the_block
+            end
+          end
+          setup_rack(app).call(@env)
+          $captures.should == []
+        end
+
+        it "should not yield to the block for a user in a different scope" do
+          @env['rack.session'] = {'warden.user.foo.key' => 'foo_key'}
+          app = lambda do |e|
+            e['warden'].unauthenticated?(:foo) do
+              $captures << :in_the_foo_block
+            end
+          end
+          setup_rack(app).call(@env)
+          $captures.should == []
+        end
+      end
+
+      describe "positive unauthentication" do
+        before do
+          @env['rack.session'] = {'warden.foo.default.key' => 'foo_key'}
+          $captures = []
+        end
+
+        it "should return false when unauthenticated in the session" do
+          app = lambda do |e|
+            e['warden'].should be_unauthenticated
+          end
+          result = setup_rack(app).call(@env)
+        end
+
+        it "should yield to a block when the block is passed and authenticated" do
+          app = lambda do |e|
+            e['warden'].unauthenticated? do
+              $captures << :in_the_block
+            end
+          end
+          setup_rack(app).call(@env)
+          $captures.should == [:in_the_block]
+        end
+
+        it "should yield for a user in a different scope" do
+          app = lambda do |e|
+            e['warden'].unauthenticated?(:bar) do
+              $captures << :in_the_bar_block
+            end
+          end
+          setup_rack(app).call(@env)
+          $captures.should == [:in_the_bar_block]
+        end
+      end
+    end
   end
-
-
 
 end

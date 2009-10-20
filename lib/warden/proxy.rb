@@ -36,8 +36,16 @@ module Warden
     #   env['warden'].authenticated?(:admin)
     # :api: public
     def authenticated?(scope = :default)
-      !raw_session["warden.user.#{scope}.key"].nil?
+      result = !raw_session["warden.user.#{scope}.key"].nil?
+      yield if block_given? && result
+      result
     end # authenticated?
+
+    def unauthenticated?(scope = :default)
+      result = !authenticated?(scope)
+      yield if block_given? && result
+      result
+    end
 
     # Run the authentiation strategies for the given strategies.
     # If there is already a user logged in for a given scope, the strategies are not run
