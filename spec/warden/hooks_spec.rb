@@ -130,7 +130,6 @@ describe "standard authentication hooks" do
       RAM.before_logout{|u,a,s| a.env['warden.spec.hook.ipsum'] = "run ipsum"}
       app = lambda{|e| e['warden'].authenticate(:pass); valid_response}
       env = env_with_params
-      debugger
       setup_rack(app).call(env)
       env['warden'].logout
       env['warden.spec.hook.lorem'].should == 'run lorem'
@@ -140,7 +139,11 @@ describe "standard authentication hooks" do
     it "should run before_logout hook on different scopes" do
       RAM.before_logout{|u,a,s| a.env["warden.spec.hook.scope1"] = "run scope1" if s == :scope1}
       RAM.before_logout{|u,a,s| a.env["warden.spec.hook.scope2"] = "run scope2" if s == :scope2}
-      app = lambda{|e| e['warden'].authenticate(:pass); valid_response}
+      app = lambda do |e|
+        e['warden'].authenticate(:pass, :scope => :scope1)
+        e['warden'].authenticate(:pass, :scope => :scope2)
+        valid_response
+      end
       env = env_with_params
       setup_rack(app).call(env)
       env['warden'].logout(:scope1)

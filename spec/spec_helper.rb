@@ -13,7 +13,7 @@ Spec::Runner.configure do |config|
 
   def load_strategies
     Dir[File.join(File.dirname(__FILE__), "warden", "strategies", "**/*.rb")].each do |f|
-      require f
+      load f
     end
   end
 end
