@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + '/../spec_helper'
 describe Warden::Proxy do
 
   before(:all) do
-    Dir[File.join(File.dirname(__FILE__), "strategies/**/*.rb")].each{|f| load f}
+    load_strategies
   end
 
   before(:each) do

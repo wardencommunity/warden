@@ -135,10 +135,14 @@ module Warden
     # :api: public
     def logout(*scopes)
       if scopes.empty?
+        # Run before_logout hooks
+        Warden::Manager._before_logout.each{|hook| hook.call(user, self, :default)}
         reset_session!
         @users.clear
       else
         scopes.each do |s|
+          # Run before_logout hooks
+          Warden::Manager._before_logout.each{|hook| hook.call(user(s), self, s)}
           raw_session["warden.user.#{s}.key"] = nil
           raw_session["warden.user.#{s}.session"] = nil
           @users.delete(s)
