@@ -1,0 +1,15 @@
+=== Version 0.4.0 / 2009-10-12
+
+* enhancements
+  * add Content-Type header to redirects (staugaard)
+  * Make scope available to strategies (josevalim)
+
+* bug fixes
+  * Do not consume opts twice, otherwise just the first will parse the scope. (josevalim)
+
+=== Version 0.3.2 / 2009-09-15
+
+* enhancements
+  * add a hook for plugins to specify how they can clear the whole section
+
+

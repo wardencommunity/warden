@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + '/../spec_helper'
 describe Warden::Proxy do
 
   before(:all) do
-    Dir[File.join(File.dirname(__FILE__), "strategies/**/*.rb")].each{|f| load f}
+    load_strategies
   end
 
   before(:each) do
@@ -54,7 +54,9 @@ describe Warden::Proxy do
           env['warden'].authenticate
           env['warden'].should be_authenticated
           env['warden.spec.strategies'].should == [:password]
+          valid_response
         end
+        setup_rack(app).call(env)
       end
 
       it "should be false in my application" do
@@ -197,6 +199,7 @@ describe Warden::Proxy do
 
       before(:each) do
         @env['rack.session']['warden.user.default.key'] = "A Previous User"
+        @env['warden.spec.strategies'] = []
       end
 
       it "should take the user from the session when logged in" do
@@ -207,7 +210,14 @@ describe Warden::Proxy do
         setup_rack(app).call(@env)
       end
 
-      it "should not run strategies when the user exists in the session"
+      it "should not run strategies when the user exists in the session" do
+        app = lambda do |env|
+          env['warden'].authenticate!(:pass)
+          valid_response
+        end
+        setup_rack(app).call(@env)
+        @env['warden.spec.strategies'].should_not include(:pass)
+      end
     end
   end
 

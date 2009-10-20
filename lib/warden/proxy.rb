@@ -142,6 +142,12 @@ module Warden
     #
     # :api: public
     def logout(*scopes)
+      # Run before_logout hooks for each scoped user
+      @users.each do |scope, user|
+        next unless scopes.empty? || scopes.include?(scope)
+        Warden::Manager._before_logout.each { |hook| hook.call(user, self, scope) }
+      end
+
       if scopes.empty?
         reset_session!
         @users.clear
