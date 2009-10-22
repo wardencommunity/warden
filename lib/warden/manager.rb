@@ -16,9 +16,10 @@ module Warden
       @config = config
       yield self if block_given?
 
-      # should ensure there is a failure application defined.
+      # Should ensure there is a failure application defined.
       @failure_app = config[:failure_app] if config[:failure_app]
       raise "No Failure App provided" unless @failure_app
+
       self
     end
 
@@ -51,19 +52,17 @@ module Warden
           call_failure_app(env, :original_response => result)
         end
       when Hash
-        if (result[:action] ||= :unauthenticated) == :unauthenticated
-          process_unauthenticated(result,env)
-        end # case result
+        result[:action] ||= :unauthenticated
+        process_unauthenticated(result, env)
       end
     end
 
     class << self
 
-
       # Does the work of storing the user in the session
       # :api: private
       def _store_user(user, session, scope = :default) # :nodoc:
-        return nil if user.nil?
+        return nil unless user
         session["warden.user.#{scope}.key"] = serialize_into_session.call(user)
       end
 
@@ -71,7 +70,7 @@ module Warden
       # :api: private
       def _fetch_user(session, scope = :default) # :nodoc:
         key = session["warden.user.#{scope}.key"]
-        return nil if key.nil?
+        return nil unless key
         serialize_from_session.call(key)
       end
 
@@ -107,16 +106,16 @@ module Warden
     # It looks at the result of the proxy to see if it's been executed and what action to take.
     # :api: private
     def process_unauthenticated(result, env)
-      case env['warden'].result
-      when :failure
-        call_failure_app(env, result)
-      when :redirect
-        [env['warden']._status, env['warden'].headers, [env['warden'].message || "You are being redirected to #{env['warden'].headers['Location']}"]]
-      when :custom
-        env['warden'].custom_response
-      when nil
-        call_failure_app(env, result)
-      end # case env['warden'].result
+      action = result[:result] || env['warden'].result
+
+      case action
+        when :redirect
+          [env['warden']._status, env['warden'].headers, [env['warden'].message || "You are being redirected to #{env['warden'].headers['Location']}"]]
+        when :custom
+          env['warden'].custom_response
+        else
+          call_failure_app(env, result)
+      end
     end
 
     # Calls the failure app.
