@@ -1,25 +1,17 @@
 require 'rubygems'
-require 'rack'
 require 'spec/rake/spectask'
-
-GEM = "warden"
-GEM_VERSION = "0.2.1"
-AUTHORS = ["Daniel Neighman"]
-EMAIL = "has.sox@gmail.com"
-HOMEPAGE = "http://github.com/hassox/warden"
-SUMMARY = "Rack middleware that provides authentication for rack applications"
+require File.join(File.dirname(__FILE__), "lib", "warden", "version")
 
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name = GEM
-    gem.summary = SUMMARY
-    gem.email = EMAIL
-    gem.homepage = HOMEPAGE
-    gem.authors = AUTHORS
+    gem.name = "warden"
+    gem.version = Warden::VERSION
+    gem.summary = "Rack middleware that provides authentication for rack applications"
+    gem.email = "has.sox@gmail.com"
+    gem.homepage = "http://github.com/hassox/warden"
+    gem.authors = ["Daniel Neighman"]
     gem.rubyforge_project = "warden"
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
- 
     gem.add_dependency "rack", ">= 1.0.0"
   end
 rescue LoadError
