@@ -192,16 +192,25 @@ module Warden
       opts = opts_from_args(args)
 
       # Look for an existing user in the session for this scope
+      # If there was no user in the session.  See if we can get one from the request
       return scope, opts if the_user = user(scope)
 
-      # If there was no user in the session.  See if we can get one from the request
       strategies = args.empty? ? @strategies : args
-      raise "No Strategies Found" if strategies.empty? || !(strategies - Warden::Strategies._strategies.keys).empty?
+      raise "No Strategies Found" if strategies.empty?
 
       strategies.each do |s|
+        unless Warden::Strategies[s]
+          if args.empty? && @config[:silence_missing_strategies]
+            next
+          else
+            raise "Invalid strategy #{s}"
+          end
+        end
+
         strategy = Warden::Strategies[s].new(@env, scope, @conf)
         self.winning_strategy = strategy
         next unless strategy.valid?
+
         strategy._run!
         break if strategy.halted?
       end

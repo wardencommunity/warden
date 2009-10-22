@@ -19,8 +19,13 @@ module Warden
       # Should ensure there is a failure application defined.
       @failure_app = config[:failure_app] if config[:failure_app]
       raise "No Failure App provided" unless @failure_app
-
       self
+    end
+
+    # Do not raise an error if a missing strategy is given by default.
+    # :api: plugin
+    def silence_missing_strategies!
+      @config[:silence_missing_strategies] = true
     end
 
     # Set the default strategies to use.
