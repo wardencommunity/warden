@@ -170,6 +170,18 @@ describe Warden::Proxy do
       end
       setup_rack(app).call(env)
     end
+
+    it "should not store the user if the :store option is set to false" do
+      env = env_with_params("/")
+      app = lambda do |e|
+        env['warden'].authenticate(:pass, :store => false)
+        env['warden'].should be_authenticated
+        env['warden'].user.should == "Valid User"
+        env['rack.session']['warden.user.default.key'].should be_nil
+        valid_response
+      end
+      setup_rack(app).call(env)
+    end
   end
 
   describe "get user" do

@@ -36,7 +36,7 @@ module Warden
     #   env['warden'].authenticated?(:admin)
     # :api: public
     def authenticated?(scope = :default)
-      result = !raw_session["warden.user.#{scope}.key"].nil?
+      result = !raw_session["warden.user.#{scope}.key"].nil? || !!user(scope)
       yield if block_given? && result
       result
     end # authenticated?
@@ -81,11 +81,11 @@ module Warden
     #
     # Parameters:
     #   user - An object that has been setup to serialize into and out of the session.
-    #   opts - An options hash.  Use the :scope option to set the scope of the user
+    #   opts - An options hash.  Use the :scope option to set the scope of the user, set the :store option to false to skip serializing into the session.
     # :api: public
     def set_user(user, opts = {})
       scope = (opts[:scope] ||= :default)
-      Warden::Manager._store_user(user, raw_session, scope) # Get the user into the session
+      Warden::Manager._store_user(user, raw_session, scope) unless opts[:store] == false# Get the user into the session
 
       # Run the after hooks for setting the user
       Warden::Manager._after_set_user.each{|hook| hook.call(user, self, opts)}
