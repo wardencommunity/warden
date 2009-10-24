@@ -49,7 +49,7 @@ describe Warden::Manager do
         env = env_with_params("/", {})
         app = lambda do |env|
           env['warden'].authenticate(:failz)
-          throw(:warden, :action => :unauthenticated)
+          throw(:warden)
         end
         result = setup_rack(app, :failure_app => @fail_app).call(env)
         result.last.should == ["You Fail!"]
@@ -64,6 +64,17 @@ describe Warden::Manager do
         end
         result = setup_rack(app, :failure_app => fail_app).call(env_with_params)
         result.last.should == ["Failure App"]
+      end
+
+      it "should call failure app if warden is thrown even after successful authentication" do
+        env = env_with_params("/", {})
+        app = lambda do |env|
+          env['warden'].authenticate(:pass)
+          throw(:warden)
+        end
+        result = setup_rack(app, :failure_app => @fail_app).call(env)
+        result.first.should == 401
+        result.last.should == ["You Fail!"]
       end
     end # failure
 

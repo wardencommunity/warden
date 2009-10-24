@@ -81,6 +81,27 @@ describe Warden::Proxy do
         setup_rack(app).call(env)
       end
 
+      it "should raise error on missing strategies" do
+        env = env_with_params('/')
+        app = lambda do |env|
+          env['warden'].authenticate(:unknown)
+        end
+        lambda {
+          setup_rack(app).call(env)
+        }.should raise_error(RuntimeError, "Invalid strategy unknown")
+      end
+
+      it "should not raise error on default missing strategies if silencing" do
+        env = env_with_params('/')
+        app = lambda do |env|
+          env['warden'].authenticate
+          valid_response
+        end
+        lambda {
+          setup_rack(app, :silence_missing_strategies => true, :default_strategies => :unknown).call(env)
+        }.should_not raise_error
+      end
+
       it "should allow me to get access to the user at warden.user." do
         env = env_with_params("/")
         app = lambda do |env|
