@@ -54,7 +54,7 @@ module Warden
         if result.first != 401
           return result
         else
-          call_failure_app(env, :original_response => result)
+          process_unauthenticated({:original_response => result, :action => :unauthenticated}, env)
         end
       when Hash
         result[:action] ||= :unauthenticated
