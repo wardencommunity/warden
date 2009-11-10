@@ -36,11 +36,12 @@ module Warden
     #   env['warden'].authenticated?(:admin)
     # :api: public
     def authenticated?(scope = :default)
-      result = !raw_session["warden.user.#{scope}.key"].nil? || !!user(scope)
+      result = user(scope) || false
       yield if block_given? && result
       result
-    end # authenticated?
+    end
 
+    # Same API as authenticated, but returns false when authenticated.
     def unauthenticated?(scope = :default)
       result = !authenticated?(scope)
       yield if block_given? && result

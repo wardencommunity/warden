@@ -176,6 +176,22 @@ describe Warden::Proxy do
         env['warden'].user(:bar).should == 'bar user'
         env['warden'].user.should be_nil
       end
+      
+      it "should not be authenticated if scope cannot be retrieved from session" do
+        begin
+          Warden::Manager.serialize_from_session { |k| nil } 
+          app = lambda do |env|
+            env['rack.session']['warden.user.foo_scope.key'] = "a foo user"
+            env['warden'].authenticated?(:foo_scope)
+            valid_response
+          end
+          env = env_with_params
+          setup_rack(app).call(env)
+          env['warden'].user(:foo_scope).should be_nil
+        ensure
+          Warden::Manager.serialize_from_session { |k| k } 
+        end
+      end
     end
   end # describe "authentication"
 
@@ -309,7 +325,6 @@ describe Warden::Proxy do
     it "should clear the session data when logging out" do
       @env['rack.session'].should_not be_nil
       app = lambda do |e|
-        # debugger
         e['warden'].user.should_not be_nil
         e['warden'].session[:foo] = :bar
         e['warden'].logout
