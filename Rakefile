@@ -14,6 +14,8 @@ begin
     gem.rubyforge_project = "warden"
     gem.add_dependency "rack", ">= 1.0.0"
   end
+  
+  Jeweler::GemcutterTasks.new
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
 end
