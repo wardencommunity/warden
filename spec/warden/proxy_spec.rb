@@ -195,6 +195,30 @@ describe Warden::Proxy do
     end
   end # describe "authentication"
 
+  describe "stored in session" do
+    before(:each) do
+      @env['rack.session'] ||= {}
+      @env['rack.session']['warden.user.default.key'] = "User"
+    end
+
+    it "returns true if user key is stored in session" do
+      app = lambda do |env|
+        env['warden'].stored_in_session?.should be_true
+        valid_response
+      end
+      setup_rack(app).call(@env)
+    end
+    
+    it "returns false if user key is not stored in session" do
+      @env['rack.session'].delete("warden.user.default.key")
+      app = lambda do |env|
+        env['warden'].stored_in_session?.should be_false
+        valid_response
+      end
+      setup_rack(app).call(@env)
+    end
+  end
+
   describe "set user" do
     it "should store the user into the session" do
       env = env_with_params("/")

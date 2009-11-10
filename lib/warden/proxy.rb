@@ -78,6 +78,18 @@ module Warden
       user(scope)
     end
 
+    # Checks if the given scope is stored in session. Different from authenticated?, this method
+    # does not serialize values from session.
+    #
+    # Example
+    #   env['warden'].set_user(@user)
+    #   env['warden'].stored_in_session? #=> true
+    # 
+    # :api: public
+    def stored_in_session?(scope = :default)
+      !!raw_session["warden.user.#{scope}.key"]
+    end
+
     # Manually set the user into the session and auth proxy
     #
     # Parameters:
@@ -114,10 +126,10 @@ module Warden
     #
     # Example
     #  # default scope
-    #  env['warden'].data[:foo] = "bar"
+    #  env['warden'].session[:foo] = "bar"
     #
     #  # :sudo scope
-    #  env['warden'].data(:sudo)[:foo] = "bar"
+    #  env['warden'].session(:sudo)[:foo] = "bar"
     #
     # :api: public
     def session(scope = :default)
@@ -164,7 +176,7 @@ module Warden
     # proxy methods through to the winning strategy
     # :api: private
     def result # :nodoc:
-       winning_strategy.nil? ? nil : winning_strategy.result
+      winning_strategy.nil? ? nil : winning_strategy.result
     end
 
     # Proxy through to the authentication strategy to find out the message that was generated.
