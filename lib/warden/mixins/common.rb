@@ -8,7 +8,7 @@ module Warden
       def session
         env['rack.session']
       end # session
-      alias_method :raw_session, :session
+      alias :raw_session :session
 
       # Convenience method to access the rack request
       # :api: public

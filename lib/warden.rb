@@ -12,6 +12,7 @@ require 'warden/authentication/strategies'
 require 'warden/authentication/strategies/base'
 require 'warden/authentication/serializers'
 require 'warden/authentication/serializers/base'
+require 'warden/authentication/serializers/cookie'
 require 'warden/authentication/serializers/session'
 
 module Warden
