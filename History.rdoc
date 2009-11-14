@@ -1,4 +1,12 @@
 * enhancements
+  * added serializers, including session serializer (set by default) and a cookie serializer (josevalim)
+
+* deprecation
+  * serializer_into_session and serializer_from_session are deprecated, overwrite serialize and deserializer in Warden::Serializers::Session instead (josevalim)
+
+== Version 0.5.2 / 2009-11-09
+
+* enhancements
   * authenticated? always try to serialize the user from session (josevalim)
   * stored_in_session? checks if user information is stored in session, without serializing (josevalim)
   * 401 behaves exactly like throw :warden (staugaard)
@@ -17,7 +25,7 @@
   * Make scope available to strategies (josevalim)
 
 * bug fixes
-  * Do not consume opts twice, otherwise just the first will parse the scope. (josevalim)
+  * Do not consume opts twice, otherwise just the first will parse the scope (josevalim)
 
 === Version 0.3.2 / 2009-09-15
 
