@@ -16,6 +16,12 @@ module Warden
         @request ||= Rack::Request.new(@env)
       end # request
 
+      # Convenience method to access the rack response
+      # :api: public
+      def response
+        @response ||= Rack::Response.new(@env)
+      end # response
+
       # Convenience method to access the rack request params
       # :api: public
       def params

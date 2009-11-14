@@ -1,6 +1,32 @@
 # encoding: utf-8
 module Warden
   module Strategies
+    # A strategy is a place where you can put logic related to authentication. Any strategy inherits
+    # from Warden::Strategy::Base.
+    #
+    # The Warden::Strategies.add method is a simple way to provide custom strategies.
+    # You _must_ declare an @authenticate!@ method.
+    # You _may_ provide a @valid?@ method.
+    # The valid method should return true or false depending on if the strategy is a valid one for the request.
+    # 
+    # The parameters for Warden::Strategies.add method is: 
+    #   <label: Symbol> The label is the name given to a strategy.  Use the label to refer to the strategy when authenticating
+    #   <strategy: Class|nil> The optional stragtegy argument if set _must_ be a class that inherits from Warden::Strategies::Base and _must_
+    #                         implement an @authenticate!@ method
+    #   <block> The block acts as a convinient way to declare your strategy.  Inside is the class definition of a strategy.
+    #
+    # Examples:
+    #
+    #   Block Declared Strategy:
+    #    Warden::Strategies.add(:foo) do
+    #      def authenticate!
+    #        # authentication logic
+    #      end
+    #    end
+    #
+    #    Class Declared Strategy:
+    #      Warden::Strategies.add(:foo, MyStrategy)
+    #
     class Base
       # :api: public
       attr_accessor :user, :message
@@ -107,7 +133,6 @@ module Warden
         headers["Content-Type"] = opts[:content_type] || 'text/plain'
 
         @message = opts[:message].nil? ? "You are being redirected to #{headers["Location"]}" : opts[:message]
-
         @result = :redirect
 
         headers["Location"]
