@@ -20,7 +20,7 @@ module Warden
         !!request.cookies[key_for(scope)]
       end
 
-      def delete(scope)
+      def delete(scope, user=nil)
         response.delete_cookie(key_for(scope))
       end
 
@@ -28,5 +28,7 @@ module Warden
         { :value => serialize(user), :expires => (Time.now + 7 * 24 * 3600), :path => "/" }
       end
     end # Cookie
+
+    Serializers.add(:cookie, Cookie)
   end # Serializers
 end # Warden

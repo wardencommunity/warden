@@ -19,6 +19,11 @@ module Warden
       # Should ensure there is a failure application defined.
       @failure_app = config[:failure_app] if config[:failure_app]
       raise "No Failure App provided" unless @failure_app
+
+      # Set default configuration values.
+      @config[:default_strategies]  ||= []
+      @config[:default_serializers] ||= [ :session ]
+
       self
     end
 
@@ -28,6 +33,12 @@ module Warden
       @config[:silence_missing_strategies] = true
     end
 
+    # Do not raise an error if a missing serializer is given by default.
+    # :api: plugin
+    def silence_missing_serializers!
+      @config[:silence_missing_serializers] = true
+    end
+
     # Set the default strategies to use.
     # :api: public
     def default_strategies(*strategies)
@@ -35,6 +46,16 @@ module Warden
         @config[:default_strategies]
       else
         @config[:default_strategies] = strategies.flatten
+      end
+    end
+
+    # Set the default serializers to use. By default, only session is enabled.
+    # :api: public
+    def default_serializers(*serializers)
+      if serializers.empty?
+        @config[:default_serializers]
+      else
+        @config[:default_serializers] = serializers.flatten
       end
     end
 

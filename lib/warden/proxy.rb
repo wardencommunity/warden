@@ -87,11 +87,18 @@ module Warden
     #
     # Example
     #   env['warden'].set_user(@user)
-    #   env['warden'].stored_in_session? #=> true
+    #   env['warden'].stored?                     #=> true
+    #   env['warden'].stored?(:default)           #=> true
+    #   env['warden'].stored?(:default, :session) #=> true
+    #   env['warden'].stored?(:default, :cookie)  #=> false
     # 
     # :api: public
-    def stored_in_session?(scope = :default)
-      !!raw_session["warden.user.#{scope}.key"]
+    def stored?(scope = :default, store = nil)
+      if store
+        serializers[store].stored?(scope)
+      else
+        serializers.values.any? { |s| s.stored?(scope) }
+      end
     end
 
     # Manually set the user into the session and auth proxy
@@ -103,7 +110,7 @@ module Warden
     # :api: public
     def set_user(user, opts = {})
       scope = (opts[:scope] ||= :default)
-      _store_user(user, raw_session, scope) unless opts[:store] == false # Get the user into the session
+      _store_user(user, scope) unless opts[:store] == false
 
       # Run the after hooks for setting the user
       Warden::Manager._after_set_user.each{ |hook| hook.call(user, self, opts) }
@@ -122,7 +129,7 @@ module Warden
     #
     # :api: public
     def user(scope = :default)
-      @users[scope] ||= set_user(_fetch_user(raw_session, scope), :scope => scope)
+      @users[scope] ||= set_user(_fetch_user(scope), :scope => scope)
     end
 
     # Provides a scoped session data for authenticated users.
@@ -159,22 +166,20 @@ module Warden
     #
     # :api: public
     def logout(*scopes)
-      # Run before_logout hooks for each scoped user
-      @users.each do |scope, user|
-        next unless scopes.empty? || scopes.include?(scope)
-        Warden::Manager._before_logout.each { |hook| hook.call(user, self, scope) }
+      if scopes.empty?
+        scopes = @users.keys
+        reset_session = true
       end
 
-      if scopes.empty?
-        reset_session!
-        @users.clear
-      else
-        scopes.each do |s|
-          raw_session["warden.user.#{s}.key"] = nil
-          raw_session["warden.user.#{s}.session"] = nil
-          @users.delete(s)
-        end
+      scopes.each do |scope|
+        user = @users.delete(scope)
+        Warden::Manager._before_logout.each { |hook| hook.call(user, self, scope) }
+
+        raw_session.delete("warden.user.#{scope}.session")
+        _delete_user(user, scope)
       end
+
+      reset_session! if reset_session
     end
 
     # proxy methods through to the winning strategy
@@ -202,7 +207,24 @@ module Warden
       !!@custom_failure
     end
 
+    # Retrieve and initializer serializers.
+    # :api: private
+    def serializers # :nodoc:
+      @serializers ||= begin
+        hash = {}
+        @config[:default_serializers].each do |s|
+          unless Warden::Serializers[s]
+            raise "Invalid serializer #{s}" unless silence_missing_serializers?
+            next
+          end
+          hash[s] ||= Warden::Serializers[s].new(@env)
+        end
+        hash
+      end
+    end
+
     private
+
     # :api: private
     def _perform_authentication(*args)
       scope = scope_from_args(args)
@@ -248,27 +270,37 @@ module Warden
     def opts_from_args(args) # :nodoc:
       Hash === args.last ? args.pop : {}
     end
-    
-    def session_serializer
-      @session_serializer ||= Warden::Serializers::Session.new(@env)
-    end
 
-    # Quick accessor to the configuration options
     # :api: private
     def silence_missing_strategies? # :nodoc:
       @config[:silence_missing_strategies]
     end
-
-    # Does the work of storing the user in the session
+    
     # :api: private
-    def _store_user(user, session, scope = :default) # :nodoc:
-      session_serializer.store(user, scope) if user
+    def silence_missing_serializers? # :nodoc:
+      @config[:silence_missing_serializers]
     end
 
-    # Does the work of fetching the user from the session
+    # Does the work of storing the user in stores.
     # :api: private
-    def _fetch_user(session, scope = :default) # :nodoc:
-      session_serializer.fetch(scope)
+    def _store_user(user, scope = :default) # :nodoc:
+      return unless user
+      serializers.each { |k, v| v.store(user, scope) }
+    end
+
+    # Does the work of fetching the user from the first store.
+    # :api: private
+    def _fetch_user(scope = :default) # :nodoc:
+      serializers.each do |k, v|
+        user = v.fetch(scope)
+        return user
+      end
+    end
+
+    # Does the work of deleteing the user in all stores.
+    # :api: private
+    def _delete_user(user, scope = :default) # :nodoc:
+      serializers.each { |k, v| v.delete(scope, user) }
     end
 
   end # Proxy

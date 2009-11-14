@@ -195,7 +195,7 @@ describe Warden::Proxy do
     end
   end # describe "authentication"
 
-  describe "stored in session" do
+  describe "stored?" do
     before(:each) do
       @env['rack.session'] ||= {}
       @env['rack.session']['warden.user.default.key'] = "User"
@@ -203,7 +203,7 @@ describe Warden::Proxy do
 
     it "returns true if user key is stored in session" do
       app = lambda do |env|
-        env['warden'].stored_in_session?.should be_true
+        env['warden'].stored?.should be_true
         valid_response
       end
       setup_rack(app).call(@env)
@@ -212,10 +212,30 @@ describe Warden::Proxy do
     it "returns false if user key is not stored in session" do
       @env['rack.session'].delete("warden.user.default.key")
       app = lambda do |env|
-        env['warden'].stored_in_session?.should be_false
+        env['warden'].stored?.should be_false
         valid_response
       end
       setup_rack(app).call(@env)
+    end
+
+    it "returns false if scope given is not stored in session" do
+      app = lambda do |env|
+        env['warden'].stored?.should be_true
+        env['warden'].stored?(:another).should be_false
+        valid_response
+      end
+      setup_rack(app).call(@env)
+    end
+
+    it "returns based on the given store" do
+      @env['rack.session'].delete("warden.user.default.key")
+      @env["HTTP_COOKIE"] = "warden.user.default.key=user;"
+      app = lambda do |env|
+        env['warden'].stored?(:default, :session).should be_false
+        env['warden'].stored?(:default, :cookie).should be_true
+        valid_response
+      end
+      setup_rack(app, :default_serializers => [:session, :cookie]).call(@env)
     end
   end
 
@@ -230,6 +250,19 @@ describe Warden::Proxy do
         valid_response
       end
       setup_rack(app).call(env)
+    end
+
+    it "should store the user in all serializers" do
+      env = env_with_params("/")
+      app = lambda do |env|
+        env['warden'].authenticate(:pass)
+        env['warden'].should be_authenticated
+        env['warden'].user.should == "Valid User"
+        valid_response
+      end
+      setup_rack(app, :default_serializers => [:session, :cookie]).call(env)
+      headers = env['warden'].serializers[:cookie].response.headers
+      headers['Set-Cookie'].first.split(";").first.should == "warden.user.default.key=Valid+User"
     end
 
     it "should not store the user if the :store option is set to false" do
@@ -268,6 +301,15 @@ describe Warden::Proxy do
       setup_rack(app).call(@env)
     end
 
+    it "should load user from others serializers" do
+      @env["HTTP_COOKIE"] = "warden.user.default.key=user;"
+      app = lambda do |env|
+        env['warden'].user.should == "user"
+        valid_response
+      end
+      setup_rack(app, :default_serializers => [:session, :cookie]).call(@env)
+    end
+
     describe "previously logged in" do
 
       before(:each) do
@@ -299,14 +341,14 @@ describe Warden::Proxy do
     before(:each) do
       @env = env = env_with_params
       @env['rack.session'] = {"warden.user.default.key" => "default key", "warden.user.foo.key" => "foo key", :foo => "bar"}
-      app = lambda do |e|
+      @app = lambda do |e|
         e['warden'].logout(env['warden.spec.which_logout'])
         valid_response
       end
-      @app = setup_rack(app)
     end
 
     it "should logout only the scoped foo user" do
+      @app = setup_rack(@app)
       @env['warden.spec.which_logout'] = :foo
       @app.call(@env)
       @env['rack.session']['warden.user.default.key'].should == "default key"
@@ -315,6 +357,7 @@ describe Warden::Proxy do
     end
 
     it "should logout only the scoped default user" do
+      @app = setup_rack(@app)
       @env['warden.spec.which_logout'] = :default
       @app.call(@env)
       @env['rack.session']['warden.user.default.key'].should be_nil
@@ -343,7 +386,6 @@ describe Warden::Proxy do
       end
       setup_rack(app).call(@env)
       @env['warden'].user.should be_nil
-
     end
 
     it "should clear the session data when logging out" do
@@ -355,6 +397,15 @@ describe Warden::Proxy do
         valid_response
       end
       setup_rack(app).call(@env)
+    end
+
+    it "should clear the session in all serializers" do
+      @app = setup_rack(@app, :default_serializers => [:session, :cookie])
+      @env['warden.spec.which_logout'] = :default
+      @app.call(@env)
+      @env['warden'].serializers[:cookie].should_not be_nil
+      headers = @env['warden'].serializers[:cookie].response.headers
+      headers['Set-Cookie'].first.split(";").first.should == "warden.user.default.key="
     end
 
     it "should clear out the session by calling reset_session! so that plugins can setup their own session clearing" do

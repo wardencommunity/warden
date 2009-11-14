@@ -20,9 +20,11 @@ module Warden
         !!session[key_for(scope)]
       end
 
-      def delete(scope)
+      def delete(scope, user=nil)
         session.delete(key_for(scope))
       end
     end # Session
+
+    Serializers.add(:session, Session)
   end # Serializers
 end # Warden
