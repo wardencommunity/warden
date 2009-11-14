@@ -7,5 +7,5 @@ I'm going to try and keep a list of all the contributors to this project.  If I'
 * Daniel Neighman (hassox)
 * Mick Staugaard (staugaard)
 * José Valim (josevalim)
-* Carlo Santoniodasilva (carlosantoniodasilva)
+* Carlos Antonio da Silva (carlosantoniodasilva)
 * Justin Smestad (jsmestad)

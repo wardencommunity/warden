@@ -72,8 +72,20 @@ module Warden
       # Example:
       #   Warden::Manager.serialize_into_session{ |user| user.id }
       #
+      # Deprecation:
+      #   This method was deprecated in favor of serializer in Session. You can set it while setting the middleware:
+      #
+      #   use Warden::Manager do |manager|
+      #     manager.update(:session) do
+      #       def serialize(user)
+      #         user.id
+      #       end
+      #     end
+      #   end
+      #
       # :api: public
       def serialize_into_session(&block)
+        warn "[DEPRECATION] serialize_into_session is deprecated. Please overwrite the serialize method in Warden::Serializers::Session."
         Warden::Serializers::Session.send :define_method, :serialize, &block
       end
 
@@ -83,8 +95,20 @@ module Warden
       # Example:
       #   Warden::Manager.serialize_from_session{ |id| User.get(id) }
       #
+      # Deprecation:
+      #   This method was deprecated in favor of serializer in Session. You can set it while setting the middleware:
+      #
+      #   use Warden::Manager do |manager|
+      #     manager.update(:session) do
+      #       def deserialize(user)
+      #         User.get(id)
+      #       end
+      #     end
+      #   end
+      #
       # :api: public
       def serialize_from_session(&block)
+        warn "[DEPRECATION] serialize_from_session is deprecated. Please overwrite the deserialize method in Warden::Serializers::Session."
         Warden::Serializers::Session.send :define_method, :deserialize, &block
       end
     end
@@ -118,7 +142,6 @@ module Warden
 
         # Call the before failure callbacks
         Warden::Manager._before_failure.each{|hook| hook.call(env,opts)}
-
         @failure_app.call(env).to_a
       end
     end # call_failure_app
