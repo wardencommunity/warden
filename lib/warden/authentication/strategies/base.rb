@@ -2,7 +2,7 @@
 module Warden
   module Strategies
     # A strategy is a place where you can put logic related to authentication. Any strategy inherits
-    # from Warden::Strategy::Base.
+    # from Warden::Strategies::Base.
     #
     # The Warden::Strategies.add method is a simple way to provide custom strategies.
     # You _must_ declare an @authenticate!@ method.
@@ -50,7 +50,7 @@ module Warden
         @halted = false
       end
 
-      # The method that is called from above.  This method calls the underlying authenticate! method
+      # The method that is called from above. This method calls the underlying authenticate! method
       # :api: private
       def _run! # :nodoc:
         result = authenticate!

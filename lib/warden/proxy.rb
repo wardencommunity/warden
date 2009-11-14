@@ -3,6 +3,7 @@ module Warden
   class UserNotSet < RuntimeError; end
 
   class Proxy
+    # An accessor to the wining strategy
     # :api: private
     attr_accessor :winning_strategy
 
@@ -16,7 +17,7 @@ module Warden
     # :api: private
     def_delegators :winning_strategy, :headers, :_status, :custom_response
 
-    def initialize(env, config = {}) # :nodoc:
+    def initialize(env, config = {}) #:nodoc:
       @env = env
       @config = config
       @strategies = @config.fetch(:default_strategies, [])
@@ -34,6 +35,7 @@ module Warden
     #
     # Example:
     #   env['warden'].authenticated?(:admin)
+    #
     # :api: public
     def authenticated?(scope = :default)
       result = user(scope) || false
@@ -42,6 +44,7 @@ module Warden
     end
 
     # Same API as authenticated, but returns false when authenticated.
+    # :api: public
     def unauthenticated?(scope = :default)
       result = !authenticated?(scope)
       yield if block_given? && result
@@ -59,6 +62,7 @@ module Warden
     #
     # Example:
     #   env['auth'].authenticate(:password, :basic, :scope => :sudo)
+    #
     # :api: public
     def authenticate(*args)
       scope, opts = _perform_authentication(*args)
@@ -95,15 +99,15 @@ module Warden
     # Parameters:
     #   user - An object that has been setup to serialize into and out of the session.
     #   opts - An options hash.  Use the :scope option to set the scope of the user, set the :store option to false to skip serializing into the session.
+    #
     # :api: public
     def set_user(user, opts = {})
       scope = (opts[:scope] ||= :default)
-      Warden::Manager._store_user(user, raw_session, scope) unless opts[:store] == false# Get the user into the session
+      _store_user(user, raw_session, scope) unless opts[:store] == false # Get the user into the session
 
       # Run the after hooks for setting the user
-      Warden::Manager._after_set_user.each{|hook| hook.call(user, self, opts)}
-
-      @users[scope] = user # Store the user in the proxy user object
+      Warden::Manager._after_set_user.each{ |hook| hook.call(user, self, opts) }
+      @users[scope] = user
     end
 
     # Provides acccess to the user object in a given scope for a request.
@@ -118,7 +122,7 @@ module Warden
     #
     # :api: public
     def user(scope = :default)
-      @users[scope] ||= lookup_user_from_session(scope)
+      @users[scope] ||= set_user(_fetch_user(raw_session, scope), :scope => scope)
     end
 
     # Provides a scoped session data for authenticated users.
@@ -213,11 +217,8 @@ module Warden
 
       strategies.each do |s|
         unless Warden::Strategies[s]
-          if args.empty? && @config[:silence_missing_strategies]
-            next
-          else
-            raise "Invalid strategy #{s}"
-          end
+          raise "Invalid strategy #{s}" unless args.empty? && silence_missing_strategies?
+          next
         end
 
         strategy = Warden::Strategies[s].new(@env, scope, @conf)
@@ -239,18 +240,36 @@ module Warden
     end
 
     # :api: private
-    def scope_from_args(args)
+    def scope_from_args(args) # :nodoc:
       Hash === args.last ? args.last.fetch(:scope, :default) : :default
     end
 
     # :api: private
-    def opts_from_args(args)
+    def opts_from_args(args) # :nodoc:
       Hash === args.last ? args.pop : {}
     end
-
-    # :api: private
-    def lookup_user_from_session(scope)
-      set_user(Warden::Manager._fetch_user(raw_session, scope), :scope => scope)
+    
+    def session_serializer
+      @session_serializer ||= Warden::Serializers::Session.new(@env)
     end
+
+    # Quick accessor to the configuration options
+    # :api: private
+    def silence_missing_strategies? # :nodoc:
+      @config[:silence_missing_strategies]
+    end
+
+    # Does the work of storing the user in the session
+    # :api: private
+    def _store_user(user, session, scope = :default) # :nodoc:
+      session_serializer.store(user, scope) if user
+    end
+
+    # Does the work of fetching the user from the session
+    # :api: private
+    def _fetch_user(session, scope = :default) # :nodoc:
+      session_serializer.fetch(scope)
+    end
+
   end # Proxy
 end # Warden

@@ -6,7 +6,7 @@ module Warden
     class << self
       def check_validity!(label, strategy)
         return if strategy.method_defined?(:authenticate!)
-        raise NoMethodError, "authenticate! is not declared in the #{label} strategy" 
+        raise NoMethodError, "authenticate! is not declared in the #{label.inspect} strategy" 
       end
       
       alias :_strategies :_declarations

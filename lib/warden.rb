@@ -10,6 +10,9 @@ require 'warden/authentication/hooks'
 require 'warden/authentication/declarable'
 require 'warden/authentication/strategies'
 require 'warden/authentication/strategies/base'
+require 'warden/authentication/serializers'
+require 'warden/authentication/serializers/base'
+require 'warden/authentication/serializers/session'
 
 module Warden
   class NotAuthenticated < StandardError; end

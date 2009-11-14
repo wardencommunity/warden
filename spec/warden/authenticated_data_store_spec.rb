@@ -5,9 +5,9 @@ describe "authenticated data store" do
   before(:each) do
     @env = env_with_params
     @env['rack.session'] = {
-        "warden.user.foo.key"      => "foo user",
-        "warden.user.default.key"  => "default user",
-        :foo => "bar"
+      "warden.user.foo.key"     => "foo user",
+      "warden.user.default.key" => "default user",
+      :foo => "bar"
     }
   end
 
@@ -18,7 +18,7 @@ describe "authenticated data store" do
       e['warden'].should be_authenticated
       e['warden'].should be_authenticated(:foo)
 
-      # Store the data for :deafult
+      # Store the data for :default
       e['warden'].session[:key] = "value"
       valid_response
     end

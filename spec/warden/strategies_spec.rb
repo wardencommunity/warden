@@ -17,7 +17,7 @@ describe Warden::Strategies do
     end.should raise_error
   end
   
-  it "should allow me to get access to a particular middleware" do
+  it "should allow me to get access to a particular strategy" do
     Warden::Strategies.add(:strategy3) do
       def authenticate!; end
     end
@@ -35,7 +35,7 @@ describe Warden::Strategies do
     end.should_not raise_error
   end
   
-  it "should not allow a strategy that does not have a call(env) and initialize(app, config={}) method" do
+  it "should not allow a strategy that does not have an authenticate! method" do
     class MyOtherStrategy
     end
     lambda do
@@ -43,28 +43,32 @@ describe Warden::Strategies do
     end.should raise_error
   end
 
-  it "should allow me to inherit from a class when providing a block and class" do
+  it "should allow me to change a class when providing a block and class" do
     class MyStrategy < Warden::Strategies::Base
-      def authenticate!
-        self.call
-      end
-      
-      def call
-        request.env['warden.spec.strategies'] ||= []
-        request.env['warden.spec.strategies'] << :inherited
-      end
     end
 
     Warden::Strategies.add(:foo, MyStrategy) do
-      def authenticate!
-        self.call
-      end
+      def authenticate!; end
     end
 
     Warden::Strategies[:foo].ancestors.should include(MyStrategy)
-
   end
-  
+
+  it "should allow me to update a previously given strategy" do
+    class MyStrategy < Warden::Strategies::Base
+      def authenticate!; end
+    end
+
+    Warden::Strategies.add(:strategy6, MyStrategy)
+
+    new_module = Module.new
+    Warden::Strategies.update(:strategy6) do
+      include new_module
+    end
+
+    Warden::Strategies[:strategy6].ancestors.should include(new_module)
+  end
+
   it "should allow me to clear the strategies" do
     Warden::Strategies.add(:foobar) do
       def authenticate!

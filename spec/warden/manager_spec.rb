@@ -12,14 +12,6 @@ describe Warden::Manager do
     env["warden"].should be_an_instance_of(Warden::Proxy)
   end
 
-  describe "user storage" do
-    it "should take a user and store it in the provided session" do
-      session = {}
-      Warden::Manager._store_user("The User", session, "some_scope")
-      session["warden.user.some_scope.key"].should == "The User"
-    end
-  end
-
   describe "thrown auth" do
     before(:each) do
       @basic_app = lambda{|env| [200,{'Content-Type' => 'text/plain'},'OK']}

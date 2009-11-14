@@ -64,21 +64,6 @@ module Warden
 
     class << self
 
-      # Does the work of storing the user in the session
-      # :api: private
-      def _store_user(user, session, scope = :default) # :nodoc:
-        return nil unless user
-        session["warden.user.#{scope}.key"] = serialize_into_session.call(user)
-      end
-
-      # Does the work of fetching the user from the session
-      # :api: private
-      def _fetch_user(session, scope = :default) # :nodoc:
-        key = session["warden.user.#{scope}.key"]
-        return nil unless key
-        serialize_from_session.call(key)
-      end
-
       # Prepares the user to serialize into the session.
       # Any object that can be serialized into the session in some way can be used as a "user" object
       # Generally however complex object should not be stored in the session.
@@ -89,8 +74,7 @@ module Warden
       #
       # :api: public
       def serialize_into_session(&block)
-        @serialize_into_session = block if block_given?
-        @serialize_into_session ||= lambda{|user| user}
+        Warden::Serializers::Session.send :define_method, :serialize, &block
       end
 
       # Reconstitues the user from the session.
@@ -100,9 +84,8 @@ module Warden
       #   Warden::Manager.serialize_from_session{ |id| User.get(id) }
       #
       # :api: public
-      def serialize_from_session(&blk)
-        @serialize_from_session = blk if block_given?
-        @serialize_from_session ||= lambda{|key| key}
+      def serialize_from_session(&block)
+        Warden::Serializers::Session.send :define_method, :deserialize, &block
       end
     end
 

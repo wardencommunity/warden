@@ -1,7 +1,8 @@
 # encoding: utf-8
 module Warden
   module Declarable
-      
+    
+    # Add a declaration and store it in a hash.
     def add(label, declaration = nil, &block)
       base = self.const_get(:Base)
 
@@ -12,6 +13,13 @@ module Warden
       raise "#{label.inspect} is not a #{base}" unless declaration.ancestors.include?(base)
 
       _declarations[label] = declaration
+    end
+
+    # Update a previously given declaration.
+    def update(label, &block)
+      declaration = _declarations[label]
+      raise "Unknown declaration #{label.inspect}" unless declaration
+      add(label, declaration, &block)
     end
 
     # Provides access to declarations by label

@@ -12,7 +12,7 @@ Spec::Runner.configure do |config|
   config.include(Warden::Spec::Helpers)
 
   def load_strategies
-    Dir[File.join(File.dirname(__FILE__), "warden", "strategies", "**/*.rb")].each do |f|
+    Dir[File.join(File.dirname(__FILE__), "helpers", "strategies", "**/*.rb")].each do |f|
       load f
     end
   end
