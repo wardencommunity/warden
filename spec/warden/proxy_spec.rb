@@ -262,7 +262,7 @@ describe Warden::Proxy do
       end
       setup_rack(app, :default_serializers => [:session, :cookie]).call(env)
       headers = env['warden'].serializers.last.response.headers
-      headers['Set-Cookie'].first.split(";").first.should == "warden.user.default.key=Valid+User"
+      headers['Set-Cookie'].split(";").first.should == "warden.user.default.key=Valid+User"
     end
 
     it "should not store the user if the :store option is set to false" do
