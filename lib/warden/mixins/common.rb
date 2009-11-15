@@ -8,6 +8,8 @@ module Warden
       def session
         env['rack.session']
       end # session
+
+      # Alias :session to :raw_session since the former will be user API for storing scoped data.
       alias :raw_session :session
 
       # Convenience method to access the rack request.
