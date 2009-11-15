@@ -1,4 +1,6 @@
 # encoding: utf-8
+require 'warden/declarable'
+
 module Warden
   module Strategies
     extend Warden::Declarable

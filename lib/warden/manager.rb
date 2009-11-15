@@ -1,10 +1,14 @@
 # encoding: utf-8
+require 'warden/hooks'
+
 module Warden
   # The middleware for Rack Authentication
   # The middlware requires that there is a session upstream
   # The middleware injects an authentication object into
   # the rack environment hash
   class Manager
+    extend Warden::Hooks
+
     attr_accessor :config, :failure_app
 
     # initialize the middleware.
