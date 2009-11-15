@@ -93,11 +93,11 @@ module Warden
     #   env['warden'].stored?(:default, :cookie)  #=> false
     # 
     # :api: public
-    def stored?(scope = :default, store = nil)
-      if store
-        serializers[store].stored?(scope)
+    def stored?(scope = :default, serializer = nil)
+      if serializer
+        find_serializer(serializer).stored?(scope)
       else
-        serializers.values.any? { |s| s.stored?(scope) }
+        serializers.any? { |s| s.stored?(scope) }
       end
     end
 
@@ -211,15 +211,15 @@ module Warden
     # :api: private
     def serializers # :nodoc:
       @serializers ||= begin
-        hash = {}
+        array = []
         @config[:default_serializers].each do |s|
           unless Warden::Serializers[s]
             raise "Invalid serializer #{s}" unless silence_missing_serializers?
             next
           end
-          hash[s] ||= Warden::Serializers[s].new(@env)
+          array << Warden::Serializers[s].new(@env)
         end
-        hash
+        array
       end
     end
 
@@ -285,23 +285,28 @@ module Warden
     # :api: private
     def _store_user(user, scope = :default) # :nodoc:
       return unless user
-      serializers.each { |k, v| v.store(user, scope) }
+      serializers.each { |s| s.store(user, scope) }
     end
 
     # Does the work of fetching the user from the first store.
     # :api: private
     def _fetch_user(scope = :default) # :nodoc:
-      serializers.each do |k, v|
-        user = v.fetch(scope)
-        return user
+      serializers.each do |s|
+        user = s.fetch(scope)
+        return user if user
       end
+      nil
     end
 
     # Does the work of deleteing the user in all stores.
     # :api: private
     def _delete_user(user, scope = :default) # :nodoc:
-      serializers.each { |k, v| v.delete(scope, user) }
+      serializers.each { |s| s.delete(scope, user) }
     end
 
+    # :api: private
+    def find_serializer(name) # :nodoc:
+      serializers.find { |s| s.class == ::Warden::Serializers[name] }
+    end
   end # Proxy
 end # Warden

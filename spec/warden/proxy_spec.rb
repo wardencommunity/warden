@@ -261,7 +261,7 @@ describe Warden::Proxy do
         valid_response
       end
       setup_rack(app, :default_serializers => [:session, :cookie]).call(env)
-      headers = env['warden'].serializers[:cookie].response.headers
+      headers = env['warden'].serializers.last.response.headers
       headers['Set-Cookie'].first.split(";").first.should == "warden.user.default.key=Valid+User"
     end
 
@@ -403,8 +403,8 @@ describe Warden::Proxy do
       @app = setup_rack(@app, :default_serializers => [:session, :cookie])
       @env['warden.spec.which_logout'] = :default
       @app.call(@env)
-      @env['warden'].serializers[:cookie].should_not be_nil
-      headers = @env['warden'].serializers[:cookie].response.headers
+      @env['warden'].serializers.last.should_not be_nil
+      headers = @env['warden'].serializers.last.response.headers
       headers['Set-Cookie'].first.split(";").first.should == "warden.user.default.key="
     end
 
