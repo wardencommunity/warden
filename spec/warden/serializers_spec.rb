@@ -83,14 +83,20 @@ describe Warden::Serializers do
   end
 
   it "should allow me to clear the Serializers" do
-    Warden::Serializers.add(:foobar) do
-      def fetch; end
-      def store; end
-      def stored?; end
-      def delete; end
+    old_serializers = Warden::Serializers._serializers.dup
+
+    begin
+      Warden::Serializers.add(:foobar) do
+        def fetch; end
+        def store; end
+        def stored?; end
+        def delete; end
+      end
+      Warden::Serializers[:foobar].should_not be_nil
+      Warden::Serializers.clear!
+      Warden::Serializers[:foobar].should be_nil
+    else
+      Warden::Serializers._serializers.replace(old_serializers)
     end
-    Warden::Serializers[:foobar].should_not be_nil
-    Warden::Serializers.clear!
-    Warden::Serializers[:foobar].should be_nil
   end
 end

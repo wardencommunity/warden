@@ -421,7 +421,6 @@ describe Warden::Proxy do
   end
 
   describe "messages" do
-
     it "should allow access to the failure message" do
       failure = lambda do |e|
         [401, {"Content-Type" => "text/plain"}, [e['warden'].message]]
@@ -438,7 +437,7 @@ describe Warden::Proxy do
         [200, {"Content-Type" => "text/plain"}, [e['warden'].message]]
       end
       result = setup_rack(app).call(env_with_params)
-      result[2].should == [""]
+      result[2].should == [nil]
     end
   end
 

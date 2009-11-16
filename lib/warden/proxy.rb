@@ -111,10 +111,11 @@ module Warden
     def set_user(user, opts = {})
       scope = (opts[:scope] ||= :default)
       _store_user(user, scope) unless opts[:store] == false
+      @users[scope] = user
 
       # Run the after hooks for setting the user
       Warden::Manager._after_set_user.each{ |hook| hook.call(user, self, opts) }
-      @users[scope] = user
+      user
     end
 
     # Provides acccess to the user object in a given scope for a request.
@@ -185,13 +186,13 @@ module Warden
     # proxy methods through to the winning strategy
     # :api: private
     def result # :nodoc:
-      winning_strategy.nil? ? nil : winning_strategy.result
+      winning_strategy && winning_strategy.result
     end
 
     # Proxy through to the authentication strategy to find out the message that was generated.
     # :api: public
     def message
-      winning_strategy.nil? ? "" : winning_strategy.message
+      winning_strategy && winning_strategy.message
     end
 
     # Provides a way to return a 401 without warden defering to the failure app

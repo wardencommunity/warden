@@ -32,9 +32,14 @@ describe "standard authentication hooks" do
     it "should run each after_set_user hook after the user is set" do
       RAM.after_set_user{|u,a,o| a.env['warden.spec.hook.foo'] = "run foo"}
       RAM.after_set_user{|u,a,o| a.env['warden.spec.hook.bar'] = "run bar"}
-      app = lambda{|e| e['warden'].set_user("foo"); valid_response}
+      RAM.after_set_user{|u,a,o| a.logout}
+      app = lambda do |e|
+        e['warden'].set_user("foo")
+        valid_response
+      end
       env = env_with_params
       setup_rack(app).call(env)
+      env['warden'].user.should be_nil
       env['warden.spec.hook.foo'].should == "run foo"
       env['warden.spec.hook.bar'].should == "run bar"
     end
