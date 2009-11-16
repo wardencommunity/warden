@@ -244,7 +244,7 @@ module Warden
           next
         end
 
-        strategy = Warden::Strategies[s].new(@env, scope, @conf)
+        strategy = Warden::Strategies[s].new(@env, scope)
         self.winning_strategy = strategy
         next unless strategy.valid?
 

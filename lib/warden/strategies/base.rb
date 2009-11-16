@@ -44,9 +44,9 @@ module Warden
       include ::Warden::Mixins::Common
 
       # :api: private
-      def initialize(env, scope=nil, config={}) # :nodoc:
-        @scope, @config = scope, config
-        @env, @_status, @headers = env, nil, {}
+      def initialize(env, scope=nil) # :nodoc:
+        @env, @scope = env, scope
+        @_status, @headers = nil, {}
         @halted = false
       end
 
