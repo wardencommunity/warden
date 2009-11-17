@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{warden}
-  s.version = "0.6.0"
+  s.version = "0.6.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Daniel Neighman"]
-  s.date = %q{2009-11-15}
+  s.date = %q{2009-11-17}
   s.email = %q{has.sox@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -65,24 +65,24 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.5}
   s.summary = %q{Rack middleware that provides authentication for rack applications}
   s.test_files = [
-    "spec/helpers/request_helper.rb",
-     "spec/helpers/strategies/failz.rb",
+    "spec/warden_spec.rb",
      "spec/helpers/strategies/invalid.rb",
+     "spec/helpers/strategies/failz.rb",
      "spec/helpers/strategies/pass.rb",
-     "spec/helpers/strategies/pass_without_user.rb",
      "spec/helpers/strategies/password.rb",
+     "spec/helpers/strategies/pass_without_user.rb",
+     "spec/helpers/request_helper.rb",
      "spec/spec_helper.rb",
-     "spec/warden/authenticated_data_store_spec.rb",
-     "spec/warden/errors_spec.rb",
+     "spec/warden/strategies/base_spec.rb",
      "spec/warden/hooks_spec.rb",
      "spec/warden/manager_spec.rb",
-     "spec/warden/proxy_spec.rb",
+     "spec/warden/authenticated_data_store_spec.rb",
+     "spec/warden/errors_spec.rb",
      "spec/warden/serializers/cookie_spec.rb",
      "spec/warden/serializers/session_spec.rb",
      "spec/warden/serializers_spec.rb",
-     "spec/warden/strategies/base_spec.rb",
-     "spec/warden/strategies_spec.rb",
-     "spec/warden_spec.rb"
+     "spec/warden/proxy_spec.rb",
+     "spec/warden/strategies_spec.rb"
   ]
 
   if s.respond_to? :specification_version then
