@@ -22,7 +22,6 @@ module Warden
 
       # Should ensure there is a failure application defined.
       @failure_app = config[:failure_app] if config[:failure_app]
-      raise "No Failure App provided" unless @failure_app
 
       # Set default configuration values.
       @config[:default_strategies]  ||= []
@@ -167,6 +166,7 @@ module Warden
 
         # Call the before failure callbacks
         Warden::Manager._before_failure.each{|hook| hook.call(env,opts)}
+        raise "No Failure App provided" unless @failure_app
         @failure_app.call(env).to_a
       end
     end # call_failure_app
