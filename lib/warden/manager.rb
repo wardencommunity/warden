@@ -33,13 +33,14 @@ module Warden
     # Get the default scope for Warden.  By default this is :default
     # @api public
     def self.default_scope
-      @default_scope ||= :default
+      @default_scope
     end
     
     # Set the default scope for Warden.  
     def self.default_scope=(scope)
       @default_scope = scope
     end
+    @default_scope = :default
 
     # Do not raise an error if a missing strategy is given by default.
     # :api: plugin
