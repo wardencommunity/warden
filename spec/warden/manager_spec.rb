@@ -207,5 +207,11 @@ describe Warden::Manager do
       end
     end
   end # integrated strategies
-
+  
+  it "Should allow me to set a different default scope for warden" do
+    Warden::Manager.default_scope.should == :default
+    Warden::Manager.default_scope = :other_scope
+    Warden::Manager.default_scope.should == :other_scope
+    Warden::Manager.default_scope = :default
+  end
 end
