@@ -1,3 +1,8 @@
+=== Version 0.5.3
+* bug fixes
+  * authenticated? and unauthenticated? should return true or false, not the user or false.
+
+=== Version 0.5.2
 * enhancements
   * authenticated? always try to serialize the user from session (josevalim)
   * stored_in_session? checks if user information is stored in session, without serializing (josevalim)
