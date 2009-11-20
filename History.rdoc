@@ -1,11 +1,16 @@
+== Version 0.6.0 / 2009-11-16
+
 * enhancements
   * added serializers, including session serializer (set by default) and a cookie serializer (josevalim)
 
 * deprecation
   * serializer_into_session and serializer_from_session are deprecated, overwrite serialize and deserializer in Warden::Serializers::Session instead (josevalim)
 
-== Version 0.5.2 / 2009-11-09
+== Version 0.5.3 / 2009-11-20
+* bug fixes
+  * authenticated? and unauthenticated? should return true or false, not the user or false.
 
+== Version 0.5.2 / 2009-11-09
 * enhancements
   * authenticated? always try to serialize the user from session (josevalim)
   * stored_in_session? checks if user information is stored in session, without serializing (josevalim)
