@@ -38,7 +38,7 @@ module Warden
     #
     # :api: public
     def authenticated?(scope = Warden::Manager.default_scope)
-      result = user(scope) || false
+      result = !!user(scope)
       yield if block_given? && result
       result
     end

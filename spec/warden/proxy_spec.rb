@@ -165,8 +165,8 @@ describe Warden::Proxy do
           env['warden'].authenticate(:pass, :scope => :foo)
           env['warden'].authenticate(:pass, :scope => :bar)
           env['warden'].authenticate(:password)
-          env['warden'].authenticated?(:foo).should be_true
-          env['warden'].authenticated?(:bar).should be_true
+          env['warden'].authenticated?(:foo).should == true
+          env['warden'].authenticated?(:bar).should == true
           env['warden'].authenticated?.should be_false
           valid_response
         end
@@ -203,7 +203,7 @@ describe Warden::Proxy do
 
     it "returns true if user key is stored in session" do
       app = lambda do |env|
-        env['warden'].stored?.should be_true
+        env['warden'].stored?.should == true
         valid_response
       end
       setup_rack(app).call(@env)
@@ -212,7 +212,7 @@ describe Warden::Proxy do
     it "returns false if user key is not stored in session" do
       @env['rack.session'].delete("warden.user.default.key")
       app = lambda do |env|
-        env['warden'].stored?.should be_false
+        env['warden'].stored?.should  == false
         valid_response
       end
       setup_rack(app).call(@env)
