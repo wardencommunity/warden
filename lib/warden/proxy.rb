@@ -36,7 +36,7 @@ module Warden
     #   env['warden'].authenticated?(:admin)
     # :api: public
     def authenticated?(scope = :default)
-      result = user(scope) || false
+      result = !!user(scope)
       yield if block_given? && result
       result
     end

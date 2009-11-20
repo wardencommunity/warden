@@ -165,9 +165,9 @@ describe Warden::Proxy do
           env['warden'].authenticate(:pass, :scope => :foo)
           env['warden'].authenticate(:pass, :scope => :bar)
           env['warden'].authenticate(:password)
-          env['warden'].authenticated?(:foo).should be_true
-          env['warden'].authenticated?(:bar).should be_true
-          env['warden'].authenticated?.should be_false
+          env['warden'].authenticated?(:foo).should == true
+          env['warden'].authenticated?(:bar).should == true
+          env['warden'].authenticated?.should == false
           valid_response
         end
         env = env_with_params
@@ -395,7 +395,7 @@ describe Warden::Proxy do
     it "should return false for authenticated when there are no valid? strategies" do
      @env['rack.session'] = {}
      app = lambda do |e|
-       e['warden'].authenticated?(:invalid).should be_false
+       e['warden'].authenticated?(:invalid).should == false
      end
      setup_rack(app).call(@env)
     end
