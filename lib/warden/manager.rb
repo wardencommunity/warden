@@ -74,6 +74,18 @@ module Warden
       end
     end
 
+    # Quick accessor to strategies from manager
+    # :api: public
+    def serializers
+      Warden::Serializers
+    end
+
+    # Quick accessor to strategies from manager
+    # :api: public
+    def strategies
+      Warden::Strategies
+    end
+
     # :api: private
     def call(env) # :nodoc:
       # if this is downstream from another warden instance, don't do anything.
@@ -112,7 +124,7 @@ module Warden
       #   This method was deprecated in favor of serializer in Session. You can set it while setting the middleware:
       #
       #   use Warden::Manager do |manager|
-      #     manager.update(:session) do
+      #     manager.serializers.update(:session) do
       #       def serialize(user)
       #         user.id
       #       end
@@ -135,8 +147,8 @@ module Warden
       #   This method was deprecated in favor of serializer in Session. You can set it while setting the middleware:
       #
       #   use Warden::Manager do |manager|
-      #     manager.update(:session) do
-      #       def deserialize(user)
+      #     manager.serializers.update(:session) do
+      #       def deserialize(id)
       #         User.get(id)
       #       end
       #     end

@@ -208,10 +208,26 @@ describe Warden::Manager do
     end
   end # integrated strategies
   
-  it "Should allow me to set a different default scope for warden" do
+  it "should allow me to set a different default scope for warden" do
     Warden::Manager.default_scope.should == :default
     Warden::Manager.default_scope = :other_scope
     Warden::Manager.default_scope.should == :other_scope
     Warden::Manager.default_scope = :default
+  end
+
+  it "should allow me to access serializers through manager" do
+    Rack::Builder.new do
+       use Warden::Manager do |manager|
+         manager.serializers.should == Warden::Serializers
+       end
+     end
+  end
+
+  it "should allow me to access serializers through manager" do
+    Rack::Builder.new do
+       use Warden::Manager do |manager|
+         manager.strategies.should == Warden::Strategies
+       end
+     end
   end
 end
