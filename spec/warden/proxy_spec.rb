@@ -176,10 +176,10 @@ describe Warden::Proxy do
         env['warden'].user(:bar).should == 'bar user'
         env['warden'].user.should be_nil
       end
-      
+
       it "should not be authenticated if scope cannot be retrieved from session" do
         begin
-          Warden::Manager.serialize_from_session { |k| nil } 
+          Warden::Manager.serialize_from_session { |k| nil }
           app = lambda do |env|
             env['rack.session']['warden.user.foo_scope.key'] = "a foo user"
             env['warden'].authenticated?(:foo_scope)
@@ -189,7 +189,7 @@ describe Warden::Proxy do
           setup_rack(app).call(env)
           env['warden'].user(:foo_scope).should be_nil
         ensure
-          Warden::Manager.serialize_from_session { |k| k } 
+          Warden::Manager.serialize_from_session { |k| k }
         end
       end
     end
@@ -208,7 +208,7 @@ describe Warden::Proxy do
       end
       setup_rack(app).call(@env)
     end
-    
+
     it "returns false if user key is not stored in session" do
       @env['rack.session'].delete("warden.user.default.key")
       app = lambda do |env|
@@ -608,6 +608,21 @@ describe Warden::Proxy do
           $captures.should == [:in_the_bar_block]
         end
       end
+    end
+  end
+
+  describe "attributes" do
+
+    def def_app(&blk)
+      @app = setup_rack(blk)
+    end
+
+    it "should have a config attribute" do
+      app = def_app do |e|
+        e['warden'].config.should be_a_kind_of(Hash)
+        valid_response
+      end
+      app.call(@env)
     end
   end
 

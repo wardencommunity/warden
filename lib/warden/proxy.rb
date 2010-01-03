@@ -11,6 +11,10 @@ module Warden
     # :api: public
     attr_reader :env
 
+    # A reader for the config of warden that created this proxy.
+    # :api: public
+    attr_reader :config
+
     extend ::Forwardable
     include ::Warden::Mixins::Common
 
@@ -91,7 +95,7 @@ module Warden
     #   env['warden'].stored?(:default)           #=> true
     #   env['warden'].stored?(:default, :session) #=> true
     #   env['warden'].stored?(:default, :cookie)  #=> false
-    # 
+    #
     # :api: public
     def stored?(scope = Warden::Manager.default_scope, serializer = nil)
       if serializer
@@ -276,7 +280,7 @@ module Warden
     def silence_missing_strategies? # :nodoc:
       @config[:silence_missing_strategies]
     end
-    
+
     # :api: private
     def silence_missing_serializers? # :nodoc:
       @config[:silence_missing_serializers]
