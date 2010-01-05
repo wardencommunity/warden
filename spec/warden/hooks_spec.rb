@@ -44,6 +44,26 @@ describe "standard authentication hooks" do
       env['warden.spec.hook.bar'].should == "run bar"
     end
 
+    it "should not run the event specified with except" do
+      RAM.after_set_user(:except => :set_user){|u,a,o| fail}
+      app = lambda do |e|
+        e['warden'].set_user("foo")
+        valid_response
+      end
+      env = env_with_params
+      setup_rack(app).call(env)
+    end
+
+    it "should only run the event specified with only" do
+      RAM.after_set_user(:only => :set_user){|u,a,o| fail}
+      app = lambda do |e|
+        e['warden'].authenticate(:pass)
+        valid_response
+      end
+      env = env_with_params
+      setup_rack(app).call(env)
+    end
+
     context "after_authentication" do
       it "should be a wrapper to after_set_user behavior" do
         RAM.after_authentication{|u,a,o| a.env['warden.spec.hook.baz'] = "run baz"}
@@ -165,21 +185,27 @@ describe "standard authentication hooks" do
       env['warden.spec.hook.ipsum'].should == 'run ipsum'
     end
 
-    it "should run before_logout hook on different scopes" do
-      RAM.before_logout{|u,a,o| a.env["warden.spec.hook.scope1"] = "run scope1" if o[:scope] == :scope1}
-      RAM.before_logout{|u,a,o| a.env["warden.spec.hook.scope2"] = "run scope2" if o[:scope] == :scope2}
+    it "should run before_logout hook for a socufued scope" do
+      RAM.before_logout(:scope => :scope1){|u,a,o| a.env["warden.spec.hook.a"] << :scope1 }
+      RAM.before_logout(:scope => [:scope2]){|u,a,o| a.env["warden.spec.hook.b"] << :scope2 }
+
       app = lambda do |e|
         e['warden'].authenticate(:pass, :scope => :scope1)
         e['warden'].authenticate(:pass, :scope => :scope2)
         valid_response
       end
       env = env_with_params
+      env["warden.spec.hook.a"] ||= []
+      env["warden.spec.hook.b"] ||= []
       setup_rack(app).call(env)
+
       env['warden'].logout(:scope1)
-      env['warden.spec.hook.scope1'].should == 'run scope1'
-      env['warden.spec.hook.scope2'].should == nil
+      env['warden.spec.hook.a'].should == [:scope1]
+      env['warden.spec.hook.b'].should == []
+
       env['warden'].logout(:scope2)
-      env['warden.spec.hook.scope2'].should == 'run scope2'
+      env['warden.spec.hook.a'].should == [:scope1]
+      env['warden.spec.hook.b'].should == [:scope2]
     end
   end
 
