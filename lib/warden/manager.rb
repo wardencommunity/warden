@@ -29,7 +29,7 @@ module Warden
     def call(env) # :nodoc:
       return @app.call(env) unless env['warden'].nil?
 
-      env['warden'] = Proxy.new(env, @config)
+      env['warden'] = Proxy.new(env, self)
       result = catch(:warden) do
         @app.call(env)
       end

@@ -13,7 +13,7 @@ module Warden::Spec
     def setup_rack(app = nil, opts = {}, &block)
       app ||= block if block_given?
 
-      opts[:failure_app]         ||= Warden::Spec::Helpers::FAILURE_APP
+      opts[:failure_app]         ||= failure_app
       opts[:default_strategies]  ||= [:password]
       opts[:default_serializers] ||= [:session]
 

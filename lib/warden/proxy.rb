@@ -7,25 +7,19 @@ module Warden
     # :api: private
     attr_accessor :winning_strategy
 
-    # An accessor to the rack env hash
+    # An accessor to the rack env hash and the proxy owner
     # :api: public
-    attr_reader :env
-
-    # A reader for the config of warden that created this proxy.
-    # :api: public
-    attr_reader :config
+    attr_reader :env, :manager
 
     extend ::Forwardable
     include ::Warden::Mixins::Common
 
     # :api: private
+    def_delegators :manager, :config
     def_delegators :winning_strategy, :headers, :_status, :custom_response
 
-    def initialize(env, config = {}) #:nodoc:
-      @env = env
-      @config = config
-      @strategies = @config.fetch(:default_strategies, [])
-      @users = {}
+    def initialize(env, manager) #:nodoc:
+      @env, @manager, @users = env, manager, {}
       errors # setup the error object in the session
     end
 
@@ -41,7 +35,7 @@ module Warden
     #   env['warden'].authenticated?(:admin)
     #
     # :api: public
-    def authenticated?(scope = @config.default_scope)
+    def authenticated?(scope = config.default_scope)
       result = !!user(scope)
       yield if block_given? && result
       result
@@ -49,7 +43,7 @@ module Warden
 
     # Same API as authenticated, but returns false when authenticated.
     # :api: public
-    def unauthenticated?(scope = @config.default_scope)
+    def unauthenticated?(scope = config.default_scope)
       result = !authenticated?(scope)
       yield if block_given? && result
       result
@@ -82,7 +76,7 @@ module Warden
     # :api: public
     def authenticate!(*args)
       scope, opts = _perform_authentication(*args)
-      throw(:warden, opts.merge(:action => :unauthenticated)) if !user(scope)
+      throw(:warden, opts) if !user(scope)
       user(scope)
     end
 
@@ -97,9 +91,9 @@ module Warden
     #   env['warden'].stored?(:default, :cookie)  #=> false
     #
     # :api: public
-    def stored?(scope = @config.default_scope, serializer = nil)
+    def stored?(scope = config.default_scope, serializer = nil)
       if serializer
-        find_serializer(serializer).stored?(scope)
+        _find_serializer(serializer).stored?(scope)
       else
         serializers.any? { |s| s.stored?(scope) }
       end
@@ -113,11 +107,11 @@ module Warden
     #
     # :api: public
     def set_user(user, opts = {})
-      scope = (opts[:scope] ||= @config.default_scope)
+      scope = (opts[:scope] ||= config.default_scope)
       _store_user(user, scope) unless opts[:store] == false
       @users[scope] = user
 
-      # Run the after hooks for setting the user
+      opts[:event] ||= :set_user
       Warden::Manager._after_set_user.each{ |hook| hook.call(user, self, opts) }
       user
     end
@@ -133,8 +127,8 @@ module Warden
     #   env['warden'].user(:admin)
     #
     # :api: public
-    def user(scope = @config.default_scope)
-      @users[scope] ||= set_user(_fetch_user(scope), :scope => scope)
+    def user(scope = config.default_scope)
+      @users[scope] ||= set_user(_fetch_user(scope), :scope => scope, :event => :fetch)
     end
 
     # Provides a scoped session data for authenticated users.
@@ -148,7 +142,7 @@ module Warden
     #  env['warden'].session(:sudo)[:foo] = "bar"
     #
     # :api: public
-    def session(scope = @config.default_scope)
+    def session(scope = config.default_scope)
       raise NotAuthenticated, "#{scope.inspect} user is not logged in" unless authenticated?(scope)
       raw_session["warden.user.#{scope}.session"] ||= {}
     end
@@ -216,15 +210,13 @@ module Warden
     # :api: private
     def serializers # :nodoc:
       @serializers ||= begin
-        array = []
-        @config[:default_serializers].each do |s|
-          unless Warden::Serializers[s]
-            raise "Invalid serializer #{s}" unless silence_missing_serializers?
+        config.default_serializers.inject([]) do |array, s|
+          unless klass = Warden::Serializers[s]
+            raise "Invalid serializer #{s}" unless config.silence_missing_serializers?
             next
           end
-          array << Warden::Serializers[s].new(@env)
+          array << klass.new(@env)
         end
-        array
       end
     end
 
@@ -233,34 +225,20 @@ module Warden
     # :api: private
     def _perform_authentication(*args)
       scope = scope_from_args(args)
-      opts = opts_from_args(args)
+      opts  = opts_from_args(args)
 
-      # Look for an existing user in the session for this scope
-      # If there was no user in the session.  See if we can get one from the request
-      return scope, opts if the_user = user(scope)
+      # Look for an existing user in the session for this scope.
+      # If there was no user in the session. See if we can get one from the request
+      return scope, opts if user(scope)
 
-      strategies = args.empty? ? @strategies : args
-      raise "No Strategies Found" if strategies.empty?
-
-      strategies.each do |s|
-        unless Warden::Strategies[s]
-          raise "Invalid strategy #{s}" unless args.empty? && silence_missing_strategies?
-          next
-        end
-
-        strategy = Warden::Strategies[s].new(@env, scope)
-        self.winning_strategy = strategy
-        next unless strategy.valid?
-
-        strategy._run!
-        break if strategy.halted?
-      end
+      _run_strategies_for(scope, args)
 
       if winning_strategy && winning_strategy.user
-        set_user(winning_strategy.user, opts)
+        set_user(winning_strategy.user, opts.merge!(:event => :authentication))
 
-        # Run the after_authentication hooks
-        Warden::Manager._after_authentication.each{|hook| hook.call(winning_strategy.user, self, opts)}
+        Warden::Manager._after_authentication.each do |hook|
+          hook.call(winning_strategy.user, self, opts)
+        end
       end
 
       [scope, opts]
@@ -268,7 +246,7 @@ module Warden
 
     # :api: private
     def scope_from_args(args) # :nodoc:
-      Hash === args.last ? args.last.fetch(:scope, @config.default_scope) : @config.default_scope
+      Hash === args.last ? args.last.fetch(:scope, config.default_scope) : config.default_scope
     end
 
     # :api: private
@@ -277,25 +255,35 @@ module Warden
     end
 
     # :api: private
-    def silence_missing_strategies? # :nodoc:
-      @config[:silence_missing_strategies]
-    end
+    def _run_strategies_for(scope, args) #:nodoc:
+      strategies = args.empty? ? config.default_strategies : args
+      raise "No Strategies Found" if strategies.empty?
 
-    # :api: private
-    def silence_missing_serializers? # :nodoc:
-      @config[:silence_missing_serializers]
+      strategies.each do |s|
+        unless klass = Warden::Strategies[s]
+          raise "Invalid strategy #{s}" unless args.empty? && config.silence_missing_strategies?
+          next
+        end
+
+        strategy = klass.new(@env, scope)
+        self.winning_strategy = strategy
+        next unless strategy.valid?
+
+        strategy._run!
+        break if strategy.halted?
+      end
     end
 
     # Does the work of storing the user in stores.
     # :api: private
-    def _store_user(user, scope = @config.default_scope) # :nodoc:
+    def _store_user(user, scope) # :nodoc:
       return unless user
       serializers.each { |s| s.store(user, scope) }
     end
 
     # Does the work of fetching the user from the first store.
     # :api: private
-    def _fetch_user(scope = @config.default_scope) # :nodoc:
+    def _fetch_user(scope) # :nodoc:
       serializers.each do |s|
         user = s.fetch(scope)
         return user if user
@@ -305,12 +293,12 @@ module Warden
 
     # Does the work of deleteing the user in all stores.
     # :api: private
-    def _delete_user(user, scope = @config.default_scope) # :nodoc:
+    def _delete_user(user, scope) # :nodoc:
       serializers.each { |s| s.delete(scope, user) }
     end
 
     # :api: private
-    def find_serializer(name) # :nodoc:
+    def _find_serializer(name) # :nodoc:
       serializers.find { |s| s.class == ::Warden::Serializers[name] }
     end
   end # Proxy
