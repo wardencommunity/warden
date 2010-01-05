@@ -16,10 +16,18 @@ module Warden
     end
 
     # A callback hook set to run every time after a user is set.
-    # This will happen the first time the user is either authenticated, accessed or manually set
-    # during a request.  You can supply as many hooks as you like, and they will be run in order of decleration
+    # This callback is triggered the first time one of those three events happens during a request:
+    # :authentication, :fetch (from one of the serializers, like session) and :set_user (when manually set).
+    # You can supply as many hooks as you like, and they will be run in order of decleration.
+    #
+    # If you want to run the callbacks for a given scope and/or event, you can specify them as options.
+    # See parameters and example below.
     #
     # Parameters:
+    # <options> Some options which specify when the callback should be executed
+    #   scope  - Executes the callback only if it maches the scope(s) given
+    #   only   - Executes the callback only if it matches the event(s) given
+    #   except - Executes the callback except if it matches the event(s) given
     # <block> A block where you can set arbitrary logic to run every time a user is set
     #   Block Parameters: |user, auth, opts|
     #     user - The user object that is being set
@@ -34,6 +42,10 @@ module Warden
     #       throw(:warden, :scope => scope, :reason => "Times Up")
     #     end
     #     auth.session["#{scope}.last_access"] = Time.now
+    #   end
+    #
+    #   Warden::Manager.after_set_user :except => :fetch do |user,auth,opts|
+    #     user.login_count += 1
     #   end
     #
     # :api: public
@@ -79,6 +91,8 @@ module Warden
     # If a Rails controller were used for the failure_app for example, you would need to set request[:params][:action] = :unauthenticated
     #
     # Parameters:
+    # <options> Some options which specify when the callback should be executed
+    #   scope  - Executes the callback only if it maches the scope(s) given
     # <block> A block to contain logic for the callback
     #   Block Parameters: |env, opts|
     #     env - The rack env hash
@@ -106,6 +120,8 @@ module Warden
     # A callback that runs just prior to the logout of each scope.
     #
     # Parameters:
+    # <options> Some options which specify when the callback should be executed
+    #   scope  - Executes the callback only if it maches the scope(s) given
     # <block> A block to contain logic for the callback
     #   Block Parameters: |user, auth, scope|
     #     user - The authenticated user for the current scope
