@@ -48,6 +48,11 @@ module Warden
       end
     end
 
+    # :api: private
+    def _run_callbacks(*args) #:nodoc:
+      self.class._run_callbacks(*args)
+    end
+
   private
 
     # When a request is unauthentiated, here's where the processing occurs.
@@ -76,7 +81,7 @@ module Warden
         env["PATH_INFO"] = "/#{opts[:action]}"
         env["warden.options"] = opts
 
-        Warden::Manager._before_failure.each { |hook| hook.call(env, opts) }
+        _run_callbacks(:before_failure, env, opts)
         config.failure_app.call(env).to_a
       else
         raise "No Failure App provided"

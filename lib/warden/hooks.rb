@@ -2,6 +2,19 @@
 module Warden
   module Hooks
 
+    # Hook to _run_callbacks asserting for conditions.
+    def _run_callbacks(kind, *args) #:nodoc:
+      options = args.last # Last callback args MUST be a Hash
+
+      send("_#{kind}").each do |callback, conditions|
+        invalid = conditions.find do |key, value|
+          value.is_a?(Array) ? !value.include?(options[key]) : (value != options[key])
+        end
+
+        callback.call(*args) unless invalid
+      end
+    end
+
     # A callback hook set to run every time after a user is set.
     # This will happen the first time the user is either authenticated, accessed or manually set
     # during a request.  You can supply as many hooks as you like, and they will be run in order of decleration
@@ -24,9 +37,16 @@ module Warden
     #   end
     #
     # :api: public
-    def after_set_user(&block)
+    def after_set_user(options={}, &block)
       raise BlockNotGiven unless block_given?
-      _after_set_user << block
+
+      if options.key?(:only)
+        options[:event] = options.delete(:only)
+      elsif options.key?(:except)
+        options[:event] = [:set_user, :authentication, :fetch] - Array(options.delete(:except))
+      end
+
+      _after_set_user << [block, options]
     end
 
     # Provides access to the array of after_set_user blocks to run
@@ -35,32 +55,22 @@ module Warden
       @_after_set_user ||= []
     end
 
-    # A callback hook set to run after the first authentiation of a session.
-    # This will only happenwhen the session is first authenticated
-    #
-    # Parameters:
-    # <block> A block to contain logic for the callback
-    #   Block Parameters: |user, auth, opts|
-    #     user - The user object that is being set
-    #     auth - The raw authentication proxy object.
-    #     opts - any options passed into the authenticate call includeing :scope
-    #
-    # Example:
-    #
-    #   Warden::Manager.after_authentication do |user, auth, opts|
-    #     throw(:warden, opts) unless user.active?
-    #   end
+    # after_authentication is just a wrapper to after_set_user, which is only invoked
+    # when the user is set through the authentication path. The options and yielded arguments
+    # are the same as in after_set_user.
     #
     # :api: public
-    def after_authentication(&block)
-      raise BlockNotGiven unless block_given?
-      _after_authentication << block
+    def after_authentication(options={}, &block)
+      after_set_user(options.merge(:event => :authentication), &block)
     end
 
-    # Provides access to the array of after_authentication blocks
-    # :api: private
-    def _after_authentication
-      @_after_authentication ||= []
+    # after_fetch is just a wrapper to after_set_user, which is only invoked
+    # when the user is fetched from sesion. The options and yielded arguments
+    # are the same as in after_set_user.
+    #
+    # :api: public
+    def after_fetch(options={}, &block)
+      after_set_user(options.merge(:event => :fetch), &block)
     end
 
     # A callback that runs just prior to the failur application being called.
@@ -70,7 +80,7 @@ module Warden
     #
     # Parameters:
     # <block> A block to contain logic for the callback
-    #   Block Parameters: |user, auth, opts|
+    #   Block Parameters: |env, opts|
     #     env - The rack env hash
     #     opts - any options passed into the authenticate call includeing :scope
     #
@@ -82,8 +92,9 @@ module Warden
     #   end
     #
     # :api: public
-    def before_failure(&block)
-      _before_failure << block
+    def before_failure(options={}, &block)
+      raise BlockNotGiven unless block_given?
+      _before_failure << [block, options]
     end
 
     # Provides access to the callback array for before_failure
@@ -99,16 +110,17 @@ module Warden
     #   Block Parameters: |user, auth, scope|
     #     user - The authenticated user for the current scope
     #     auth - The warden proxy object
-    #     scope - current logout scope
+    #     opts - any options passed into the authenticate call including :scope
     #
     # Example:
-    #   Warden::Manager.before_logout do |user, auth, scope|
+    #   Warden::Manager.before_logout do |user, auth, opts|
     #     user.forget_me!
     #   end
     #
     # :api: public
-    def before_logout(&block)
-      _before_logout << block
+    def before_logout(options={}, &block)
+      raise BlockNotGiven unless block_given?
+      _before_logout << [block, options]
     end
 
     # Provides access to the callback array for before_logout

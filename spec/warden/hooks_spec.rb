@@ -43,38 +43,62 @@ describe "standard authentication hooks" do
       env['warden.spec.hook.foo'].should == "run foo"
       env['warden.spec.hook.bar'].should == "run bar"
     end
-  end
 
-  describe "after_authentication" do
-    before(:each) do
-      RAM = Warden::Manager unless defined?(RAM)
-      RAM._after_authentication.clear
+    context "after_authentication" do
+      it "should be a wrapper to after_set_user behavior" do
+        RAM.after_authentication{|u,a,o| a.env['warden.spec.hook.baz'] = "run baz"}
+        RAM.after_authentication{|u,a,o| a.env['warden.spec.hook.paz'] = "run paz"}
+        RAM.after_authentication{|u,a,o| o[:event].should == :authentication }
+        app = lambda{|e| e['warden'].authenticate(:pass); valid_response}
+        env = env_with_params
+        setup_rack(app).call(env)
+        env['warden.spec.hook.baz'].should == 'run baz'
+        env['warden.spec.hook.paz'].should == 'run paz'
+      end
+
+      it "should not be invoked on default after_set_user scenario" do
+        RAM.after_authentication{|u,a,o| fail}
+        app = lambda do |e|
+          e['warden'].set_user("foo")
+          valid_response
+        end
+        env = env_with_params
+        setup_rack(app).call(env)
+      end
     end
 
-    after(:each) do
-      RAM._after_authentication.clear
+    context "after_fetch" do
+      it "should be a wrapper to after_set_user behavior" do
+        RAM.after_fetch{|u,a,o| a.env['warden.spec.hook.baz'] = "run baz"}
+        RAM.after_fetch{|u,a,o| a.env['warden.spec.hook.paz'] = "run paz"}
+        RAM.after_fetch{|u,a,o| o[:event].should == :fetch }
+        env = env_with_params
+        setup_rack(lambda { valid_response }).call(env)
+        env['rack.session']['warden.user.default.key'] = "Foo"
+        env['warden'].user.should == "Foo"
+        env['warden.spec.hook.baz'].should == 'run baz'
+        env['warden.spec.hook.paz'].should == 'run paz'
+      end
+
+      it "should not be invoked on default after_set_user scenario" do
+        RAM.after_fetch{|u,a,o| fail}
+        app = lambda do |e|
+          e['warden'].set_user("foo")
+          valid_response
+        end
+        env = env_with_params
+        setup_rack(app).call(env)
+      end
+
+      it "should not be invoked if fetched user is nil" do
+        RAM.after_fetch{|u,a,o| fail}
+        env = env_with_params
+        setup_rack(lambda { valid_response }).call(env)
+        env['rack.session']['warden.user.default.key'] = nil
+        env['warden'].user.should be_nil
+      end
     end
 
-    it "should allow me to add an after_authentication hook" do
-      RAM.after_authentication{|user, auth, opts| "foo"}
-      RAM._after_authentication.should have(1).item
-    end
-
-    it "should allow me to add multiple after_authentication hooks" do
-      RAM.after_authentication{|u,a,o| "bar"}
-      RAM.after_authentication{|u,a,o| "baz"}
-      RAM._after_authentication.should have(2).items
-    end
-
-    it "should run each after_authentication hook after authentication is run" do
-      RAM.after_authentication{|u,a,o| a.env['warden.spec.hook.baz'] = "run baz"}
-      RAM.after_authentication{|u,a,o| a.env['warden.spec.hook.paz'] = "run paz"}
-      app = lambda{|e| e['warden'].authenticate(:pass); valid_response}
-      env = env_with_params
-      setup_rack(app).call(env)
-      env['warden.spec.hook.baz'].should == 'run baz'
-      env['warden.spec.hook.paz'].should == 'run paz'
-    end
   end
 
   describe "before_failure" do
@@ -125,14 +149,14 @@ describe "standard authentication hooks" do
     end
 
     it "should allow me to add multiple after_authetnication hooks" do
-      RAM.before_logout{|u,a,s| "bar"}
-      RAM.before_logout{|u,a,s| "baz"}
+      RAM.before_logout{|u,a,o| "bar"}
+      RAM.before_logout{|u,a,o| "baz"}
       RAM._before_logout.should have(2).items
     end
 
     it "should run each before_logout hook before logout is run" do
-      RAM.before_logout{|u,a,s| a.env['warden.spec.hook.lorem'] = "run lorem"}
-      RAM.before_logout{|u,a,s| a.env['warden.spec.hook.ipsum'] = "run ipsum"}
+      RAM.before_logout{|u,a,o| a.env['warden.spec.hook.lorem'] = "run lorem"}
+      RAM.before_logout{|u,a,o| a.env['warden.spec.hook.ipsum'] = "run ipsum"}
       app = lambda{|e| e['warden'].authenticate(:pass); valid_response}
       env = env_with_params
       setup_rack(app).call(env)
@@ -142,8 +166,8 @@ describe "standard authentication hooks" do
     end
 
     it "should run before_logout hook on different scopes" do
-      RAM.before_logout{|u,a,s| a.env["warden.spec.hook.scope1"] = "run scope1" if s == :scope1}
-      RAM.before_logout{|u,a,s| a.env["warden.spec.hook.scope2"] = "run scope2" if s == :scope2}
+      RAM.before_logout{|u,a,o| a.env["warden.spec.hook.scope1"] = "run scope1" if o[:scope] == :scope1}
+      RAM.before_logout{|u,a,o| a.env["warden.spec.hook.scope2"] = "run scope2" if o[:scope] == :scope2}
       app = lambda do |e|
         e['warden'].authenticate(:pass, :scope => :scope1)
         e['warden'].authenticate(:pass, :scope => :scope2)

@@ -107,12 +107,13 @@ module Warden
     #
     # :api: public
     def set_user(user, opts = {})
+      return unless user
       scope = (opts[:scope] ||= @config.default_scope)
       _store_user(user, scope) unless opts[:store] == false
       @users[scope] = user
 
       opts[:event] ||= :set_user
-      Warden::Manager._after_set_user.each{ |hook| hook.call(user, self, opts) }
+      manager._run_callbacks(:after_set_user, user, self, opts)
       user
     end
 
@@ -172,7 +173,7 @@ module Warden
 
       scopes.each do |scope|
         user = @users.delete(scope)
-        Warden::Manager._before_logout.each { |hook| hook.call(user, self, scope) }
+        manager._run_callbacks(:before_logout, user, self, :scope => scope)
 
         raw_session.delete("warden.user.#{scope}.session")
         _delete_user(user, scope)
@@ -235,10 +236,6 @@ module Warden
 
       if winning_strategy && winning_strategy.user
         set_user(winning_strategy.user, opts.merge!(:event => :authentication))
-
-        Warden::Manager._after_authentication.each do |hook|
-          hook.call(winning_strategy.user, self, opts)
-        end
       end
 
       [scope, opts]
