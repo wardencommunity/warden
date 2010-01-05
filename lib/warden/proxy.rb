@@ -7,19 +7,19 @@ module Warden
     # :api: private
     attr_accessor :winning_strategy
 
-    # An accessor to the rack env hash and the proxy owner
+    # An accessor to the rack env hash, the proxy owner and its config
     # :api: public
-    attr_reader :env, :manager
+    attr_reader :env, :manager, :config
 
     extend ::Forwardable
     include ::Warden::Mixins::Common
 
     # :api: private
-    def_delegators :manager, :config
     def_delegators :winning_strategy, :headers, :_status, :custom_response
 
     def initialize(env, manager) #:nodoc:
-      @env, @manager, @users = env, manager, {}
+      @env, @users = env, {}
+      @manager, @config = manager, manager.config
       errors # setup the error object in the session
     end
 
@@ -35,7 +35,7 @@ module Warden
     #   env['warden'].authenticated?(:admin)
     #
     # :api: public
-    def authenticated?(scope = config.default_scope)
+    def authenticated?(scope = @config.default_scope)
       result = !!user(scope)
       yield if block_given? && result
       result
@@ -43,7 +43,7 @@ module Warden
 
     # Same API as authenticated, but returns false when authenticated.
     # :api: public
-    def unauthenticated?(scope = config.default_scope)
+    def unauthenticated?(scope = @config.default_scope)
       result = !authenticated?(scope)
       yield if block_given? && result
       result
@@ -91,7 +91,7 @@ module Warden
     #   env['warden'].stored?(:default, :cookie)  #=> false
     #
     # :api: public
-    def stored?(scope = config.default_scope, serializer = nil)
+    def stored?(scope = @config.default_scope, serializer = nil)
       if serializer
         _find_serializer(serializer).stored?(scope)
       else
@@ -107,7 +107,7 @@ module Warden
     #
     # :api: public
     def set_user(user, opts = {})
-      scope = (opts[:scope] ||= config.default_scope)
+      scope = (opts[:scope] ||= @config.default_scope)
       _store_user(user, scope) unless opts[:store] == false
       @users[scope] = user
 
@@ -127,7 +127,7 @@ module Warden
     #   env['warden'].user(:admin)
     #
     # :api: public
-    def user(scope = config.default_scope)
+    def user(scope = @config.default_scope)
       @users[scope] ||= set_user(_fetch_user(scope), :scope => scope, :event => :fetch)
     end
 
@@ -142,7 +142,7 @@ module Warden
     #  env['warden'].session(:sudo)[:foo] = "bar"
     #
     # :api: public
-    def session(scope = config.default_scope)
+    def session(scope = @config.default_scope)
       raise NotAuthenticated, "#{scope.inspect} user is not logged in" unless authenticated?(scope)
       raw_session["warden.user.#{scope}.session"] ||= {}
     end
@@ -210,9 +210,9 @@ module Warden
     # :api: private
     def serializers # :nodoc:
       @serializers ||= begin
-        config.default_serializers.inject([]) do |array, s|
+        @config.default_serializers.inject([]) do |array, s|
           unless klass = Warden::Serializers[s]
-            raise "Invalid serializer #{s}" unless config.silence_missing_serializers?
+            raise "Invalid serializer #{s}" unless @config.silence_missing_serializers?
             next
           end
           array << klass.new(@env)
@@ -246,7 +246,7 @@ module Warden
 
     # :api: private
     def scope_from_args(args) # :nodoc:
-      Hash === args.last ? args.last.fetch(:scope, config.default_scope) : config.default_scope
+      Hash === args.last ? args.last.fetch(:scope, @config.default_scope) : @config.default_scope
     end
 
     # :api: private
@@ -256,12 +256,12 @@ module Warden
 
     # :api: private
     def _run_strategies_for(scope, args) #:nodoc:
-      strategies = args.empty? ? config.default_strategies : args
+      strategies = args.empty? ? @config.default_strategies : args
       raise "No Strategies Found" if strategies.empty?
 
       strategies.each do |s|
         unless klass = Warden::Strategies[s]
-          raise "Invalid strategy #{s}" unless args.empty? && config.silence_missing_strategies?
+          raise "Invalid strategy #{s}" unless args.empty? && @config.silence_missing_strategies?
           next
         end
 
