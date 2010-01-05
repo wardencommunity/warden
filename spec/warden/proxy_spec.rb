@@ -98,7 +98,7 @@ describe Warden::Proxy do
           valid_response
         end
         lambda {
-          setup_rack(app, :silence_missing_strategies => true, :default_strategies => :unknown).call(env)
+          setup_rack(app, :silence_missing_strategies => true, :default_strategies => [:unknown]).call(env)
         }.should_not raise_error
       end
 

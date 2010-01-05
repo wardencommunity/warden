@@ -41,7 +41,7 @@ module Warden
     #   env['warden'].authenticated?(:admin)
     #
     # :api: public
-    def authenticated?(scope = Warden::Manager.default_scope)
+    def authenticated?(scope = @config.default_scope)
       result = !!user(scope)
       yield if block_given? && result
       result
@@ -49,7 +49,7 @@ module Warden
 
     # Same API as authenticated, but returns false when authenticated.
     # :api: public
-    def unauthenticated?(scope = Warden::Manager.default_scope)
+    def unauthenticated?(scope = @config.default_scope)
       result = !authenticated?(scope)
       yield if block_given? && result
       result
@@ -97,7 +97,7 @@ module Warden
     #   env['warden'].stored?(:default, :cookie)  #=> false
     #
     # :api: public
-    def stored?(scope = Warden::Manager.default_scope, serializer = nil)
+    def stored?(scope = @config.default_scope, serializer = nil)
       if serializer
         find_serializer(serializer).stored?(scope)
       else
@@ -113,7 +113,7 @@ module Warden
     #
     # :api: public
     def set_user(user, opts = {})
-      scope = (opts[:scope] ||= Warden::Manager.default_scope)
+      scope = (opts[:scope] ||= @config.default_scope)
       _store_user(user, scope) unless opts[:store] == false
       @users[scope] = user
 
@@ -133,7 +133,7 @@ module Warden
     #   env['warden'].user(:admin)
     #
     # :api: public
-    def user(scope = Warden::Manager.default_scope)
+    def user(scope = @config.default_scope)
       @users[scope] ||= set_user(_fetch_user(scope), :scope => scope)
     end
 
@@ -148,7 +148,7 @@ module Warden
     #  env['warden'].session(:sudo)[:foo] = "bar"
     #
     # :api: public
-    def session(scope = Warden::Manager.default_scope)
+    def session(scope = @config.default_scope)
       raise NotAuthenticated, "#{scope.inspect} user is not logged in" unless authenticated?(scope)
       raw_session["warden.user.#{scope}.session"] ||= {}
     end
@@ -268,7 +268,7 @@ module Warden
 
     # :api: private
     def scope_from_args(args) # :nodoc:
-      Hash === args.last ? args.last.fetch(:scope, Warden::Manager.default_scope) : Warden::Manager.default_scope
+      Hash === args.last ? args.last.fetch(:scope, @config.default_scope) : @config.default_scope
     end
 
     # :api: private
@@ -288,14 +288,14 @@ module Warden
 
     # Does the work of storing the user in stores.
     # :api: private
-    def _store_user(user, scope = Warden::Manager.default_scope) # :nodoc:
+    def _store_user(user, scope = @config.default_scope) # :nodoc:
       return unless user
       serializers.each { |s| s.store(user, scope) }
     end
 
     # Does the work of fetching the user from the first store.
     # :api: private
-    def _fetch_user(scope = Warden::Manager.default_scope) # :nodoc:
+    def _fetch_user(scope = @config.default_scope) # :nodoc:
       serializers.each do |s|
         user = s.fetch(scope)
         return user if user
@@ -305,7 +305,7 @@ module Warden
 
     # Does the work of deleteing the user in all stores.
     # :api: private
-    def _delete_user(user, scope = Warden::Manager.default_scope) # :nodoc:
+    def _delete_user(user, scope = @config.default_scope) # :nodoc:
       serializers.each { |s| s.delete(scope, user) }
     end
 

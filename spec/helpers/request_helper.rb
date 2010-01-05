@@ -12,16 +12,14 @@ module Warden::Spec
 
     def setup_rack(app = nil, opts = {}, &block)
       app ||= block if block_given?
+
+      opts[:failure_app]         ||= Warden::Spec::Helpers::FAILURE_APP
       opts[:default_strategies]  ||= [:password]
       opts[:default_serializers] ||= [:session]
-      opts[:failure_app] ||= Warden::Spec::Helpers::FAILURE_APP
+
       Rack::Builder.new do
         use Warden::Spec::Helpers::Session
-        use Warden::Manager, opts do |manager|
-          manager.failure_app = Warden::Spec::Helpers::FAILURE_APP
-          manager.default_strategies *opts[:default_strategies]
-          manager.default_serializers *opts[:default_serializers]
-        end
+        use Warden::Manager, opts
         run app
       end
     end
