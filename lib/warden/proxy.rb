@@ -214,9 +214,10 @@ module Warden
         @config.default_serializers.inject([]) do |array, s|
           unless klass = Warden::Serializers[s]
             raise "Invalid serializer #{s}" unless @config.silence_missing_serializers?
-            next
+            array
+          else
+            array << klass.new(@env)
           end
-          array << klass.new(@env)
         end
       end
     end

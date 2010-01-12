@@ -239,6 +239,19 @@ describe Warden::Proxy do
     end
   end
 
+  it "should not raise errors with missing serializers" do
+    env = env_with_params('/')
+    app = lambda do |env|
+      env['warden'].authenticate
+      env['warden'].serializers.size.should == 1
+      env['warden'].serializers.first.should be_kind_of(Warden::Serializers[:session])
+      valid_response
+    end
+    lambda {
+      setup_rack(app, :silence_missing_serializers => true, :default_serializers => [:session, :unknown]).call(env)
+    }.should_not raise_error
+  end
+
   describe "set user" do
     it "should store the user into the session" do
       env = env_with_params("/")
