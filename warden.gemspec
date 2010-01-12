@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{warden}
-  s.version = "0.7.0"
+  s.version = "0.8.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Daniel Neighman"]
-  s.date = %q{2010-01-04}
+  s.date = %q{2010-01-07}
   s.email = %q{has.sox@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -23,10 +23,12 @@ Gem::Specification.new do |s|
      "Rakefile",
      "TODO.textile",
      "lib/warden.rb",
+     "lib/warden/config.rb",
      "lib/warden/declarable.rb",
      "lib/warden/errors.rb",
      "lib/warden/hooks.rb",
      "lib/warden/manager.rb",
+     "lib/warden/manager_deprecation.rb",
      "lib/warden/mixins/common.rb",
      "lib/warden/proxy.rb",
      "lib/warden/serializers.rb",
@@ -42,10 +44,10 @@ Gem::Specification.new do |s|
      "spec/helpers/strategies/failz.rb",
      "spec/helpers/strategies/invalid.rb",
      "spec/helpers/strategies/pass.rb",
-     "spec/helpers/strategies/pass_without_user.rb",
      "spec/helpers/strategies/password.rb",
      "spec/spec_helper.rb",
      "spec/warden/authenticated_data_store_spec.rb",
+     "spec/warden/config_spec.rb",
      "spec/warden/errors_spec.rb",
      "spec/warden/hooks_spec.rb",
      "spec/warden/manager_spec.rb",
@@ -69,10 +71,10 @@ Gem::Specification.new do |s|
      "spec/helpers/strategies/failz.rb",
      "spec/helpers/strategies/invalid.rb",
      "spec/helpers/strategies/pass.rb",
-     "spec/helpers/strategies/pass_without_user.rb",
      "spec/helpers/strategies/password.rb",
      "spec/spec_helper.rb",
      "spec/warden/authenticated_data_store_spec.rb",
+     "spec/warden/config_spec.rb",
      "spec/warden/errors_spec.rb",
      "spec/warden/hooks_spec.rb",
      "spec/warden/manager_spec.rb",
