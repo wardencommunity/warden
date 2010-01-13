@@ -270,7 +270,6 @@ module Warden
     # :api: private
     def _run_strategies_for(scope, args) #:nodoc:
       strategies = args.empty? ? @config.default_strategies : args
-      raise "No Strategies Found" if strategies.empty?
 
       strategies.each do |s|
         unless klass = Warden::Strategies[s]
