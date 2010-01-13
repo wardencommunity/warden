@@ -89,19 +89,6 @@ module Warden
       user(scope)
     end
 
-    # Checks if the given scope is stored in session. Different from authenticated?, this method
-    # does not serialize values from session.
-    #
-    # Example
-    #   env['warden'].set_user(@user)
-    #   env['warden'].stored?                     #=> true
-    #   env['warden'].stored?(:default)           #=> true
-    #
-    # :api: public
-    def stored?(scope = @config.default_scope)
-      session_serializer.stored?(scope)
-    end
-
     # Manually set the user into the session and auth proxy
     #
     # Parameters:
@@ -214,7 +201,6 @@ module Warden
 
     # Add warden cookies to the response streamed back.
     # :api: private
-    # TODO Test me since I was removed.
     def respond!(args)
       return args if warden_cookies.empty?
       response = Rack::Response.new(args[2], args[0], args[1])
