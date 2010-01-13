@@ -63,5 +63,17 @@ module Warden
     def strategies
       Warden::Strategies
     end
+
+    # Hook from configuration to serialize_into_session.
+    # :api: public
+    def serialize_into_session(*args, &block)
+      Warden::Manager.serialize_into_session(*args, &block)
+    end
+
+    # Hook from configuration to serialize_from_session.
+    # :api: public
+    def serialize_from_session(*args, &block)
+      Warden::Manager.serialize_from_session(*args, &block)
+    end
   end
 end
