@@ -46,6 +46,18 @@ describe Warden::Proxy do
       resp.first.should == 200
     end
 
+    it "should set warden cookies" do
+      env = env_with_params
+      app = lambda do |env|
+        env['warden'].warden_cookies[:foo] = { :value => "bar"}
+        env['warden'].warden_cookies[:baz] = nil
+        valid_response
+      end
+      cookies = setup_rack(app).call(env)[1]["Set-Cookie"].to_s
+      cookies.should match(/^foo=bar$/)
+      cookies.should match(/^baz=;/)
+    end
+
     describe "authenticate!" do
 
       it "should allow authentication in my application" do
@@ -495,7 +507,6 @@ describe Warden::Proxy do
       end
     end
 
-
     describe "unauthenticated?" do
       describe "negative unauthentication" do
         before do
@@ -569,7 +580,6 @@ describe Warden::Proxy do
   end
 
   describe "attributes" do
-
     def def_app(&blk)
       @app = setup_rack(blk)
     end
