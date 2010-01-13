@@ -23,6 +23,21 @@ module Warden
       errors # setup the error object in the session
     end
 
+    # Add warden cookies to the response streamed back.
+    def respond!(args)
+      return args if warden_cookies.empty?
+      response = Rack::Response.new(args[2], args[0], args[1])
+
+      warden_cookies.each do |key, value|
+        if value.is_a?(Hash)
+          response.set_cookie key, value
+        else
+          response.delete_cookie key
+        end
+      end
+      response.to_a
+    end
+
     # Check to see if there is an authenticated user for the given scope.
     # When scope is not specified, Warden::Manager.default_scope is assumed.
     # This will not try to reconstitute the user from the session and will simply check for the

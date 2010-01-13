@@ -7,18 +7,21 @@ describe Warden::Serializers::Cookie do
   end
 
   def set_cookie!
-    @env['HTTP_COOKIE'] = @cookie.response.headers['Set-Cookie']
-  end
-
-  def read_cookie
-    cookie = @cookie.response.headers['Set-Cookie']
-    cookie = cookie.first if cookie.is_a?(Array)
-    cookie.split(";").first
+    response = Rack::Response.new
+    @cookie.warden_cookies.each do |key, value|
+      if value.is_a?(Hash)
+        response.set_cookie key, value
+      else
+        response.delete_cookie key
+      end
+    end
+    @env['HTTP_COOKIE'] = response.headers['Set-Cookie']
   end
 
   it "should store data for the default scope" do
     @cookie.store("user", :default)
-    read_cookie.should == "warden.user.default.key=user"
+    @cookie.warden_cookies.should have_key("warden.user.default.key")
+    @cookie.warden_cookies["warden.user.default.key"][:value].should == "user"
   end
 
   it "should check if a data is stored or not" do
@@ -47,7 +50,8 @@ describe Warden::Serializers::Cookie do
     set_cookie!
     @cookie.fetch(:default).should == "user"
     @cookie.delete(:default)
-    read_cookie.should == "warden.user.default.key="
+    @cookie.warden_cookies.should have_key("warden.user.default.key")
+    @cookie.warden_cookies["warden.user.default.key"].should be_nil
   end
 
   it "should delete information from store if user cannot be retrieved" do
@@ -55,6 +59,7 @@ describe Warden::Serializers::Cookie do
     set_cookie!
     @cookie.instance_eval "def deserialize(key); nil; end" 
     @cookie.fetch(:default)
-    read_cookie.should == "warden.user.default.key="
+    @cookie.warden_cookies.should have_key("warden.user.default.key")
+    @cookie.warden_cookies["warden.user.default.key"].should be_nil
   end
 end

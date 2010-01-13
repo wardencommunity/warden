@@ -18,11 +18,11 @@ module Warden
         @request ||= Rack::Request.new(@env)
       end # request
 
-      # Convenience method to access the rack response. This should be replaced by the
-      # actual response returned to the client.
+      # Provides a warden repository for cookies. Those are sent to the client
+      # when the response is streamed back from the app.
       # :api: public
-      def response
-        @response ||= Rack::Response.new(@env)
+      def warden_cookies
+        env['warden.cookies'] ||= {}
       end # response
 
       # Convenience method to access the rack request params

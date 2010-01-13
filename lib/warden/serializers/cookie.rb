@@ -5,7 +5,7 @@ module Warden
     # methods in order to use it.
     class Cookie < Base
       def store(user, scope)
-        response.set_cookie key_for(scope), default_options(user)
+        warden_cookies[key_for(scope)] = default_options(user)
       end
 
       def fetch(scope)
@@ -21,7 +21,7 @@ module Warden
       end
 
       def delete(scope, user=nil)
-        response.delete_cookie(key_for(scope))
+        warden_cookies[key_for(scope)] = nil
       end
 
       def default_options(user)
