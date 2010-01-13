@@ -1,10 +1,10 @@
-require File.dirname(__FILE__) + '/../../spec_helper'
+require File.dirname(__FILE__) + '/../spec_helper'
 
-describe Warden::Serializers::Session do
+describe Warden::SessionSerializer do
   before(:each) do
     @env = env_with_params
     @env['rack.session'] ||= {}
-    @session = Warden::Serializers::Session.new(@env)
+    @session = Warden::SessionSerializer.new(@env)
   end
 
   it "should store data for the default scope" do

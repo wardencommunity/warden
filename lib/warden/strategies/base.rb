@@ -34,13 +34,9 @@ module Warden
       #:api: private
       attr_accessor :result, :custom_response
 
-      # Setup for redirection
-      # :api: private
-      attr_reader   :_status
-
-      # Accessor for the rack env
+      # Accessors for the rack env
       # :api: public
-      attr_reader   :env, :scope
+      attr_reader   :env, :scope, :status
       include ::Warden::Mixins::Common
 
       # :api: private
@@ -127,7 +123,7 @@ module Warden
       # :api: public
       def redirect!(url, params = {}, opts = {})
         halt!
-        @_status = opts[:permanent] ? 301 : 302
+        @status = opts[:permanent] ? 301 : 302
         headers["Location"] = url
         headers["Location"] << "?" << Rack::Utils.build_query(params) unless params.empty?
         headers["Content-Type"] = opts[:content_type] || 'text/plain'
