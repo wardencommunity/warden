@@ -1,8 +1,10 @@
 $TESTING=true
-require 'rubygems'
-require 'rack'
+
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 require 'warden'
+
+require 'rubygems'
+require 'rack'
 
 Dir[File.join(File.dirname(__FILE__), "helpers", "**/*.rb")].each do |f|
   require f
