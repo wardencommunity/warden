@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{warden}
-  s.version = "0.8.1"
+  s.version = "0.9.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Daniel Neighman"]
-  s.date = %q{2010-01-12}
+  s.date = %q{2010-01-14}
   s.email = %q{has.sox@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -24,17 +24,13 @@ Gem::Specification.new do |s|
      "TODO.textile",
      "lib/warden.rb",
      "lib/warden/config.rb",
-     "lib/warden/declarable.rb",
      "lib/warden/errors.rb",
      "lib/warden/hooks.rb",
      "lib/warden/manager.rb",
      "lib/warden/manager_deprecation.rb",
      "lib/warden/mixins/common.rb",
      "lib/warden/proxy.rb",
-     "lib/warden/serializers.rb",
-     "lib/warden/serializers/base.rb",
-     "lib/warden/serializers/cookie.rb",
-     "lib/warden/serializers/session.rb",
+     "lib/warden/session_serializer.rb",
      "lib/warden/strategies.rb",
      "lib/warden/strategies/base.rb",
      "lib/warden/version.rb",
@@ -52,9 +48,7 @@ Gem::Specification.new do |s|
      "spec/warden/hooks_spec.rb",
      "spec/warden/manager_spec.rb",
      "spec/warden/proxy_spec.rb",
-     "spec/warden/serializers/cookie_spec.rb",
-     "spec/warden/serializers/session_spec.rb",
-     "spec/warden/serializers_spec.rb",
+     "spec/warden/session_serializer_spec.rb",
      "spec/warden/strategies/base_spec.rb",
      "spec/warden/strategies_spec.rb",
      "spec/warden_spec.rb",
@@ -79,9 +73,7 @@ Gem::Specification.new do |s|
      "spec/warden/hooks_spec.rb",
      "spec/warden/manager_spec.rb",
      "spec/warden/proxy_spec.rb",
-     "spec/warden/serializers/cookie_spec.rb",
-     "spec/warden/serializers/session_spec.rb",
-     "spec/warden/serializers_spec.rb",
+     "spec/warden/session_serializer_spec.rb",
      "spec/warden/strategies/base_spec.rb",
      "spec/warden/strategies_spec.rb",
      "spec/warden_spec.rb"

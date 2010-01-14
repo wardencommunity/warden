@@ -263,10 +263,10 @@ module Warden
       _run_strategies_for(scope, args)
 
       if winning_strategy && winning_strategy.user
-        user = set_user(winning_strategy.user, opts.merge!(:event => :authentication))
+        set_user(winning_strategy.user, opts.merge!(:event => :authentication))
       end
 
-      [user, opts]
+      [@users[scope], opts]
     end
 
     def _retrieve_scope_and_opts(args) #:nodoc:
