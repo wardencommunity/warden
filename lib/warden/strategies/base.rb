@@ -31,26 +31,39 @@ module Warden
       # :api: public
       attr_accessor :user, :message
 
-      #:api: private
+      # :api: private
       attr_accessor :result, :custom_response
 
-      # Accessors for the rack env
       # :api: public
-      attr_reader   :env, :scope, :status
+      attr_reader :env, :scope, :status
+
       include ::Warden::Mixins::Common
 
       # :api: private
       def initialize(env, scope=nil) # :nodoc:
         @env, @scope = env, scope
-        @_status, @headers = nil, {}
-        @halted = false
+        @status, @headers = nil, {}
+        @halted, @performed = false, false
       end
 
       # The method that is called from above. This method calls the underlying authenticate! method
       # :api: private
       def _run! # :nodoc:
-        result = authenticate!
+        @performed = true
+        authenticate!
         self
+      end
+
+      # Returns if this strategy was already performed.
+      # :api: private
+      def performed? #:nodoc:
+        @performed
+      end
+
+      # Marks this strategy as not performed.
+      # :api: private
+      def clear!
+        @performed = false
       end
 
       # Acts as a guarding method for the strategy.

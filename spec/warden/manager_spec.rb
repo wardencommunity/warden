@@ -218,15 +218,7 @@ describe Warden::Manager do
     end
   end
 
-  it "should allow me to access serializers through manager" do
-    Rack::Builder.new do
-      use Warden::Manager do |manager|
-        manager.serializers.should == Warden::Serializers
-      end
-    end
-  end
-
-  it "should allow me to access serializers through manager" do
+  it "should allow me to access strategies through manager" do
     Rack::Builder.new do
       use Warden::Manager do |manager|
         manager.strategies.should == Warden::Strategies

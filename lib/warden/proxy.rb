@@ -24,7 +24,7 @@ module Warden
       errors # setup the error object in the session
     end
 
-    # Points to a SessionSerializer instance repsonsible for handling
+    # Points to a SessionSerializer instance responsible for handling
     # everything related with storing, fetching and removing the user
     # session.
     # :api: public
@@ -32,13 +32,79 @@ module Warden
       @session_serializer ||= Warden::SessionSerializer.new(@env)
     end
 
-    # Check to see if there is an authenticated user for the given scope.
-    # When scope is not specified, Warden::Manager.default_scope is assumed.
-    # This will not try to reconstitute the user from the session and will simply check for the
-    # existance of a session key
+    # Clear the cache of performed strategies so far. It has the same API
+    # as authenticate, allowing you to clear an specific strategies for
+    # given scope:
     #
     # Parameters:
-    #   scope - the scope to check for authentication.  Defaults to :default
+    #   args - a list of symbols (labels) that name the strategies to attempt
+    #   opts - an options hash that contains the :scope of the user to check
+    #
+    # Example:
+    #   # Clear all strategies for the configured default_scope
+    #   env['auth'].clear_strategies_cache!
+    #
+    #   # Clear all strategies for the :admin scope
+    #   env['auth'].clear_strategies_cache!(:scope => :admin)
+    #
+    #   # Clear password strategy for the :admin scope
+    #   env['auth'].clear_strategies_cache!(:password, :scope => :admin)
+    #
+    # :api: public
+    def clear_strategies_cache!(*args)
+      scope, opts = _retrieve_scope_and_opts(args)
+
+      @strategies[scope].each do |k, v|
+        v.clear! if args.empty? || args.include?(k)
+      end
+    end
+
+    # Run the authentiation strategies for the given strategies.
+    # If there is already a user logged in for a given scope, the strategies are not run
+    # This does not halt the flow of control and is a passive attempt to authenticate only
+    # When scope is not specified, the default_scope is assumed.
+    #
+    # Parameters:
+    #   args - a list of symbols (labels) that name the strategies to attempt
+    #   opts - an options hash that contains the :scope of the user to check
+    #
+    # Example:
+    #   env['warden'].authenticate(:password, :basic, :scope => :sudo)
+    #
+    # :api: public
+    def authenticate(*args)
+      user, opts = _perform_authentication(*args)
+      user
+    end
+
+    # Same API as authenticated, but returns a boolean instead of an user.
+    # The difference between this method (authenticate?) and authenticated?
+    # is that the former always run strategies and the second relies on already
+    # performed ones.
+    # :api: public
+    def authenticate?(*args)
+      !!authenticate(*args)
+    end
+
+    # The same as +authenticate+ except on failure it will throw an :warden symbol causing the request to be halted
+    # and rendered through the +failure_app+
+    #
+    # Example
+    #   env['warden'].authenticate!(:password, :scope => :publisher) # throws if it cannot authenticate
+    #
+    # :api: public
+    def authenticate!(*args)
+      user, opts = _perform_authentication(*args)
+      throw(:warden, opts) unless user
+      user
+    end
+
+    # Check to see if there is an authenticated user for the given scope.
+    # This brings the user from the session, but does not run strategies before doing so.
+    # If you want strategies to be run, please check authenticate?.
+    #
+    # Parameters:
+    #   scope - the scope to check for authentication. Defaults to default_scope
     #
     # Example:
     #   env['warden'].authenticated?(:admin)
@@ -50,43 +116,12 @@ module Warden
       result
     end
 
-    # Same API as authenticated, but returns false when authenticated.
+    # Same API as authenticated?, but returns false when authenticated.
     # :api: public
     def unauthenticated?(scope = @config.default_scope)
       result = !authenticated?(scope)
       yield if block_given? && result
       result
-    end
-
-    # Run the authentiation strategies for the given strategies.
-    # If there is already a user logged in for a given scope, the strategies are not run
-    # This does not halt the flow of control and is a passive attempt to authenticate only
-    # When scope is not specified, Warden::Manager.default_scope is assumed.
-    #
-    # Parameters:
-    #   args - a list of symbols (labels) that name the strategies to attempt
-    #   opts - an options hash that contains the :scope of the user to check
-    #
-    # Example:
-    #   env['auth'].authenticate(:password, :basic, :scope => :sudo)
-    #
-    # :api: public
-    def authenticate(*args)
-      scope, opts = _perform_authentication(*args)
-      user(scope)
-    end
-
-    # The same as +authenticate+ except on failure it will throw an :warden symbol causing the request to be halted
-    # and rendered through the +failure_app+
-    #
-    # Example
-    #   env['warden'].authenticate!(:password, :scope => :publisher) # throws if it cannot authenticate
-    #
-    # :api: public
-    def authenticate!(*args)
-      scope, opts = _perform_authentication(*args)
-      throw(:warden, opts) if !user(scope)
-      user(scope)
     end
 
     # Manually set the user into the session and auth proxy
@@ -109,7 +144,8 @@ module Warden
     end
 
     # Provides acccess to the user object in a given scope for a request.
-    # will be nil if not logged in
+    # Will be nil if not logged in. Please notice that this method does not
+    # perform strategies.
     #
     # Example:
     #   # without scope (default user)
@@ -218,18 +254,24 @@ module Warden
     private
 
     def _perform_authentication(*args)
-      opts  = args.last.is_a?(Hash) ? args.pop : {}
-      scope = opts[:scope] || @config.default_scope
+      scope, opts = _retrieve_scope_and_opts(args)
+      user = nil
 
       # Look for an existing user in the session for this scope.
       # If there was no user in the session. See if we can get one from the request.
-      return scope, opts if user(scope)
+      return user, opts if user = user(scope)
       _run_strategies_for(scope, args)
 
       if winning_strategy && winning_strategy.user
-        set_user(winning_strategy.user, opts.merge!(:event => :authentication))
+        user = set_user(winning_strategy.user, opts.merge!(:event => :authentication))
       end
 
+      [user, opts]
+    end
+
+    def _retrieve_scope_and_opts(args) #:nodoc:
+      opts  = args.last.is_a?(Hash) ? args.pop : {}
+      scope = opts[:scope] || @config.default_scope
       [scope, opts]
     end
 
@@ -239,7 +281,7 @@ module Warden
 
       strategies.each do |name|
         strategy = _fetch_strategy(name, scope)
-        next unless strategy && strategy.valid?
+        next unless strategy && !strategy.performed? && strategy.valid?
 
         self.winning_strategy = strategy
         strategy._run!
