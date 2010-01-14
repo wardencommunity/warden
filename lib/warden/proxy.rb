@@ -235,22 +235,6 @@ module Warden
       !!@custom_failure
     end
 
-    # Add warden cookies to the response streamed back.
-    # :api: private
-    def respond!(args)
-      return args if warden_cookies.empty?
-      response = Rack::Response.new(args[2], args[0], args[1])
-
-      warden_cookies.each do |key, value|
-        if value.is_a?(Hash)
-          response.set_cookie key, value
-        else
-          response.delete_cookie key
-        end
-      end
-      response.to_a
-    end
-
     private
 
     def _perform_authentication(*args)

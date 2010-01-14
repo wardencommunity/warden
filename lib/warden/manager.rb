@@ -33,18 +33,19 @@ module Warden
       result = catch(:warden) do
         @app.call(env)
       end
-      result ||= {}
 
-      response = if result.is_a?(Hash)
+      result ||= {}
+      case result
+      when Array
+        if result.first == 401
+          process_unauthenticated({:original_response => result, :action => :unauthenticated}, env)
+        else
+          result
+        end
+      when Hash
         result[:action] ||= :unauthenticated
         process_unauthenticated(result, env)
-      elsif result.is_a?(Array) && result.first == 401
-        process_unauthenticated({:original_response => result, :action => :unauthenticated}, env)
-      else
-        result
       end
-
-      env['warden'].respond!(response)
     end
 
     # :api: private

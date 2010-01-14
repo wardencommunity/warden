@@ -20,18 +20,6 @@ describe Warden::Proxy do
       env_for('/', 'HTTP_VERSION' => '1.1', 'REQUEST_METHOD' => 'GET')
   end # before(:each)
 
-  it "should set warden cookies" do
-    env = env_with_params
-    app = lambda do |env|
-      env['warden'].warden_cookies[:foo] = { :value => "bar"}
-      env['warden'].warden_cookies[:baz] = nil
-      valid_response
-    end
-    cookies = setup_rack(app).call(env)[1]["Set-Cookie"].to_s
-    cookies.should match(/^foo=bar$/)
-    cookies.should match(/^baz=;/)
-  end
-
   describe "authentication" do
 
     it "should not check the authentication if it is not checked" do
