@@ -15,6 +15,7 @@ begin
     gem.authors = ["Daniel Neighman"]
     gem.rubyforge_project = "warden"
     gem.add_dependency "rack", ">= 1.0.0"
+    gem.add_development_dependency "rspec", ">= 1.0.0"
   end
 
   Jeweler::GemcutterTasks.new
