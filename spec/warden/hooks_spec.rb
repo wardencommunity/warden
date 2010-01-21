@@ -93,7 +93,7 @@ describe "standard authentication hooks" do
         RAM.after_fetch{|u,a,o| a.env['warden.spec.hook.paz'] = "run paz"}
         RAM.after_fetch{|u,a,o| o[:event].should == :fetch }
         env = env_with_params
-        setup_rack(lambda { valid_response }).call(env)
+        setup_rack(lambda { |e| valid_response }).call(env)
         env['rack.session']['warden.user.default.key'] = "Foo"
         env['warden'].user.should == "Foo"
         env['warden.spec.hook.baz'].should == 'run baz'
@@ -113,7 +113,7 @@ describe "standard authentication hooks" do
       it "should not be invoked if fetched user is nil" do
         RAM.after_fetch{|u,a,o| fail}
         env = env_with_params
-        setup_rack(lambda { valid_response }).call(env)
+        setup_rack(lambda { |e| valid_response }).call(env)
         env['rack.session']['warden.user.default.key'] = nil
         env['warden'].user.should be_nil
       end

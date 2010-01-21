@@ -415,7 +415,7 @@ describe Warden::Proxy do
       @app = setup_rack(@app, :default_serializers => [:cookie])
       @env['warden.spec.which_logout'] = :default
       response = @app.call(@env)
-      response[1]['Set-Cookie'].first.split(";").first.should == "warden.user.default.key="
+      [*response[1]['Set-Cookie']].first.split(";").first.should == "warden.user.default.key="
     end
 
     it "should clear out the session by calling reset_session! so that plugins can setup their own session clearing" do
