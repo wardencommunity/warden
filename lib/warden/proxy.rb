@@ -42,13 +42,13 @@ module Warden
     #
     # Example:
     #   # Clear all strategies for the configured default_scope
-    #   env['auth'].clear_strategies_cache!
+    #   env['warden'].clear_strategies_cache!
     #
     #   # Clear all strategies for the :admin scope
-    #   env['auth'].clear_strategies_cache!(:scope => :admin)
+    #   env['warden'].clear_strategies_cache!(:scope => :admin)
     #
     #   # Clear password strategy for the :admin scope
-    #   env['auth'].clear_strategies_cache!(:password, :scope => :admin)
+    #   env['warden'].clear_strategies_cache!(:password, :scope => :admin)
     #
     # :api: public
     def clear_strategies_cache!(*args)
@@ -77,13 +77,15 @@ module Warden
       user
     end
 
-    # Same API as authenticated, but returns a boolean instead of an user.
+    # Same API as authenticated, but returns a boolean instead of a user.
     # The difference between this method (authenticate?) and authenticated?
-    # is that the former always run strategies and the second relies on already
-    # performed ones.
+    # is that the former will run strategies if the user has not yet been authenticated,
+    # and the second relies on already performed ones.
     # :api: public
     def authenticate?(*args)
-      !!authenticate(*args)
+      result = !!authenticate(*args)
+      yield if result && block_given?
+      result
     end
 
     # The same as +authenticate+ except on failure it will throw an :warden symbol causing the request to be halted
