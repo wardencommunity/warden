@@ -168,7 +168,7 @@ describe "standard authentication hooks" do
       RAM._before_logout.should have(1).item
     end
 
-    it "should allow me to add multiple after_authetnication hooks" do
+    it "should allow me to add multiple after_authentication hooks" do
       RAM.before_logout{|u,a,o| "bar"}
       RAM.before_logout{|u,a,o| "baz"}
       RAM._before_logout.should have(2).items
@@ -185,7 +185,7 @@ describe "standard authentication hooks" do
       env['warden.spec.hook.ipsum'].should == 'run ipsum'
     end
 
-    it "should run before_logout hook for a socufued scope" do
+    it "should run before_logout hook for a specified scope" do
       RAM.before_logout(:scope => :scope1){|u,a,o| a.env["warden.spec.hook.a"] << :scope1 }
       RAM.before_logout(:scope => [:scope2]){|u,a,o| a.env["warden.spec.hook.b"] << :scope2 }
 

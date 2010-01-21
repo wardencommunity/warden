@@ -33,23 +33,50 @@ module Warden
       result = catch(:warden) do
         @app.call(env)
       end
-      result ||= {}
 
-      response = if result.is_a?(Hash)
+      result ||= {}
+      case result
+      when Array
+        if result.first == 401
+          process_unauthenticated({:original_response => result, :action => :unauthenticated}, env)
+        else
+          result
+        end
+      when Hash
         result[:action] ||= :unauthenticated
         process_unauthenticated(result, env)
-      elsif result.is_a?(Array) && result.first == 401
-        process_unauthenticated({:original_response => result, :action => :unauthenticated}, env)
-      else
-        result
       end
-
-      env['warden'].respond!(response)
     end
 
     # :api: private
     def _run_callbacks(*args) #:nodoc:
       self.class._run_callbacks(*args)
+    end
+
+    class << self
+      # Prepares the user to serialize into the session.
+      # Any object that can be serialized into the session in some way can be used as a "user" object
+      # Generally however complex object should not be stored in the session.
+      # If possible store only a "key" of the user object that will allow you to reconstitute it.
+      #
+      # Example:
+      #   Warden::Manager.serialize_into_session{ |user| user.id }
+      #
+      # :api: public
+      def serialize_into_session(&block)
+        Warden::SessionSerializer.send :define_method, :serialize, &block
+      end
+
+      # Reconstitues the user from the session.
+      # Use the results of user_session_key to reconstitue the user from the session on requests after the initial login
+      #
+      # Example:
+      #   Warden::Manager.serialize_from_session{ |id| User.get(id) }
+      #
+      # :api: public
+      def serialize_from_session(&block)
+        Warden::SessionSerializer.send :define_method, :deserialize, &block
+      end
     end
 
   private
@@ -62,7 +89,7 @@ module Warden
 
       case action
         when :redirect
-          [env['warden']._status, env['warden'].headers, [env['warden'].message || "You are being redirected to #{env['warden'].headers['Location']}"]]
+          [env['warden'].status, env['warden'].headers, [env['warden'].message || "You are being redirected to #{env['warden'].headers['Location']}"]]
         when :custom
           env['warden'].custom_response
         else

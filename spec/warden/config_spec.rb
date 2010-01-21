@@ -23,24 +23,9 @@ describe Warden::Config do
     @config.default_strategies.should == [:foo, :bar]
   end
 
-  it "should allow to read and set default serializers" do
-    @config.default_serializers :foo, :bar
-    @config.default_serializers.should == [:foo, :bar]
-  end
-
-  it "should ship with default serializers and strategies" do
-    @config.default_strategies.should == []
-    @config.default_serializers.should == [:session]
-  end
-
   it "should allow to silence missing strategies" do
     @config.silence_missing_strategies!
     @config.silence_missing_strategies?.should be_true
-  end
-
-  it "should allow to silence missing serializers" do
-    @config.silence_missing_serializers!
-    @config.silence_missing_serializers?.should be_true
   end
 
   it "should set the default_scope" do

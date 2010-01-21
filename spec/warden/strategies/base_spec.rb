@@ -43,7 +43,19 @@ describe Warden::Strategies::Base do
     strategy._run!
     strategy.user.should == "foo"
   end
-  
+
+  it "should be performed after run" do
+    RAS.add(:foobar) do
+      def authenticate!; end
+    end
+    strategy = RAS[:foobar].new(env_with_params)
+    strategy.should_not be_performed
+    strategy._run!
+    strategy.should be_performed
+    strategy.clear!
+    strategy.should_not be_performed
+  end
+
   it "should set the scope" do
     RAS.add(:foobar) do
       def authenticate!

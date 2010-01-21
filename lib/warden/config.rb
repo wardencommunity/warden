@@ -34,10 +34,8 @@ module Warden
 
     def initialize(other={})
       merge!(other)
-
       self[:default_scope]       ||= :default
       self[:default_strategies]  ||= []
-      self[:default_serializers] ||= [ :session ]
     end
 
     # Do not raise an error if a missing strategy is given by default.
@@ -50,16 +48,6 @@ module Warden
       !!self[:silence_missing_strategies]
     end
 
-    # Do not raise an error if a missing serializer is given by default.
-    # :api: plugin
-    def silence_missing_serializers!
-      self[:silence_missing_serializers] = true
-    end
-
-    def silence_missing_serializers? #:nodoc:
-      !!self[:silence_missing_serializers]
-    end
-
     # Set the default strategies to use.
     # :api: public
     def default_strategies(*strategies)
@@ -70,26 +58,22 @@ module Warden
       end
     end
 
-    # Set the default serializers to use. By default, only session is enabled.
-    # :api: public
-    def default_serializers(*serializers)
-      if serializers.empty?
-        self[:default_serializers]
-      else
-        self[:default_serializers] = serializers.flatten
-      end
-    end
-
-    # Quick accessor to strategies from manager
-    # :api: public
-    def serializers
-      Warden::Serializers
-    end
-
     # Quick accessor to strategies from manager
     # :api: public
     def strategies
       Warden::Strategies
+    end
+
+    # Hook from configuration to serialize_into_session.
+    # :api: public
+    def serialize_into_session(*args, &block)
+      Warden::Manager.serialize_into_session(*args, &block)
+    end
+
+    # Hook from configuration to serialize_from_session.
+    # :api: public
+    def serialize_from_session(*args, &block)
+      Warden::Manager.serialize_from_session(*args, &block)
     end
   end
 end
