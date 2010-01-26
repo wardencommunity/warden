@@ -397,7 +397,7 @@ describe Warden::Proxy do
     end
   end
 
-  describe "messages" do
+  describe "messages" do    
     it "should allow access to the failure message" do
       failure = lambda do |e|
         [401, {"Content-Type" => "text/plain"}, [e['warden'].message]]
@@ -409,6 +409,18 @@ describe Warden::Proxy do
       result.last.should == ["The Fails Strategy Has Failed You"]
     end
 
+    it "should allow access to the success message" do
+      success = lambda do |e|
+        [200, {"Content-Type" => "text/plain"}, [e['warden'].message]]
+      end
+      app = lambda do |e|
+        e['warden'].authenticate! :pass_with_message
+        success.call(e)
+      end
+      result = setup_rack(app).call(env_with_params)
+      result.last.should == ["The Success Strategy Has Accepted You"]
+    end
+    
     it "should not die when accessing a message from a source where no authentication has occured" do
       app = lambda do |e|
         [200, {"Content-Type" => "text/plain"}, [e['warden'].message]]
