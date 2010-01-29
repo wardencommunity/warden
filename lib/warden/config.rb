@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 module Warden
   # This is a class which is yielded on use Warden::Manager. If you have a plugin
   # and wants to add more configuration to warden, you just need to extend this
@@ -15,7 +17,7 @@ module Warden
     #
     #   config[:failure_app] = Bar
     #   config.failure_app #=> Bar
-    #  
+    #
     def self.hash_accessor(*names) #:nodoc:
       names.each do |name|
         class_eval <<-METHOD, __FILE__, __LINE__ + 1

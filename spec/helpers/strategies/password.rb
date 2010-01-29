@@ -1,3 +1,4 @@
+# encoding: utf-8
 Warden::Strategies.add(:password) do
   def authenticate!
     request.env['warden.spec.strategies'] ||= []

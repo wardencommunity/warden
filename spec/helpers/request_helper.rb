@@ -1,3 +1,4 @@
+# encoding: utf-8
 module Warden::Spec
   module Helpers
 
