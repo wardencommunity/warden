@@ -222,7 +222,7 @@ describe Warden::Strategies::Base do
     before(:each) do
       RAS.add(:foobar) do
         def authenticate!
-          success!("Foo User")
+          success!("Foo User", "Welcome to the club!")
         end
       end
       @str = RAS[:foobar].new(env_with_params)
@@ -235,6 +235,11 @@ describe Warden::Strategies::Base do
     it "should be authenticated after success" do
       @str._run!
       @str.user.should_not be_nil
+    end
+    
+    it "should allow you to set a message when succeeding" do
+      @str._run!
+      @str.message.should == "Welcome to the club!"
     end
     
     it "should store the user" do

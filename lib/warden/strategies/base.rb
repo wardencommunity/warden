@@ -8,8 +8,8 @@ module Warden
     # You _must_ declare an @authenticate!@ method.
     # You _may_ provide a @valid?@ method.
     # The valid method should return true or false depending on if the strategy is a valid one for the request.
-    # 
-    # The parameters for Warden::Strategies.add method is: 
+    #
+    # The parameters for Warden::Strategies.add method is:
     #   <label: Symbol> The label is the name given to a strategy.  Use the label to refer to the strategy when authenticating
     #   <strategy: Class|nil> The optional stragtegy argument if set _must_ be a class that inherits from Warden::Strategies::Base and _must_
     #                         implement an @authenticate!@ method
@@ -110,9 +110,10 @@ module Warden
       #   user - The user object to login.  This object can be anything you have setup to serialize in and out of the session
       #
       # :api: public
-      def success!(user)
+      def success!(user, message = nil)
         halt!
-        @user   = user
+        @user = user
+        @message = message
         @result = :success
       end
 
