@@ -65,12 +65,29 @@ describe "standard authentication hooks" do
       setup_rack(app).call(env)
     end
 
+    it "should run filters in the given order" do
+      RAM.after_set_user{|u,a,o| a.env['warden.spec.order'] << 2}
+      RAM.after_set_user{|u,a,o| a.env['warden.spec.order'] << 3}
+      RAM.prepend_after_set_user{|u,a,o| a.env['warden.spec.order'] << 1}
+      app = lambda do |e|
+        e['warden.spec.order'] = []
+        e['warden'].set_user("foo")
+        valid_response
+      end
+      env = env_with_params
+      setup_rack(app).call(env)
+      env['warden.spec.order'].should == [1,2,3]
+    end
+
     context "after_authentication" do
       it "should be a wrapper to after_set_user behavior" do
         RAM.after_authentication{|u,a,o| a.env['warden.spec.hook.baz'] = "run baz"}
         RAM.after_authentication{|u,a,o| a.env['warden.spec.hook.paz'] = "run paz"}
         RAM.after_authentication{|u,a,o| o[:event].should == :authentication }
-        app = lambda{|e| e['warden'].authenticate(:pass); valid_response}
+        app = lambda do |e|
+          e['warden'].authenticate(:pass)
+          valid_response
+        end
         env = env_with_params
         setup_rack(app).call(env)
         env['warden.spec.hook.baz'].should == 'run baz'
@@ -85,6 +102,20 @@ describe "standard authentication hooks" do
         end
         env = env_with_params
         setup_rack(app).call(env)
+      end
+
+      it "should run filters in the given order" do
+        RAM.after_authentication{|u,a,o| a.env['warden.spec.order'] << 2}
+        RAM.after_authentication{|u,a,o| a.env['warden.spec.order'] << 3}
+        RAM.prepend_after_authentication{|u,a,o| a.env['warden.spec.order'] << 1}
+        app = lambda do |e|
+          e['warden.spec.order'] = []
+          e['warden'].authenticate(:pass)
+          valid_response
+        end
+        env = env_with_params
+        setup_rack(app).call(env)
+        env['warden.spec.order'].should == [1,2,3]
       end
     end
 
@@ -117,6 +148,21 @@ describe "standard authentication hooks" do
         setup_rack(lambda { |e| valid_response }).call(env)
         env['rack.session']['warden.user.default.key'] = nil
         env['warden'].user.should be_nil
+      end
+
+      it "should run filters in the given order" do
+        RAM.after_fetch{|u,a,o| a.env['warden.spec.order'] << 2}
+        RAM.after_fetch{|u,a,o| a.env['warden.spec.order'] << 3}
+        RAM.prepend_after_fetch{|u,a,o| a.env['warden.spec.order'] << 1}
+        app = lambda do |e|
+          e['warden.spec.order'] = []
+          e['rack.session']['warden.user.default.key'] = "Foo"
+          e['warden'].user
+          valid_response
+        end
+        env = env_with_params
+        setup_rack(app).call(env)
+        env['warden.spec.order'].should == [1,2,3]
       end
     end
 
@@ -151,6 +197,20 @@ describe "standard authentication hooks" do
       setup_rack(app).call(env)
       env['warden.spec.before_failure.foo'].should == "foo"
       env['warden.spec.before_failure.bar'].should  == "bar"
+    end
+
+    it "should run filters in the given order" do
+      RAM.before_failure{|e,o| e['warden.spec.order'] << 2}
+      RAM.before_failure{|e,o| e['warden.spec.order'] << 3}
+      RAM.prepend_before_failure{|e,o| e['warden.spec.order'] << 1}
+      app = lambda do |e|
+        e['warden.spec.order'] = []
+        e['warden'].authenticate!(:failz)
+        valid_response
+      end
+      env = env_with_params
+      setup_rack(app).call(env)
+      env['warden.spec.order'].should == [1,2,3]
     end
   end
 
@@ -207,6 +267,21 @@ describe "standard authentication hooks" do
       env['warden'].logout(:scope2)
       env['warden.spec.hook.a'].should == [:scope1]
       env['warden.spec.hook.b'].should == [:scope2]
+    end
+
+    it "should run filters in the given order" do
+      RAM.before_logout{|u,a,o| a.env['warden.spec.order'] << 2}
+      RAM.before_logout{|u,a,o| a.env['warden.spec.order'] << 3}
+      RAM.prepend_before_logout{|u,a,o| a.env['warden.spec.order'] << 1}
+      app = lambda do |e|
+        e['warden.spec.order'] = []
+        e['warden'].authenticate(:pass)
+        e['warden'].logout
+        valid_response
+      end
+      env = env_with_params
+      setup_rack(app).call(env)
+      env['warden.spec.order'].should == [1,2,3]
     end
   end
 

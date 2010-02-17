@@ -4,7 +4,7 @@ module Warden
 
     # Hook to _run_callbacks asserting for conditions.
     def _run_callbacks(kind, *args) #:nodoc:
-      options = args.last # Last callback args MUST be a Hash
+      options = args.last # Last callback arg MUST be a Hash
 
       send("_#{kind}").each do |callback, conditions|
         invalid = conditions.find do |key, value|
@@ -49,7 +49,7 @@ module Warden
     #   end
     #
     # :api: public
-    def after_set_user(options={}, &block)
+    def after_set_user(options = {}, method = :push, &block)
       raise BlockNotGiven unless block_given?
 
       if options.key?(:only)
@@ -58,7 +58,7 @@ module Warden
         options[:event] = [:set_user, :authentication, :fetch] - Array(options.delete(:except))
       end
 
-      _after_set_user << [block, options]
+      _after_set_user.send(method, [block, options])
     end
 
     # Provides access to the array of after_set_user blocks to run
@@ -72,8 +72,8 @@ module Warden
     # are the same as in after_set_user.
     #
     # :api: public
-    def after_authentication(options={}, &block)
-      after_set_user(options.merge(:event => :authentication), &block)
+    def after_authentication(options = {}, method = :push, &block)
+      after_set_user(options.merge(:event => :authentication), method, &block)
     end
 
     # after_fetch is just a wrapper to after_set_user, which is only invoked
@@ -81,8 +81,8 @@ module Warden
     # are the same as in after_set_user.
     #
     # :api: public
-    def after_fetch(options={}, &block)
-      after_set_user(options.merge(:event => :fetch), &block)
+    def after_fetch(options = {}, method = :push, &block)
+      after_set_user(options.merge(:event => :fetch), method, &block)
     end
 
     # A callback that runs just prior to the failur application being called.
@@ -106,9 +106,9 @@ module Warden
     #   end
     #
     # :api: public
-    def before_failure(options={}, &block)
+    def before_failure(options = {}, method = :push, &block)
       raise BlockNotGiven unless block_given?
-      _before_failure << [block, options]
+      _before_failure.send(method, [block, options])
     end
 
     # Provides access to the callback array for before_failure
@@ -134,9 +134,9 @@ module Warden
     #   end
     #
     # :api: public
-    def before_logout(options={}, &block)
+    def before_logout(options = {}, method = :push, &block)
       raise BlockNotGiven unless block_given?
-      _before_logout << [block, options]
+      _before_logout.send(method, [block, options])
     end
 
     # Provides access to the callback array for before_logout
@@ -145,5 +145,14 @@ module Warden
       @_before_logout ||= []
     end
 
+    # Add prepend filters version
+    %w(after_set_user after_authentication after_fetch
+       before_failure before_logout).each do |filter|
+      class_eval <<-METHOD, __FILE__, __LINE__ + 1
+        def prepend_#{filter}(options={}, &block)
+          #{filter}(options, :unshift, &block)
+        end
+      METHOD
+    end
   end # Hooks
 end # Warden
