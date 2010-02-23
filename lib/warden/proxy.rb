@@ -263,6 +263,7 @@ module Warden
 
     # Run the strategies for a given scope
     def _run_strategies_for(scope, args) #:nodoc:
+      self.winning_strategy = nil
       strategies = args.empty? ? @config.default_strategies : args
 
       strategies.each do |name|

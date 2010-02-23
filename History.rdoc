@@ -1,3 +1,7 @@
+== Version 0.9.4 / 2010-02-23
+
+* Fix an issue where winning_strategy was not cleaned, allowing multiple scopes to sign in, even when the second one should not
+
 == Version 0.9.3 / 2010-02-17
 
 * Add prepend_ to all hooks (josevalim)

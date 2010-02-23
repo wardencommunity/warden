@@ -181,9 +181,6 @@ describe Warden::Proxy do
       app = lambda do |env|
         env['rack.session']['warden.user.foo.key'] = 'foo user'
         env['rack.session']['warden.user.bar.key'] = 'bar user'
-        env['warden'].authenticate(:pass, :scope => :foo)
-        env['warden'].authenticate(:pass, :scope => :bar)
-        env['warden'].authenticate(:password)
         env['warden'].should be_authenticated(:foo)
         env['warden'].should be_authenticated(:bar)
         env['warden'].should_not be_authenticated # default scope
@@ -194,6 +191,18 @@ describe Warden::Proxy do
       env['warden'].user(:foo).should == 'foo user'
       env['warden'].user(:bar).should == 'bar user'
       env['warden'].user.should be_nil
+    end
+
+    it "should not authenticate other scopes just because the first is authenticated" do
+      app = lambda do |env|
+        env['warden'].authenticate(:pass, :scope => :foo)
+        env['warden'].authenticate(:invalid, :scope => :bar)
+        env['warden'].should be_authenticated(:foo)
+        env['warden'].should_not be_authenticated(:bar)
+        valid_response
+      end
+      env = env_with_params
+      setup_rack(app).call(env)
     end
   end
 
