@@ -1,3 +1,11 @@
+== Version 0.9.4 / 2010-02-28
+
+* Add Warden.test_mode!
+* Add Warden.on_next_request
+* Add test helpers in Warden::Test::Helpers
+** login_as
+** logout
+
 == Version 0.9.3 / 2010-02-17
 
 * Add prepend_ to all hooks (josevalim)
