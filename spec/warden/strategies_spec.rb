@@ -1,5 +1,5 @@
 # encoding: utf-8
-require File.dirname(__FILE__) + '/../spec_helper'
+require 'spec_helper'
 
 describe Warden::Strategies do
   it "should let me add a strategy via a block" do
@@ -10,14 +10,14 @@ describe Warden::Strategies do
     end
     Warden::Strategies[:strategy1].ancestors.should include(Warden::Strategies::Base)
   end
-  
+
   it "should raise an error if I add a strategy via a block, that does not have an autheniticate! method" do
     lambda do
       Warden::Strategies.add(:strategy2) do
       end
     end.should raise_error
   end
-  
+
   it "should allow me to get access to a particular strategy" do
     Warden::Strategies.add(:strategy3) do
       def authenticate!; end
@@ -26,7 +26,7 @@ describe Warden::Strategies do
     strategy.should_not be_nil
     strategy.ancestors.should include(Warden::Strategies::Base)
   end
-  
+
   it "should allow me to add a strategy with the required methods" do
     class MyStrategy < Warden::Strategies::Base
       def authenticate!; end
@@ -35,7 +35,7 @@ describe Warden::Strategies do
       Warden::Strategies.add(:strategy4, MyStrategy)
     end.should_not raise_error
   end
-  
+
   it "should not allow a strategy that does not have an authenticate! method" do
     class MyOtherStrategy
     end

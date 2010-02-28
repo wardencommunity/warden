@@ -145,8 +145,34 @@ module Warden
       @_before_logout ||= []
     end
 
+    # A callback that runs on each request, just after the proxy is initialized
+    #
+    # Parameters:
+    # <block> A block to contain logic for the callback
+    #   Block Parameters: |proxy|
+    #     proxy - The warden proxy object for the request
+    #
+    # Example:
+    #   user = "A User"
+    #   Warden::Manager.on_request do |proxy|
+    #     proxy.set_user = user
+    #   end
+    #
+    # :api: public
+    def on_request(options = {}, method = :push, &block)
+      raise BlockNotGiven unless block_given?
+      _on_request.send(method, [block, options])
+    end
+
+    # Provides access to the callback array for before_logout
+    # :api: private
+    def _on_request
+      @_on_request ||= []
+    end
+
+
     # Add prepend filters version
-    %w(after_set_user after_authentication after_fetch
+    %w(after_set_user after_authentication after_fetch on_request
        before_failure before_logout).each do |filter|
       class_eval <<-METHOD, __FILE__, __LINE__ + 1
         def prepend_#{filter}(options={}, &block)

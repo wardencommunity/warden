@@ -1,5 +1,5 @@
 # encoding: utf-8
-require File.dirname(__FILE__) + '/../../spec_helper'
+require 'spec_helper'
 
 describe Warden::Strategies::Base do
 
@@ -7,7 +7,7 @@ describe Warden::Strategies::Base do
     RAS = Warden::Strategies unless defined?(RAS)
     Warden::Strategies.clear!
   end
-  
+
   describe "headers" do
     it "should have headers" do
       Warden::Strategies.add(:foo) do
@@ -19,7 +19,7 @@ describe Warden::Strategies::Base do
       strategy._run!
       strategy.headers["foo"].should == "bar"
     end
-    
+
     it "should allow us to clear the headers" do
       Warden::Strategies.add(:foo) do
         def authenticate!
@@ -33,7 +33,7 @@ describe Warden::Strategies::Base do
       strategy.headers.should be_empty
     end
   end
-  
+
   it "should have a user object" do
     RAS.add(:foobar) do
       def authenticate!
@@ -65,7 +65,7 @@ describe Warden::Strategies::Base do
     end
     strategy = RAS[:foobar].new(env_with_params, :user)
   end
-  
+
   it "should allow you to set a message" do
     RAS.add(:foobar) do
       def authenticate!
@@ -76,7 +76,7 @@ describe Warden::Strategies::Base do
     strategy._run!
     strategy.message.should == "foo message"
   end
-  
+
   it "should provide access to the errors" do
     RAS.add(:foobar) do
       def authenticate!
@@ -89,7 +89,7 @@ describe Warden::Strategies::Base do
     strategy._run!
     strategy.errors.on(:foo).should == ["foo has an error"]
   end
-  
+
   describe "halting" do
     it "should allow you to halt a strategy" do
       RAS.add(:foobar) do
@@ -101,7 +101,7 @@ describe Warden::Strategies::Base do
       str._run!
       str.should be_halted
     end
-    
+
     it "should not be halted if halt was not called" do
       RAS.add(:foobar) do
         def authenticate!
@@ -114,7 +114,7 @@ describe Warden::Strategies::Base do
     end
 
   end
-  
+
   describe "pass" do
     it "should allow you to pass" do
       RAS.add(:foobar) do
@@ -128,7 +128,7 @@ describe Warden::Strategies::Base do
       str.user.should be_nil
     end
   end
-  
+
   describe "redirect" do
     it "should allow you to set a redirection" do
       RAS.add(:foobar) do
@@ -140,7 +140,7 @@ describe Warden::Strategies::Base do
       str._run!
       str.user.should be_nil
     end
-    
+
     it "should mark the strategy as halted when redirecting" do
       RAS.add(:foobar) do
         def authenticate!
@@ -151,7 +151,7 @@ describe Warden::Strategies::Base do
       str._run!
       str.should be_halted
     end
-    
+
     it "should escape redirected url parameters" do
       RAS.add(:foobar) do
         def authenticate!
@@ -162,7 +162,7 @@ describe Warden::Strategies::Base do
       str._run!
       str.headers["Location"].should == "/foo/bar?foo=bar"
     end
-    
+
     it "should allow you to set a message" do
       RAS.add(:foobar) do
         def authenticate!
@@ -174,7 +174,7 @@ describe Warden::Strategies::Base do
       str.headers["Location"].should == "/foo/bar?foo=bar"
       str.message.should == "You are being redirected foo"
     end
-    
+
     it "should set the action as :redirect" do
       RAS.add(:foobar) do
         def authenticate!
@@ -186,9 +186,9 @@ describe Warden::Strategies::Base do
       str.result.should == :redirect
     end
   end
-  
+
   describe "failure" do
-    
+
     before(:each) do
       RAS.add(:foobar) do
         def authenticate!
@@ -197,28 +197,28 @@ describe Warden::Strategies::Base do
       end
       @str = RAS[:foobar].new(env_with_params)
     end
-    
+
     it "should allow you to fail" do
       @str._run!
       @str.user.should be_nil
     end
-    
+
     it "should halt the strategies when failing" do
       @str._run!
       @str.should be_halted
     end
-    
+
     it "should allow you to set a message when failing" do
       @str._run!
       @str.message.should == "You are not cool enough"
     end
-    
+
     it "should set the action as :failure" do
       @str._run!
       @str.result.should == :failure
     end
   end
-  
+
   describe "success" do
     before(:each) do
       RAS.add(:foobar) do
@@ -228,32 +228,32 @@ describe Warden::Strategies::Base do
       end
       @str = RAS[:foobar].new(env_with_params)
     end
-    
+
     it "should allow you to succeed" do
       @str._run!
     end
-      
+
     it "should be authenticated after success" do
       @str._run!
       @str.user.should_not be_nil
     end
-    
+
     it "should allow you to set a message when succeeding" do
       @str._run!
       @str.message.should == "Welcome to the club!"
     end
-    
+
     it "should store the user" do
       @str._run!
       @str.user.should == "Foo User"
     end
-    
+
     it "should set the action as :success" do
       @str._run!
       @str.result.should == :success
-    end    
+    end
   end
-  
+
   describe "custom response" do
     before(:each) do
       RAS.add(:foobar) do
@@ -264,19 +264,19 @@ describe Warden::Strategies::Base do
       @str = RAS[:foobar].new(env_with_params)
       @str._run!
     end
-    
+
     it "should allow me to set a custom rack response" do
       @str.user.should be_nil
     end
-    
+
     it "should halt the strategy" do
       @str.should be_halted
     end
-    
+
     it "should provide access to the custom rack response" do
       @str.custom_response.should == [521, {"foo" => "bar"}, ["BAD"]]
     end
-    
+
     it "should set the action as :custom" do
       @str._run!
       @str.result.should == :custom

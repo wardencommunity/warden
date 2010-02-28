@@ -1,5 +1,5 @@
 # encoding: utf-8
-require File.dirname(__FILE__) + '/../spec_helper'
+require 'spec_helper'
 
 describe Warden::Manager do
 
@@ -208,7 +208,7 @@ describe Warden::Manager do
       end
     end
   end # integrated strategies
-  
+
   it "should allow me to set a different default scope for warden" do
     Rack::Builder.new do
       use Warden::Manager, :default_scope => :default do |manager|

@@ -22,6 +22,7 @@ module Warden
       @strategies  = Hash.new { |h,k| h[k] = {} }
       @manager, @config = manager, manager.config
       errors # setup the error object in the session
+      manager._run_callbacks(:on_request, self)
     end
 
     # Points to a SessionSerializer instance responsible for handling

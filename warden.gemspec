@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{warden}
-  s.version = "0.9.4"
+  s.version = "0.9.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Daniel Neighman"]
-  s.date = %q{2010-02-23}
+  s.date = %q{2010-03-01}
   s.email = %q{has.sox@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -33,6 +33,8 @@ Gem::Specification.new do |s|
      "lib/warden/session_serializer.rb",
      "lib/warden/strategies.rb",
      "lib/warden/strategies/base.rb",
+     "lib/warden/test/helpers.rb",
+     "lib/warden/test/warden_helpers.rb",
      "lib/warden/version.rb",
      "script/destroy",
      "script/generate",
@@ -52,6 +54,8 @@ Gem::Specification.new do |s|
      "spec/warden/session_serializer_spec.rb",
      "spec/warden/strategies/base_spec.rb",
      "spec/warden/strategies_spec.rb",
+     "spec/warden/test/helpers_spec.rb",
+     "spec/warden/test/test_mode_spec.rb",
      "spec/warden_spec.rb",
      "warden.gemspec"
   ]
@@ -59,7 +63,7 @@ Gem::Specification.new do |s|
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{warden}
-  s.rubygems_version = %q{1.3.5}
+  s.rubygems_version = %q{1.3.6}
   s.summary = %q{Rack middleware that provides authentication for rack applications}
   s.test_files = [
     "spec/helpers/request_helper.rb",
@@ -78,6 +82,8 @@ Gem::Specification.new do |s|
      "spec/warden/session_serializer_spec.rb",
      "spec/warden/strategies/base_spec.rb",
      "spec/warden/strategies_spec.rb",
+     "spec/warden/test/helpers_spec.rb",
+     "spec/warden/test/test_mode_spec.rb",
      "spec/warden_spec.rb"
   ]
 
