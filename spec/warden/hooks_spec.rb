@@ -287,12 +287,14 @@ describe "standard authentication hooks" do
 
   describe "on_request" do
     before(:each) do
+      @old_on_request = RAM._on_request.dup
       RAM = Warden::Manager unless defined?(RAM)
       RAM._on_request.clear
     end
 
     after(:each) do
       RAM._on_request.clear
+      RAM._on_request.replace(@old_on_request)
     end
 
     it "should allow me to add an on_request hook" do
