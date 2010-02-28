@@ -1,5 +1,5 @@
 # encoding: utf-8
-require File.dirname(__FILE__) + '/../spec_helper'
+require 'spec_helper'
 
 describe Warden::SessionSerializer do
   before(:each) do
@@ -12,7 +12,7 @@ describe Warden::SessionSerializer do
     @session.store("user", :default)
     @env['rack.session'].should == { "warden.user.default.key"=>"user" }
   end
-  
+
   it "should check if a data is stored or not" do
     @session.should_not be_stored(:default)
     @session.store("user", :default)
@@ -41,7 +41,7 @@ describe Warden::SessionSerializer do
   it "should delete information from store if user cannot be retrieved" do
     @session.store("user", :default)
     @env['rack.session'].should have_key("warden.user.default.key")
-    @session.instance_eval "def deserialize(key); nil; end" 
+    @session.instance_eval "def deserialize(key); nil; end"
     @session.fetch(:default)
     @env['rack.session'].should_not have_key("warden.user.default.key")
   end

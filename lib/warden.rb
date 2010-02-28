@@ -11,4 +11,8 @@ require 'warden/strategies/base'
 
 module Warden
   class NotAuthenticated < StandardError; end
+
+  module Test
+    autoload :WardenHelpers, 'warden/test/warden_helpers'
+  end
 end

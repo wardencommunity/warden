@@ -1,5 +1,5 @@
 # encoding: utf-8
-require File.dirname(__FILE__) + '/../spec_helper'
+require 'spec_helper'
 
 describe "standard authentication hooks" do
 
@@ -285,4 +285,47 @@ describe "standard authentication hooks" do
     end
   end
 
+  describe "on_request" do
+    before(:each) do
+      RAM = Warden::Manager unless defined?(RAM)
+      RAM._on_request.clear
+    end
+
+    after(:each) do
+      RAM._on_request.clear
+    end
+
+    it "should allow me to add an on_request hook" do
+      RAM.on_request{|proxy| "foo"}
+      RAM._on_request.should have(1).item
+    end
+
+    it "should allow me to add multiple on_request hooks" do
+      RAM.on_request{|proxy| "foo"}
+      RAM.on_request{|proxy| "bar"}
+      RAM._on_request.should have(2).items
+    end
+
+    it "should run each on_request hooks when initializing" do
+      RAM.on_request{|proxy| proxy.env['warden.spec.on_request.foo'] = "foo"}
+      RAM.on_request{|proxy| proxy.env['warden.spec.on_request.bar'] = "bar"}
+      app = lambda{|e| valid_response}
+      env = env_with_params
+      setup_rack(app).call(env)
+      env['warden.spec.on_request.foo'].should == "foo"
+      env['warden.spec.on_request.bar'].should  == "bar"
+    end
+
+    it "should run filters in the given order" do
+      RAM.on_request{|proxy| proxy.env['warden.spec.order'] << 2}
+      RAM.on_request{|proxy| proxy.env['warden.spec.order'] << 3}
+      RAM.prepend_on_request{|proxy| proxy.env['warden.spec.order'] << 1}
+      app = lambda do |e|
+        valid_response
+      end
+      env = Rack::MockRequest.env_for("/", "warden.spec.order" => [])
+      setup_rack(app).call(env)
+      env['warden.spec.order'].should == [1,2,3]
+    end
+  end
 end
