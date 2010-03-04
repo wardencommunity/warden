@@ -647,5 +647,77 @@ describe Warden::Proxy do
       app.call(@env)
     end
   end
+end
 
+describe "dynamic default_strategies" do
+  before(:all) do
+    class ::DynamicDefaultStrategies
+      def initialize(app, &blk)
+        @app, @blk = app, blk
+      end
+
+      def call(env)
+        @blk.call(env)
+        @app.call(env)
+      end
+    end
+
+    Warden::Strategies.add(:one) do
+      def authenticate!; $captures << :one; success!("User") end
+    end
+
+    Warden::Strategies.add(:two) do
+      def authenticate!; $captures << :two; fail!("User not found") end
+    end
+  end
+
+  before(:each) do
+    $captures = []
+    @app = lambda{|e| e['warden'].authenticate! }
+  end
+
+  def wrap_app(app, &blk)
+    builder = Rack::Builder.new do
+      use DynamicDefaultStrategies, &blk
+      run app
+    end
+    builder.to_app
+  end
+
+  it "should allow me to change the default strategies on the fly" do
+    app = wrap_app(@app) do |e|
+      e['warden'].default_strategies.should == [:password]
+      e['warden'].config.default_strategies.should == [:password]
+      e['warden'].default_strategies = [:one]
+      e['warden'].authenticate!
+      Rack::Response.new("OK").finish
+    end
+    setup_rack(app).call(env_with_params)
+
+    $captures.should == [:one]
+  end
+
+  it "should allow me to append to the default strategies on the fly" do
+    app = wrap_app(@app) do |e|
+      e['warden'].default_strategies << :one
+      e['warden'].default_strategies.should == [:password, :one]
+      e['warden'].authenticate!
+      Rack::Response.new("OK").finish
+    end
+    setup_rack(app).call(env_with_params)
+
+    $captures.should == [:one]
+  end
+  it "should not change the master configurations strategies when I change them" do
+    app = wrap_app(@app) do |e|
+      e['warden'].default_strategies << :one
+      e['warden'].default_strategies.should == [:password, :one]
+      e['warden'].config.default_strategies.should == [:password]
+      e['warden'].authenticate!
+      Rack::Response.new("OK").finish
+    end
+    setup_rack(app).call(env_with_params)
+
+    $captures.should == [:one]
+  end
 end

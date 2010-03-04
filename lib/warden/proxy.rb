@@ -60,6 +60,22 @@ module Warden
       end
     end
 
+    # Provides access to the currently defined default strategies for the proxy.
+    # This can change as it moves throughout the rack graph
+    # Any changes to this are reflected only for the duration of the request
+    # By changing this value, you can change the default strategies for a downstream branch of you rack graph.
+    #
+    # @api public
+    def default_strategies
+      @default_strategies ||= config.default_strategies.dup
+    end
+
+    # Allows you to set the default strategies for this request.
+    # @api public
+    def default_strategies=(*strategies)
+      @default_strategies = strategies.flatten
+    end
+
     # Run the authentiation strategies for the given strategies.
     # If there is already a user logged in for a given scope, the strategies are not run
     # This does not halt the flow of control and is a passive attempt to authenticate only
@@ -265,7 +281,7 @@ module Warden
     # Run the strategies for a given scope
     def _run_strategies_for(scope, args) #:nodoc:
       self.winning_strategy = nil
-      strategies = args.empty? ? @config.default_strategies : args
+      strategies = args.empty? ? default_strategies : args
 
       strategies.each do |name|
         strategy = _fetch_strategy(name, scope)
