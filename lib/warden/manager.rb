@@ -105,6 +105,7 @@ module Warden
     # :api: private
     def call_failure_app(env, options = {})
       if config.failure_app
+        options.merge!(:attempted_path => ::Rack::Request.new(env).fullpath)
         env["PATH_INFO"] = "/#{options[:action]}"
         env["warden.options"] = options
 
