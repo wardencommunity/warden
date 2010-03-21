@@ -759,4 +759,43 @@ describe "dynamic default_strategies" do
 
     $captures.should == [:one]
   end
+
+  describe "default scope options" do
+    it "should allow me to set store, false on a given scope" do
+      $captures = []
+      builder = Rack::Builder.new do
+        use Warden::Manager do |config|
+          config.default_strategies :one
+          config.default_strategies :two, :one, :scope => :foo
+          config.default_strategies :two, :one, :scope => :bar
+
+          config.default_scope_options :bar, :store => false
+          config.default_scope_options :baz, :store => false
+          config.failure_app = Warden::Spec::Helpers::FAILURE_APP
+        end
+        run(lambda do |e|
+          w = e['warden']
+          w.authenticate
+          w.authenticate(:scope => :foo)
+          w.authenticate(:one, :scope => :bar)
+          w.authenticate(:one, :scope => :baz, :store => true)
+          w.user.should == "User"
+          w.user(:foo).should == "User"
+          w.user(:bar).should == "User"
+          w.user(:baz).should == "User"
+          $captures << :complete
+          Rack::Response.new("OK").finish
+        end)
+      end
+      env = env_with_params
+      session = env["rack.session"] = {}
+      builder.to_app.call(env)
+      $captures.should include(:complete)
+      session['warden.user.default.key'].should == "User"
+      session['warden.user.foo.key'].should == "User"
+      session.key?('warden.user.bar.key').should be_false
+      session['warden.user.bar.key'].should be_nil
+      session['warden.user.baz.key'].should == "User"
+    end
+  end
 end

@@ -166,6 +166,12 @@ module Warden
       return unless user
       scope = (opts[:scope] ||= @config.default_scope)
 
+      # Get the default options from the master configuration for the given scope
+      opts = opts.dup
+      if @config.default_scope_options(scope)
+        opts = @config.default_scope_options(scope).merge(opts)
+      end
+
       @users[scope] = user
       session_serializer.store(user, scope) unless opts[:store] == false
 

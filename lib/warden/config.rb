@@ -36,8 +36,9 @@ module Warden
 
     def initialize(other={})
       merge!(other)
-      self[:default_scope]       ||= :default
-      self[:default_strategies]  ||= {}
+      self[:default_scope]          ||= :default
+      self[:default_scope_options]  ||= {}
+      self[:default_strategies]     ||= {}
     end
 
     # Do not raise an error if a missing strategy is given by default.
@@ -59,6 +60,18 @@ module Warden
         self[:default_strategies][scope]
       else
         self[:default_strategies][scope] = strategies.flatten
+      end
+    end
+
+    # Set the default options that are passed to set_user.  This is configured
+    # during the setup phase and is used throughout.
+    def default_scope_options(scope = default_scope, opts = nil)
+      if opts.nil?
+        # We're reading the default options for this scope
+        self[:default_scope_options][scope] ||= {}
+      else
+        # We're setting the default options forthe scope
+        self[:default_scope_options][scope] = opts
       end
     end
 
