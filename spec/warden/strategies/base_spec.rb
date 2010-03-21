@@ -203,9 +203,9 @@ describe Warden::Strategies::Base do
       @str.user.should be_nil
     end
 
-    it "should halt the strategies when failing" do
+    it "should not halt the strategies when failing" do
       @str._run!
-      @str.should be_halted
+      @str.should_not be_halted
     end
 
     it "should allow you to set a message when failing" do

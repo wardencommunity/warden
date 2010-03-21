@@ -1,8 +1,11 @@
 # encoding: utf-8
+require 'warden/proxy_deprecation'
+
 module Warden
   class UserNotSet < RuntimeError; end
 
   class Proxy
+    include ProxyDeprecation
     # An accessor to the winning strategy
     # :api: private
     attr_accessor :winning_strategy
@@ -66,14 +69,23 @@ module Warden
     # By changing this value, you can change the default strategies for a downstream branch of you rack graph.
     #
     # @api public
-    def default_strategies
-      @default_strategies ||= config.default_strategies.dup
+    def default_strategies(*strategies)
+      scope, opts = _retrieve_scope_and_opts(strategies)
+      if strategies.empty?
+        _default_strategies[scope] ||= begin
+          (
+            @config.default_strategies(:scope => scope) ||
+            @config.default_strategies(:scope => @config.default_scope)
+          ).dup
+        end
+      else
+        _default_strategies[scope] = strategies.flatten
+      end
+      _default_strategies[scope]
     end
 
-    # Allows you to set the default strategies for this request.
-    # @api public
-    def default_strategies=(*strategies)
-      @default_strategies = strategies.flatten
+    def _default_strategies
+      @default_strategies ||= {}
     end
 
     # Run the authentiation strategies for the given strategies.
@@ -281,7 +293,8 @@ module Warden
     # Run the strategies for a given scope
     def _run_strategies_for(scope, args) #:nodoc:
       self.winning_strategy = nil
-      strategies = args.empty? ? default_strategies : args
+      strategies = args.empty? ? default_strategies(:scope => scope) : args
+      puts strategies.inspect
 
       strategies.each do |name|
         strategy = _fetch_strategy(name, scope)

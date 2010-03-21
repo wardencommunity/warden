@@ -672,8 +672,8 @@ describe "dynamic default_strategies" do
   end
 
   before(:each) do
-    $captures = []
     @app = lambda{|e| e['warden'].authenticate! }
+    $captures = []
   end
 
   def wrap_app(app, &blk)
@@ -688,7 +688,7 @@ describe "dynamic default_strategies" do
     app = wrap_app(@app) do |e|
       e['warden'].default_strategies.should == [:password]
       e['warden'].config.default_strategies.should == [:password]
-      e['warden'].default_strategies = [:one]
+      e['warden'].default_strategies :one
       e['warden'].authenticate!
       Rack::Response.new("OK").finish
     end
@@ -708,6 +708,45 @@ describe "dynamic default_strategies" do
 
     $captures.should == [:one]
   end
+
+  it "should allow me to set the default strategies on a per scope basis" do
+    app = wrap_app(@app) do |e|
+      w = e['warden']
+      w.default_strategies(:two, :one, :scope => :foo)
+      w.default_strategies(:two, :scope => :default)
+      w.default_strategies(:scope => :foo).should == [:two, :one]
+      w.authenticate(:scope => :foo)
+      $captures.should == [:two, :one]
+      $captures.clear
+      w.authenticate
+      $captures.should == [:two]
+    end
+    setup_rack(app).call(env_with_params)
+    $captures.should == [:two]
+  end
+
+  it "should allow me to setup default strategies for each scope on the manager" do
+    builder = Rack::Builder.new do
+      use Warden::Spec::Helpers::Session
+      use Warden::Manager do |config|
+        config.default_strategies :one
+        config.default_strategies :two, :one, :scope => :foo
+        config.failure_app = Warden::Spec::Helpers::FAILURE_APP
+      end
+      run(lambda do |e|
+        w = e['warden']
+        w.authenticate
+        $captures.should == [:one]
+        $captures.clear
+        w.authenticate(:scope => :foo)
+        $captures.should == [:two, :one]
+        $captures << :complete
+      end)
+    end
+    builder.to_app.call(env_with_params)
+    $captures.should include(:complete)
+  end
+
   it "should not change the master configurations strategies when I change them" do
     app = wrap_app(@app) do |e|
       e['warden'].default_strategies << :one

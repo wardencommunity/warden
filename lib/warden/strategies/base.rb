@@ -121,7 +121,6 @@ module Warden
       # You must throw an :warden symbol somewhere in the application to enforce this
       # :api: public
       def fail!(message = "Failed to Login")
-        halt!
         @message = message
         @result = :failure
       end

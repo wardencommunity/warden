@@ -37,7 +37,7 @@ module Warden
     def initialize(other={})
       merge!(other)
       self[:default_scope]       ||= :default
-      self[:default_strategies]  ||= []
+      self[:default_strategies]  ||= {}
     end
 
     # Do not raise an error if a missing strategy is given by default.
@@ -53,10 +53,12 @@ module Warden
     # Set the default strategies to use.
     # :api: public
     def default_strategies(*strategies)
+      opts = Hash === strategies.last ? strategies.pop : {}
+      scope = opts[:scope] || default_scope
       if strategies.empty?
-        self[:default_strategies]
+        self[:default_strategies][scope]
       else
-        self[:default_strategies] = strategies.flatten
+        self[:default_strategies][scope] = strategies.flatten
       end
     end
 

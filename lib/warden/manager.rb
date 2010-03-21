@@ -18,7 +18,10 @@ module Warden
     # configure the Warden::Manager.
     # :api: public
     def initialize(app, options={})
+      default_strategies = options.delete(:default_strategies)
+
       @app, @config = app, Warden::Config.new(options)
+      @config.default_strategies *default_strategies if default_strategies
       yield @config if block_given?
       self
     end
