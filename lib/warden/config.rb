@@ -75,6 +75,14 @@ module Warden
       end
     end
 
+    # A short hand way to set up a particular scope
+    def scope_defaults(scope, opts = {})
+      strategies = opts.delete(:strategies) || []
+      default_strategies(strategies, :scope => scope)
+      default_scope_options(scope, opts)
+      true
+    end
+
     # Quick accessor to strategies from manager
     # :api: public
     def strategies

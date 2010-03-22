@@ -38,4 +38,11 @@ describe Warden::Config do
   it "should merge given options on initialization" do
     Warden::Config.new(:foo => :bar)[:foo].should == :bar
   end
+
+  it "should setup defaults with the scope_defaults method" do
+    c = Warden::Config.new
+    c.scope_defaults :foo, :strategies => [:foo, :bar], :store => false
+    c.default_strategies(:scope => :foo).should == [:foo, :bar]
+    c.default_scope_options(:foo).should == {:store => false}
+  end
 end

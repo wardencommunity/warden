@@ -1,3 +1,9 @@
+== Version 0.10.0 / 2010-03-22
+* Allow default strategies to be set on the proxy
+* Provide each scope with it's own default strategies
+* Provide each scope with default set_user opts
+* depricate the Proxy#default_strategies= method
+
 == Version 0.9.5 / 2010-02-28
 
 * Add Warden.test_mode!
