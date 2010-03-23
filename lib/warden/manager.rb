@@ -40,14 +40,13 @@ module Warden
       result ||= {}
       case result
       when Array
-        if result.first == 401
-          process_unauthenticated({:original_response => result, :action => :unauthenticated}, env)
+        if result.first == 401 && !env['warden'].custom_failure?
+          process_unauthenticated(env)
         else
           result
         end
       when Hash
-        result[:action] ||= :unauthenticated
-        process_unauthenticated(result, env)
+        process_unauthenticated(env, result || {})
       end
     end
 
@@ -87,30 +86,33 @@ module Warden
     # When a request is unauthentiated, here's where the processing occurs.
     # It looks at the result of the proxy to see if it's been executed and what action to take.
     # :api: private
-    def process_unauthenticated(result, env)
-      action = result[:result] || env['warden'].result
+    def process_unauthenticated(env, options={})
+      options[:action] ||= :unauthenticated
 
-      case action
-        when :redirect
-          [env['warden'].status, env['warden'].headers, [env['warden'].message || "You are being redirected to #{env['warden'].headers['Location']}"]]
-        when :custom
-          env['warden'].custom_response
-        else
-          call_failure_app(env, result)
+      proxy  = env['warden']
+      result = options[:result] || proxy.result
+
+      case result
+      when :redirect
+        body = proxy.message || "You are being redirected to #{proxy.headers['Location']}"
+        [proxy.status, proxy.headers, [body]]
+      when :custom
+        proxy.custom_response
+      else
+        call_failure_app(env, options)
       end
     end
 
     # Calls the failure app.
     # The before_failure hooks are run on each failure
     # :api: private
-    def call_failure_app(env, opts = {})
-      if env['warden'].custom_failure?
-        opts[:original_response]
-      elsif config.failure_app
-        env["PATH_INFO"] = "/#{opts[:action]}"
-        env["warden.options"] = opts
+    def call_failure_app(env, options = {})
+      if config.failure_app
+        options.merge!(:attempted_path => ::Rack::Request.new(env).fullpath)
+        env["PATH_INFO"] = "/#{options[:action]}"
+        env["warden.options"] = options
 
-        _run_callbacks(:before_failure, env, opts)
+        _run_callbacks(:before_failure, env, options)
         config.failure_app.call(env).to_a
       else
         raise "No Failure App provided"

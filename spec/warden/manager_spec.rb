@@ -69,6 +69,17 @@ describe Warden::Manager do
         result.first.should == 401
         result.last.should == ["You Fail!"]
       end
+
+      it "should set the attempted url in warden.options hash" do
+        env = env_with_params("/access/path", {})
+        app = lambda do |env|
+          env['warden'].authenticate(:pass)
+          throw(:warden)
+        end
+        result = setup_rack(app, :failure_app => @fail_app).call(env)
+        result.first.should == 401
+        env["warden.options"][:attempted_path].should == "/access/path"
+      end
     end # failure
 
   end
