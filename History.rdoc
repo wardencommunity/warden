@@ -1,3 +1,7 @@
+== Version 0.10.1 / 2010-03-23
+* Merge previous from master
+* tag
+
 == Version 0.10.0 / 2010-03-22
 * Allow default strategies to be set on the proxy
 * Provide each scope with it's own default strategies
