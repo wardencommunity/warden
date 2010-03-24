@@ -43,6 +43,6 @@ describe Warden::Config do
     c = Warden::Config.new
     c.scope_defaults :foo, :strategies => [:foo, :bar], :store => false
     c.default_strategies(:scope => :foo).should == [:foo, :bar]
-    c.default_scope_options(:foo).should == {:store => false}
+    c.scope_defaults(:foo).should == {:store => false}
   end
 end

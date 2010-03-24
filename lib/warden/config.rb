@@ -36,9 +36,15 @@ module Warden
 
     def initialize(other={})
       merge!(other)
-      self[:default_scope]          ||= :default
-      self[:default_scope_options]  ||= {}
-      self[:default_strategies]     ||= {}
+      self[:default_scope]      ||= :default
+      self[:scope_defaults]     ||= {}
+      self[:default_strategies] ||= {}
+    end
+
+    def initialize_copy(other)
+      super
+      deep_dup(:scope_defaults, other)
+      deep_dup(:default_strategies, other)
     end
 
     # Do not raise an error if a missing strategy is given by default.
@@ -54,33 +60,27 @@ module Warden
     # Set the default strategies to use.
     # :api: public
     def default_strategies(*strategies)
-      opts = Hash === strategies.last ? strategies.pop : {}
-      scope = opts[:scope] || default_scope
-      if strategies.empty?
-        self[:default_strategies][scope]
-      else
-        self[:default_strategies][scope] = strategies.flatten
-      end
-    end
+      opts  = Hash === strategies.last ? strategies.pop : {}
+      hash  = self[:default_strategies]
+      scope = opts[:scope] || :_all
 
-    # Set the default options that are passed to set_user.  This is configured
-    # during the setup phase and is used throughout.
-    def default_scope_options(scope = default_scope, opts = nil)
-      if opts.nil?
-        # We're reading the default options for this scope
-        self[:default_scope_options][scope] ||= {}
-      else
-        # We're setting the default options forthe scope
-        self[:default_scope_options][scope] = opts
-      end
+      hash[scope] = strategies.flatten unless strategies.empty?
+      hash[scope] || hash[:_all]
     end
 
     # A short hand way to set up a particular scope
+    # :api: public
     def scope_defaults(scope, opts = {})
-      strategies = opts.delete(:strategies) || []
-      default_strategies(strategies, :scope => scope)
-      default_scope_options(scope, opts)
-      true
+      if strategies = opts.delete(:strategies)
+        default_strategies(strategies, :scope => scope)
+      end
+
+      if opts.empty?
+        self[:scope_defaults][scope] || {}
+      else
+        self[:scope_defaults][scope] ||= {}
+        self[:scope_defaults][scope].merge!(opts)
+      end
     end
 
     # Quick accessor to strategies from manager
@@ -99,6 +99,13 @@ module Warden
     # :api: public
     def serialize_from_session(*args, &block)
       Warden::Manager.serialize_from_session(*args, &block)
+    end
+
+  protected
+
+    def deep_dup(key, other)
+      self[key] = hash = other[key].dup
+      hash.each { |k, v| hash[k] = v.dup }
     end
   end
 end

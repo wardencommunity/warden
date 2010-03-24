@@ -751,7 +751,7 @@ describe "dynamic default_strategies" do
     app = wrap_app(@app) do |e|
       e['warden'].default_strategies << :one
       e['warden'].default_strategies.should == [:password, :one]
-      e['warden'].config.default_strategies.should == [:password]
+      e['warden'].manager.config.default_strategies.should == [:password]
       e['warden'].authenticate!
       Rack::Response.new("OK").finish
     end
@@ -769,8 +769,8 @@ describe "dynamic default_strategies" do
           config.default_strategies :two, :one, :scope => :foo
           config.default_strategies :two, :one, :scope => :bar
 
-          config.default_scope_options :bar, :store => false
-          config.default_scope_options :baz, :store => false
+          config.scope_defaults :bar, :store => false
+          config.scope_defaults :baz, :store => false
           config.failure_app = Warden::Spec::Helpers::FAILURE_APP
         end
         run(lambda do |e|

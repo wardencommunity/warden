@@ -20,10 +20,13 @@ module Warden
     # :api: private
     def_delegators :winning_strategy, :headers, :status, :custom_response
 
+    # :api: public
+    def_delegators :config, :default_strategies
+
     def initialize(env, manager) #:nodoc:
       @env, @users = env, {}
       @strategies  = Hash.new { |h,k| h[k] = {} }
-      @manager, @config = manager, manager.config
+      @manager, @config = manager, manager.config.dup
       errors # setup the error object in the session
       manager._run_callbacks(:on_request, self)
     end
@@ -61,31 +64,6 @@ module Warden
       @strategies[scope].each do |k, v|
         v.clear! if args.empty? || args.include?(k)
       end
-    end
-
-    # Provides access to the currently defined default strategies for the proxy.
-    # This can change as it moves throughout the rack graph
-    # Any changes to this are reflected only for the duration of the request
-    # By changing this value, you can change the default strategies for a downstream branch of you rack graph.
-    #
-    # @api public
-    def default_strategies(*strategies)
-      scope, opts = _retrieve_scope_and_opts(strategies)
-      if strategies.empty?
-        _default_strategies[scope] ||= begin
-          (
-            @config.default_strategies(:scope => scope) ||
-            @config.default_strategies(:scope => @config.default_scope)
-          ).dup
-        end
-      else
-        _default_strategies[scope] = strategies.flatten
-      end
-      _default_strategies[scope]
-    end
-
-    def _default_strategies
-      @default_strategies ||= {}
     end
 
     # Run the authentiation strategies for the given strategies.
@@ -167,10 +145,7 @@ module Warden
       scope = (opts[:scope] ||= @config.default_scope)
 
       # Get the default options from the master configuration for the given scope
-      opts = opts.dup
-      if @config.default_scope_options(scope)
-        opts = @config.default_scope_options(scope).merge(opts)
-      end
+      opts = @config.scope_defaults(scope).merge(opts)
 
       @users[scope] = user
       session_serializer.store(user, scope) unless opts[:store] == false
@@ -300,7 +275,6 @@ module Warden
     def _run_strategies_for(scope, args) #:nodoc:
       self.winning_strategy = nil
       strategies = args.empty? ? default_strategies(:scope => scope) : args
-      puts strategies.inspect
 
       strategies.each do |name|
         strategy = _fetch_strategy(name, scope)
