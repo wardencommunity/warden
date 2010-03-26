@@ -1,11 +1,9 @@
 # encoding: utf-8
-require 'warden/proxy_deprecation'
 
 module Warden
   class UserNotSet < RuntimeError; end
 
   class Proxy
-    include ProxyDeprecation
     # An accessor to the winning strategy
     # :api: private
     attr_accessor :winning_strategy
