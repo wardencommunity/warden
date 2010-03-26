@@ -30,7 +30,7 @@ module Warden
     # If this is downstream from another warden instance, don't do anything.
     # :api: private
     def call(env) # :nodoc:
-      return @app.call(env) unless env['warden'].nil?
+      return @app.call(env) unless env['warden'].nil? || env['warden'].manager == self
 
       env['warden'] = Proxy.new(env, self)
       result = catch(:warden) do

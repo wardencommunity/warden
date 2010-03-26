@@ -7,7 +7,7 @@ describe Warden::Manager do
     load_strategies
   end
 
-  it "should insert a Base object into the rack env" do
+  it "should insert a Proxy object into the rack env" do
     env = env_with_params
     setup_rack(success_app).call(env)
     env["warden"].should be_an_instance_of(Warden::Proxy)
@@ -80,8 +80,53 @@ describe Warden::Manager do
         result.first.should == 401
         env["warden.options"][:attempted_path].should == "/access/path"
       end
-    end # failure
 
+      it "should catch a resubmitted request" do
+        # this is a bit convoluted. but it's occurred in the field with Rack::OpenID
+        $count = 0
+        $throw_count = 0
+        env = env_with_params("/foo")
+        class ::ResubmittingMiddleware
+          @@app = nil
+          def initialize(app)
+            @@app = app
+          end
+
+          def self.call(env)
+            if $count > 1
+              Rack::Response.new("Bad", 401)
+            else
+              $count += 1
+              @@app.call(env)
+            end
+          end
+
+          def call(env)
+            $count += 1
+            @@app.call(env)
+          end
+
+        end
+
+        app = lambda do |e|
+          $throw_count += 1
+          throw(:warden)
+        end
+
+        builder = Rack::Builder.new do
+          use ResubmittingMiddleware
+          use Warden::Manager do |config|
+            config.failure_app = ResubmittingMiddleware
+          end
+          run app
+        end
+
+        result = builder.to_app.call(env)
+        result[0].should == 401
+        result[2].body.should == ["Bad"]
+        $throw_count.should == 2
+      end
+    end # failure
   end
 
   describe "integrated strategies" do
