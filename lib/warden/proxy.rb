@@ -12,7 +12,7 @@ module Warden
 
     # An accessor to the rack env hash, the proxy owner and its config
     # :api: public
-    attr_reader :env, :manager, :config
+    attr_reader :env, :manager, :config, :winning_strategies
 
     extend ::Forwardable
     include ::Warden::Mixins::Common
@@ -24,9 +24,9 @@ module Warden
     def_delegators :config, :default_strategies
 
     def initialize(env, manager) #:nodoc:
-      @env, @users = env, {}
-      @strategies  = Hash.new { |h,k| h[k] = {} }
+      @env, @users, @winning_strategies = env, {}, {}
       @manager, @config = manager, manager.config.dup
+      @strategies = Hash.new { |h,k| h[k] = {} }
       errors # setup the error object in the session
       manager._run_callbacks(:on_request, self)
     end
@@ -61,6 +61,7 @@ module Warden
     def clear_strategies_cache!(*args)
       scope, opts = _retrieve_scope_and_opts(args)
 
+      @winning_strategies.delete(scope)
       @strategies[scope].each do |k, v|
         v.clear! if args.empty? || args.include?(k)
       end
@@ -273,14 +274,14 @@ module Warden
 
     # Run the strategies for a given scope
     def _run_strategies_for(scope, args) #:nodoc:
-      self.winning_strategy = nil
+      self.winning_strategy = @winning_strategies[scope]
       strategies = args.empty? ? default_strategies(:scope => scope) : args
 
       strategies.each do |name|
         strategy = _fetch_strategy(name, scope)
         next unless strategy && !strategy.performed? && strategy.valid?
 
-        self.winning_strategy = strategy
+        self.winning_strategy = @winning_strategies[scope] = strategy
         strategy._run!
         break if strategy.halted?
       end

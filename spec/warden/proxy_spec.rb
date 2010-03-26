@@ -220,6 +220,18 @@ describe Warden::Proxy do
       setup_rack(app).call(env)
     end
 
+    it "should store the last winning strategy per scope" do
+      env = env_with_params("/")
+      app = lambda do |env|
+        env['warden'].authenticate(:failz)
+        env['warden'].should_not be_authenticated
+        env['warden'].authenticate(:failz)
+        env['warden'].winning_strategy.message.should == "The Fails Strategy Has Failed You"
+        valid_response
+      end
+      setup_rack(app).call(env)
+    end
+
     it "should run strategies for a given scope several times if cache is cleaned" do
       env = env_with_params("/")
       app = lambda do |env|
