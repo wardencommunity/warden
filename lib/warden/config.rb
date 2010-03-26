@@ -65,7 +65,7 @@ module Warden
       scope = opts[:scope] || :_all
 
       hash[scope] = strategies.flatten unless strategies.empty?
-      hash[scope] || hash[:_all]
+      hash[scope] || hash[:_all] || []
     end
 
     # A short hand way to set up a particular scope
