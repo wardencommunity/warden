@@ -667,7 +667,7 @@ describe "dynamic default_strategies" do
     end
 
     Warden::Strategies.add(:two) do
-      def authenticate!; $captures << :two; fail!("User not found") end
+      def authenticate!; $captures << :two; fail("User not found") end
     end
   end
 

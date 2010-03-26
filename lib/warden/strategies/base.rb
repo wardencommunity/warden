@@ -119,8 +119,17 @@ module Warden
 
       # This causes the strategy to fail.  It does not throw an :warden symbol to drop the request out to the failure application
       # You must throw an :warden symbol somewhere in the application to enforce this
+      # Halts the strategies so that this is the last strategy checked
       # :api: public
       def fail!(message = "Failed to Login")
+        halt!
+        @message = message
+        @result = :failure
+      end
+
+      # Casuses the strategy to fail, but not halt.  The strategies will cascade after this failure and warden will check the next strategy.  The last strategy to fail will have it's message displayed.
+      # :api: public
+      def fail(message = "Failed to Login")
         @message = message
         @result = :failure
       end

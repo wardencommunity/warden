@@ -190,32 +190,59 @@ describe Warden::Strategies::Base do
   describe "failure" do
 
     before(:each) do
-      RAS.add(:foobar) do
+      RAS.add(:hard_fail) do
         def authenticate!
           fail!("You are not cool enough")
         end
       end
-      @str = RAS[:foobar].new(env_with_params)
+
+      RAS.add(:soft_fail) do
+        def authenticate!
+          fail("You are too soft")
+        end
+      end
+      @hard = RAS[:hard_fail].new(env_with_params)
+      @soft = RAS[:soft_fail].new(env_with_params)
     end
 
-    it "should allow you to fail" do
-      @str._run!
-      @str.user.should be_nil
+    it "should allow you to fail hard" do
+      @hard._run!
+      @hard.user.should be_nil
     end
 
-    it "should not halt the strategies when failing" do
-      @str._run!
-      @str.should_not be_halted
+    it "should halt the strategies when failing hard" do
+      @hard._run!
+      @hard.should be_halted
     end
 
-    it "should allow you to set a message when failing" do
-      @str._run!
-      @str.message.should == "You are not cool enough"
+    it "should allow you to set a message when failing hard" do
+      @hard._run!
+      @hard.message.should == "You are not cool enough"
     end
 
-    it "should set the action as :failure" do
-      @str._run!
-      @str.result.should == :failure
+    it "should set the action as :failure when failing hard" do
+      @hard._run!
+      @hard.result.should == :failure
+    end
+
+    it "should allow you to fail soft" do
+      @soft._run!
+      @soft.user.should be_nil
+    end
+
+    it "should not halt the strategies when failing soft" do
+      @soft._run!
+      @soft.should_not be_halted
+    end
+
+    it "should allow you to set a message when failing soft" do
+      @soft._run!
+      @soft.message.should == "You are too soft"
+    end
+
+    it "should set the action as :failure when failing soft" do
+      @soft._run!
+      @soft.result.should == :failure
     end
   end
 
