@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{warden}
-  s.version = "0.10.2"
+  s.version = "0.10.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Daniel Neighman"]
-  s.date = %q{2010-03-26}
+  s.date = %q{2010-04-01}
   s.email = %q{has.sox@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -27,10 +27,8 @@ Gem::Specification.new do |s|
      "lib/warden/errors.rb",
      "lib/warden/hooks.rb",
      "lib/warden/manager.rb",
-     "lib/warden/manager_deprecation.rb",
      "lib/warden/mixins/common.rb",
      "lib/warden/proxy.rb",
-     "lib/warden/proxy_deprecation.rb",
      "lib/warden/session_serializer.rb",
      "lib/warden/strategies.rb",
      "lib/warden/strategies/base.rb",
