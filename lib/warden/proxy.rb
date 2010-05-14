@@ -269,6 +269,7 @@ module Warden
     def _retrieve_scope_and_opts(args) #:nodoc:
       opts  = args.last.is_a?(Hash) ? args.pop : {}
       scope = opts[:scope] || @config.default_scope
+      opts  = (config[:scope_defaults][scope] || {}).merge(opts)
       [scope, opts]
     end
 

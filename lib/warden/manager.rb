@@ -87,7 +87,7 @@ module Warden
     # It looks at the result of the proxy to see if it's been executed and what action to take.
     # :api: private
     def process_unauthenticated(env, options={})
-      options[:action] ||= :unauthenticated
+      options[:action] ||= "unauthenticated"
 
       proxy  = env['warden']
       result = options[:result] || proxy.result

@@ -16,6 +16,7 @@ module Warden
       # @api public
       def login_as(user, opts = {})
         Warden.on_next_request do |proxy|
+          opts[:event] ||= :authentication
           proxy.set_user(user, opts)
         end
       end

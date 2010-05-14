@@ -773,6 +773,27 @@ describe "dynamic default_strategies" do
   end
 
   describe "default scope options" do
+
+    it "should allow me to set a default action for a given scope" do
+      $captures = []
+      builder = Rack::Builder.new do
+        use Warden::Manager do |config|
+          config.scope_defaults :foo, :strategies => [:two], :action => "some_bad_action"
+          config.failure_app = Warden::Spec::Helpers::FAILURE_APP
+        end
+
+        run(lambda do |e|
+          e['warden'].authenticate!(:scope => :foo)
+        end)
+      end
+
+      env = env_with_params("/foo")
+      env["rack.session"] = {}
+      builder.to_app.call(env)
+      request = Rack::Request.new(env)
+      request.path.should == "/some_bad_action"
+    end
+
     it "should allow me to set store, false on a given scope" do
       $captures = []
       builder = Rack::Builder.new do
