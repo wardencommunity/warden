@@ -1,7 +1,6 @@
 # encoding: utf-8
 require 'warden/hooks'
 require 'warden/config'
-require 'warden/manager_deprecation'
 
 module Warden
   # The middleware for Rack Authentication
@@ -10,7 +9,6 @@ module Warden
   # the rack environment hash
   class Manager
     extend Warden::Hooks
-    extend Warden::ManagerDeprecation
 
     attr_accessor :config
 
@@ -30,7 +28,7 @@ module Warden
     # If this is downstream from another warden instance, don't do anything.
     # :api: private
     def call(env) # :nodoc:
-      return @app.call(env) unless env['warden'].nil? || env['warden'].manager == self
+      return @app.call(env) if env['warden'] && env['warden'].manager != self
 
       env['warden'] = Proxy.new(env, self)
       result = catch(:warden) do

@@ -1,11 +1,9 @@
 # encoding: utf-8
-require 'warden/proxy_deprecation'
 
 module Warden
   class UserNotSet < RuntimeError; end
 
   class Proxy
-    include ProxyDeprecation
     # An accessor to the winning strategy
     # :api: private
     attr_accessor :winning_strategy
@@ -276,6 +274,8 @@ module Warden
     # Run the strategies for a given scope
     def _run_strategies_for(scope, args) #:nodoc:
       self.winning_strategy = @winning_strategies[scope]
+      return if winning_strategy && winning_strategy.halted?
+
       strategies = args.empty? ? default_strategies(:scope => scope) : args
 
       strategies.each do |name|
