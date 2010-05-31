@@ -117,6 +117,18 @@ describe "standard authentication hooks" do
         setup_rack(app).call(env)
         env['warden.spec.order'].should == [1,2,3]
       end
+
+      it "should allow me to log out a user in an after_set_user block" do
+        RAM.after_set_user{|u,a,o| a.logout}
+
+        app = lambda do |e|
+          e['warden'].authenticate(:pass)
+          valid_response
+        end
+        env = env_with_params
+        setup_rack(app).call(env)
+        env['warden'].authenticated?.should be_false
+      end
     end
 
     context "after_fetch" do

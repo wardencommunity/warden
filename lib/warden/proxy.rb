@@ -151,7 +151,7 @@ module Warden
 
       opts[:event] ||= :set_user
       manager._run_callbacks(:after_set_user, user, self, opts)
-      user
+      @users[scope]
     end
 
     # Provides acccess to the user object in a given scope for a request.
