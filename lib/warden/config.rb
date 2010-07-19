@@ -47,7 +47,7 @@ module Warden
       deep_dup(:default_strategies, other)
     end
 
-    # Do not raise an error if a missing strategy is given by default.
+    # Do not raise an error if a missing strategy is given.
     # :api: plugin
     def silence_missing_strategies!
       self[:silence_missing_strategies] = true

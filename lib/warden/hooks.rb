@@ -170,7 +170,6 @@ module Warden
       @_on_request ||= []
     end
 
-
     # Add prepend filters version
     %w(after_set_user after_authentication after_fetch on_request
        before_failure before_logout).each do |filter|

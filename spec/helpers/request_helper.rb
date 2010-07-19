@@ -5,10 +5,11 @@ module Warden::Spec
     FAILURE_APP = lambda{|e|[401, {"Content-Type" => "text/plain"}, ["You Fail!"]] }
 
     def env_with_params(path = "/", params = {})
-      method = params.fetch(:method, "GET")
-      Rack::MockRequest.env_for(path, :input => Rack::Utils.build_query(params),
-                                     'HTTP_VERSION' => '1.1',
-                                     'REQUEST_METHOD' => "#{method}")
+      method = params.delete(:method) || "GET"
+
+      Rack::MockRequest.env_for("#{path}?#{Rack::Utils.build_query(params)}",
+        'HTTP_VERSION' => '1.1',
+        'REQUEST_METHOD' => "#{method}")
     end
 
     def setup_rack(app = nil, opts = {}, &block)

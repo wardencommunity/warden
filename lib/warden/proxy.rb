@@ -290,9 +290,7 @@ module Warden
 
     # Fetchs strategies and keep them in a hash cache.
     def _fetch_strategy(name, scope)
-      return @strategies[scope][name] if @strategies[scope].key?(name)
-
-      @strategies[scope][name] = if klass = Warden::Strategies[name]
+      @strategies[scope][name] ||= if klass = Warden::Strategies[name]
         klass.new(@env, scope)
       elsif @config.silence_missing_strategies?
         nil
