@@ -1,11 +1,6 @@
 # encoding: utf-8
 module Warden
   class Proxy 
-    # :api: public
-    def errors
-      @env['warden.errors'] ||= Errors.new
-    end
-
     # Lifted from DataMapper's dm-validations plugin :)
     # @author Guy van den Berg
     # @since  DM 0.9

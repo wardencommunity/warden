@@ -25,8 +25,13 @@ module Warden
       @env, @users, @winning_strategies = env, {}, {}
       @manager, @config = manager, manager.config.dup
       @strategies = Hash.new { |h,k| h[k] = {} }
-      errors # setup the error object in the session
       manager._run_callbacks(:on_request, self)
+    end
+
+    # Lazily initiate errors object in session.
+    # :api: public
+    def errors
+      @env['warden.errors'] ||= Errors.new
     end
 
     # Points to a SessionSerializer instance responsible for handling
@@ -140,11 +145,10 @@ module Warden
     #
     # :api: public
     def set_user(user, opts = {})
-      return unless user
       scope = (opts[:scope] ||= @config.default_scope)
 
       # Get the default options from the master configuration for the given scope
-      opts = @config.scope_defaults(scope).merge(opts)
+      opts = (@config[:scope_defaults][scope] || {}).merge(opts)
 
       @users[scope] = user
       session_serializer.store(user, scope) unless opts[:store] == false
@@ -167,8 +171,10 @@ module Warden
     #
     # :api: public
     def user(scope = @config.default_scope)
-      @users[scope] ||= set_user(session_serializer.fetch(scope),
-                                 :scope => scope, :event => :fetch)
+      @users[scope] ||= begin
+        user = session_serializer.fetch(scope)
+        set_user(user, :scope => scope, :event => :fetch) if user
+      end
     end
 
     # Provides a scoped session data for authenticated users.
@@ -267,7 +273,7 @@ module Warden
     def _retrieve_scope_and_opts(args) #:nodoc:
       opts  = args.last.is_a?(Hash) ? args.pop : {}
       scope = opts[:scope] || @config.default_scope
-      opts  = (config[:scope_defaults][scope] || {}).merge(opts)
+      opts  = (@config[:scope_defaults][scope] || {}).merge(opts)
       [scope, opts]
     end
 
@@ -276,9 +282,12 @@ module Warden
       self.winning_strategy = @winning_strategies[scope]
       return if winning_strategy && winning_strategy.halted?
 
-      strategies = args.empty? ? default_strategies(:scope => scope) : args
+      if args.empty?
+        defaults   = @config[:default_strategies]
+        strategies = defaults[scope] || defaults[:_all]
+      end
 
-      strategies.each do |name|
+      (strategies || args).each do |name|
         strategy = _fetch_strategy(name, scope)
         next unless strategy && !strategy.performed? && strategy.valid?
 
