@@ -264,6 +264,7 @@ module Warden
       _run_strategies_for(scope, args)
 
       if winning_strategy && winning_strategy.user
+        opts[:store] = opts.fetch(:store, winning_strategy.store?)
         set_user(winning_strategy.user, opts.merge!(:event => :authentication))
       end
 

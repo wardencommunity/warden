@@ -269,6 +269,19 @@ describe Warden::Proxy do
       setup_rack(app).call(env)
     end
 
+    it "should not store user if strategy isn't meant for permanent login" do
+      env = env_with_params("/")
+      session = Warden::SessionSerializer.new(env)
+      app = lambda do |env|
+        env['warden'].authenticate(:single)
+        env['warden'].should be_authenticated
+        env['warden'].user.should == "Valid User"
+        session.should_not be_stored(:default)
+        valid_response
+      end
+      setup_rack(app).call(env)
+    end
+
   end
 
   describe "set user" do

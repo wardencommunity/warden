@@ -98,6 +98,12 @@ module Warden
         !!@halted
       end
 
+      # Checks to see if a strategy should result in a permanent login
+      # :api: public
+      def store?
+        true
+      end
+
       # A simple method to return from authenticate! if you want to ignore this strategy
       # :api: public
       def pass; end
