@@ -1,3 +1,24 @@
+== Version 1.0.0
+* Bump!
+
+== Version 0.10.7
+* Performance boost. config object to use raw accessors
+* Add per strategy storage option
+
+== Version 0.10.6 / 0.10.7 / 2010-05-22
+* Bugfix set_user was not respecting logouts in hooks
+
+== Version 0.10.4 / 0.10.5 / 2010-05-20
+* Add action specifying in scope_defaults
+
+== Version 0.10.3 / 2010-03-01
+* Bugfix prevent halted winning strategy from being skipped in subsequent runs
+
+== Version 0.10.2 / 2010-03-26
+* Halt on fail!.  Add fail to allow cascading
+* cache the winning strategy
+* Make the config object Dupable
+
 == Version 0.10.1 / 2010-03-23
 * Merge previous from master
 * tag

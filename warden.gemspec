@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{warden}
-  s.version = "0.10.7"
+  s.version = "1.0.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Daniel Neighman"]
-  s.date = %q{2010-05-31}
+  s.date = %q{2010-09-22}
   s.email = %q{has.sox@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -43,6 +43,7 @@ Gem::Specification.new do |s|
      "spec/helpers/strategies/pass.rb",
      "spec/helpers/strategies/pass_with_message.rb",
      "spec/helpers/strategies/password.rb",
+     "spec/helpers/strategies/single.rb",
      "spec/spec_helper.rb",
      "spec/warden/authenticated_data_store_spec.rb",
      "spec/warden/config_spec.rb",
@@ -71,6 +72,7 @@ Gem::Specification.new do |s|
      "spec/helpers/strategies/pass.rb",
      "spec/helpers/strategies/pass_with_message.rb",
      "spec/helpers/strategies/password.rb",
+     "spec/helpers/strategies/single.rb",
      "spec/spec_helper.rb",
      "spec/warden/authenticated_data_store_spec.rb",
      "spec/warden/config_spec.rb",
@@ -92,14 +94,14 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<rack>, [">= 1.0.0"])
-      s.add_development_dependency(%q<rspec>, [">= 1.0.0"])
+      s.add_development_dependency(%q<rspec>, ["~> 1"])
     else
       s.add_dependency(%q<rack>, [">= 1.0.0"])
-      s.add_dependency(%q<rspec>, [">= 1.0.0"])
+      s.add_dependency(%q<rspec>, ["~> 1"])
     end
   else
     s.add_dependency(%q<rack>, [">= 1.0.0"])
-    s.add_dependency(%q<rspec>, [">= 1.0.0"])
+    s.add_dependency(%q<rspec>, ["~> 1"])
   end
 end
 
