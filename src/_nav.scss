@@ -1,0 +1,15 @@
+@import "compass/utilities/lists";
+@import 'fancy-buttons';
+
+nav.main ul {
+  a {
+    @include fancy-button;
+  }
+  @include horizontal-list;
+  @include alpha;
+}
+nav.main {
+  padding-bottom: 1.5em;
+  border-bottom: 5px groove gray;
+  margin-bottom: 1.5em;
+}

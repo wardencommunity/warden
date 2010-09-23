@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+  <head>
+    <link href="stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
+    <link href="stylesheets/print.css" media="print" rel="stylesheet" type="text/css" />
+    <link href="stylesheets/ie.css" media="screen, projection" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <div id='page'>
+      <section class='container'>
+        <header class='logo'>
+          <h1>Warden</h1>
+          <span class='tagline'>Rack Middleware for Authentication</span>
+          <img src='./images/logo-large.png' alt='Warden Logo'>
+          <nav class='main'>
+            <ul>
+              <li><a href="http://github.com/hassox/warden"     >Github </a></li>
+              <li><a href="http://github.com/hassox/warden/wiki">Wiki   </a></li>
+            </ul>
+          </nav>
+        </header>
+
+
+        <div class='content'>
+          <p>Warden is an authentication solution for Ruby applications.  Based on Rack, it's designed to work with any Rack based application, including Rails, Sinatra or any other Rack based framework.  If a framework is not your thing, it works just great with raw Rack applications as well.
+          </p>
+
+          <p>
+            Warden provides a <em>consistent API</em> throughout Rack applications.  This means that any component built for Rack can require an authenticated <em>user</em> in a known way, without having to worry about your applications authentication requirements.  They might be password, open id, oauth or any other scheme modern web applications use.  To Rack machinery though, the authentication is as simple as:
+            <pre><code lang='ruby'>env['warden'].authenticate!</code></pre>
+            With this one statement, any Middleware or application can request authentication customised to your applciation.
+          </p>
+        </div>
+
+        <aside>
+          <ul class='features'>
+            <li>Rack Based</li>
+            <li>Consistent API</li>
+            <li>Transportable</li>
+            <li>Any Type of User</li>
+            <li>Multiple Users</li>
+            <li>Multiple User Scopes</li>
+            <li>Full Failure Application</li>
+          </ul>
+        </aside>
+
+        <footer>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
+
