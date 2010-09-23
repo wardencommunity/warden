@@ -685,6 +685,6 @@ ul.features {
 /* line 29, ../../../.rvm/gems/ruby-1.8.7-p299/gems/compass-0.10.5/frameworks/compass/stylesheets/compass/utilities/lists/_bullets.scss */
 ul.features li {
   padding-left: 36px;
-  background: url('../images/tick.png?1285241363') no-repeat 0px 0px;
+  background: url('/images/tick.png?1285241363') no-repeat 0px 0px;
   list-style-type: none;
 }
