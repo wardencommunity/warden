@@ -16,7 +16,7 @@ html body{
 // or @extend it to apply multiple containers on your site.
 .container {
   @include container;
-  @include show-grid("grid.png");
+  // @include show-grid("grid.png");
   background-color: black;
 }
 
@@ -46,6 +46,6 @@ html body{
 }
 
 ul.features {
-  @include pretty-bullets('tick.png', 36px, 36px, 36px, 36px);
+  @include pretty-bullets('warden/images/tick.png', 36px, 36px, 36px, 36px);
   line-height: 2.3em;
 }
