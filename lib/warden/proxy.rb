@@ -15,6 +15,9 @@ module Warden
     extend ::Forwardable
     include ::Warden::Mixins::Common
 
+    ENV_WARDEN_ERRORS = 'warden.errors'.freeze
+    ENV_SESSION_OPTIONS = 'rack.session.options'.freeze
+
     # :api: private
     def_delegators :winning_strategy, :headers, :status, :custom_response
 
@@ -31,7 +34,7 @@ module Warden
     # Lazily initiate errors object in session.
     # :api: public
     def errors
-      @env['warden.errors'] ||= Errors.new
+      @env[ENV_WARDEN_ERRORS] ||= Errors.new
     end
 
     # Points to a SessionSerializer instance responsible for handling
@@ -149,9 +152,13 @@ module Warden
 
       # Get the default options from the master configuration for the given scope
       opts = (@config[:scope_defaults][scope] || {}).merge(opts)
-
       @users[scope] = user
-      session_serializer.store(user, scope) unless opts[:store] == false
+
+      unless opts[:store] == false
+        options = env[ENV_SESSION_OPTIONS]
+        options[:renew] = true if options
+        session_serializer.store(user, scope)
+      end
 
       opts[:event] ||= :set_user
       manager._run_callbacks(:after_set_user, user, self, opts)

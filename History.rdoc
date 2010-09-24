@@ -1,5 +1,7 @@
 == Version 1.0.0
 * Bump!
+* Allow strategies to configure if user should be stored or not
+* Force session id renewal when user is set
 
 == Version 0.10.7
 * Performance boost. config object to use raw accessors

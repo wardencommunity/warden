@@ -1,15 +1,12 @@
 # encoding: utf-8
 module Warden::Spec
   module Helpers
-
     FAILURE_APP = lambda{|e|[401, {"Content-Type" => "text/plain"}, ["You Fail!"]] }
 
-    def env_with_params(path = "/", params = {})
+    def env_with_params(path = "/", params = {}, env = {})
       method = params.delete(:method) || "GET"
-
-      Rack::MockRequest.env_for("#{path}?#{Rack::Utils.build_query(params)}",
-        'HTTP_VERSION' => '1.1',
-        'REQUEST_METHOD' => "#{method}")
+      env = { 'HTTP_VERSION' => '1.1', 'REQUEST_METHOD' => "#{method}" }.merge(env)
+      Rack::MockRequest.env_for("#{path}?#{Rack::Utils.build_query(params)}", env)
     end
 
     def setup_rack(app = nil, opts = {}, &block)
@@ -20,7 +17,7 @@ module Warden::Spec
       opts[:default_serializers] ||= [:session]
 
       Rack::Builder.new do
-        use Warden::Spec::Helpers::Session
+        use opts[:session] || Warden::Spec::Helpers::Session
         use Warden::Manager, opts
         run app
       end

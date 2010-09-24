@@ -17,8 +17,7 @@ describe Warden::Proxy do
         [401,{'Content-Type' => 'text/plain'},"You Fail"]
       end
     end
-    @env = Rack::MockRequest.
-      env_for('/', 'HTTP_VERSION' => '1.1', 'REQUEST_METHOD' => 'GET')
+    @env = env_with_params("/")
   end # before(:each)
 
   describe "authentication" do
@@ -70,39 +69,35 @@ describe Warden::Proxy do
     end
 
     it "should raise error on missing strategies" do
-      env = env_with_params('/')
       app = lambda do |env|
         env['warden'].authenticate(:unknown)
       end
       lambda {
-        setup_rack(app).call(env)
+        setup_rack(app).call(@env)
       }.should raise_error(RuntimeError, "Invalid strategy unknown")
     end
 
     it "should not raise error on missing strategies if silencing" do
-      env = env_with_params('/')
       app = lambda do |env|
         env['warden'].authenticate
         valid_response
       end
       lambda {
-        setup_rack(app, :silence_missing_strategies => true, :default_strategies => [:unknown]).call(env)
+        setup_rack(app, :silence_missing_strategies => true, :default_strategies => [:unknown]).call(@env)
       }.should_not raise_error
     end
 
     it "should allow me to get access to the user at warden.user." do
-      env = env_with_params("/")
       app = lambda do |env|
         env['warden'].authenticate(:pass)
         env['warden'].should be_authenticated
         env['warden.spec.strategies'].should == [:pass]
         valid_response
       end
-      setup_rack(app).call(env)
+      setup_rack(app).call(@env)
     end
 
     it "should run strategies when authenticate? is asked" do
-      env = env_with_params("/")
       app = lambda do |env|
         env['warden'].should_not be_authenticated
         env['warden'].authenticate?(:pass)
@@ -110,29 +105,27 @@ describe Warden::Proxy do
         env['warden.spec.strategies'].should == [:pass]
         valid_response
       end
-      setup_rack(app).call(env)
+      setup_rack(app).call(@env)
     end
 
     it "should properly send the scope to the strategy" do
-      env = env_with_params("/")
       app = lambda do |env|
         env['warden'].authenticate(:pass, :scope => :failz)
         env['warden'].should_not be_authenticated
         env['warden.spec.strategies'].should == [:pass]
         valid_response
       end
-      setup_rack(app).call(env)
+      setup_rack(app).call(@env)
     end
 
     it "should try multiple authentication strategies" do
-      env = env_with_params("/")
       app = lambda do |env|
         env['warden'].authenticate(:password,:pass)
         env['warden'].should be_authenticated
         env['warden.spec.strategies'].should == [:password, :pass]
         valid_response
       end
-      setup_rack(app).call(env)
+      setup_rack(app).call(@env)
     end
 
     it "should look for an active user in the session with authenticate" do
@@ -141,9 +134,8 @@ describe Warden::Proxy do
         env['warden'].authenticate(:pass)
         valid_response
       end
-      env = env_with_params
-      setup_rack(app).call(env)
-      env['warden'].user.should == "foo as a user"
+      setup_rack(app).call(@env)
+      @env['warden'].user.should == "foo as a user"
     end
 
     it "should look for an active user in the session with authenticate?" do
@@ -152,9 +144,8 @@ describe Warden::Proxy do
         env['warden'].authenticate?(:pass, :scope => :foo_scope)
         valid_response
       end
-      env = env_with_params
-      setup_rack(app).call(env)
-      env['warden'].user(:foo_scope).should == "a foo user"
+      setup_rack(app).call(@env)
+      @env['warden'].user(:foo_scope).should == "a foo user"
     end
 
     it "should look for an active user in the session with authenticate!" do
@@ -163,9 +154,8 @@ describe Warden::Proxy do
         env['warden'].authenticate!(:pass, :scope => :foo_scope)
         valid_response
       end
-      env = env_with_params
-      setup_rack(app).call(env)
-      env['warden'].user(:foo_scope).should == "a foo user"
+      setup_rack(app).call(@env)
+      @env['warden'].user(:foo_scope).should == "a foo user"
     end
 
     it "should throw an error when authenticate!" do
@@ -173,8 +163,7 @@ describe Warden::Proxy do
         env['warden'].authenticate!(:pass, :scope => :failz)
         raise "OMG"
       end
-      env = env_with_params
-      setup_rack(app).call(env)
+      setup_rack(app).call(@env)
     end
 
     it "should login 2 different users from the session" do
@@ -186,11 +175,10 @@ describe Warden::Proxy do
         env['warden'].should_not be_authenticated # default scope
         valid_response
       end
-      env = env_with_params
-      setup_rack(app).call(env)
-      env['warden'].user(:foo).should == 'foo user'
-      env['warden'].user(:bar).should == 'bar user'
-      env['warden'].user.should be_nil
+      setup_rack(app).call(@env)
+      @env['warden'].user(:foo).should == 'foo user'
+      @env['warden'].user(:bar).should == 'bar user'
+      @env['warden'].user.should be_nil
     end
 
     it "should not authenticate other scopes just because the first is authenticated" do
@@ -201,14 +189,66 @@ describe Warden::Proxy do
         env['warden'].should_not be_authenticated(:bar)
         valid_response
       end
-      env = env_with_params
-      setup_rack(app).call(env)
+      setup_rack(app).call(@env)
+    end
+
+    SID_REGEXP = /rack\.session=([^;]*);/
+
+    it "should renew session" do
+      app = lambda do |env|
+        env["rack.session"]["counter"] ||= 0
+        env["rack.session"]["counter"] += 1
+        if env["warden.on"]
+          env["warden"].authenticate!(:pass) 
+          env['warden'].should be_authenticated
+        end
+        valid_response
+      end
+
+      # Setup a rack app with Pool session.
+      app = setup_rack(app, :session => Rack::Session::Pool).to_app
+      response = app.call(@env)
+      @env["rack.session"]["counter"].should == 1
+
+      # Ensure a cookie was given back
+      cookie = response[1]["Set-Cookie"]
+      cookie.should_not be_nil
+
+      # Ensure a session id was given
+      sid = cookie.match(SID_REGEXP)[1]
+      sid.should_not be_nil
+
+      # Do another request, but now passing the session id cookie
+      env = env_with_params("/", {}, "HTTP_COOKIE" => cookie)
+      response = app.call(env)
+      env["rack.session"]["counter"].should == 2
+
+      # Depending on rack version, a cookie will be returned with the
+      # same session id or no cookie is given back (becase it did not change).
+      # If we don't get any of these two behaviors, raise an error.
+      new_cookie = response[1]["Set-Cookie"]
+      if new_cookie && new_cookie.match(SID_REGEXP)[1] != sid
+        raise "Expected a cookie to not be sent or session id to match"
+      end
+
+      # Do another request, giving a cookie but turning on warden authentication
+      env = env_with_params("/", {}, "HTTP_COOKIE" => cookie, "warden.on" => true)
+      response = app.call(env)
+      @env["rack.session"]["counter"].should == 3
+
+      # Regardless of rack version, a cookie should be sent back
+      new_cookie = response[1]["Set-Cookie"]
+      new_cookie.should_not be_nil
+
+      # And the session id in this cookie should not be the same as the previous one
+      new_sid = new_cookie.match(SID_REGEXP)[1]
+      new_sid.should_not be_nil
+      new_sid.should_not == sid
     end
   end
 
   describe "authentication cache" do
     it "should run strategies just once for a given scope" do
-      env = env_with_params("/")
       app = lambda do |env|
         env['warden'].authenticate(:password, :pass, :scope => :failz)
         env['warden'].should_not be_authenticated(:failz)
@@ -217,11 +257,10 @@ describe Warden::Proxy do
         env['warden.spec.strategies'].should == [:password, :pass]
         valid_response
       end
-      setup_rack(app).call(env)
+      setup_rack(app).call(@env)
     end
 
     it "should run strategies for a given scope several times if cache is cleaned" do
-      env = env_with_params("/")
       app = lambda do |env|
         env['warden'].authenticate(:password, :pass, :scope => :failz)
         env['warden'].clear_strategies_cache!(:scope => :failz)
@@ -229,11 +268,10 @@ describe Warden::Proxy do
         env['warden.spec.strategies'].should == [:password, :pass, :password, :pass]
         valid_response
       end
-      setup_rack(app).call(env)
+      setup_rack(app).call(@env)
     end
 
     it "should clear the cache for a specified strategy" do
-      env = env_with_params("/")
       app = lambda do |env|
         env['warden'].authenticate(:password, :pass, :scope => :failz)
         env['warden'].clear_strategies_cache!(:password, :scope => :failz)
@@ -241,11 +279,10 @@ describe Warden::Proxy do
         env['warden.spec.strategies'].should == [:password, :pass, :password]
         valid_response
       end
-      setup_rack(app).call(env)
+      setup_rack(app).call(@env)
     end
 
     it "should run the strategies several times for different scopes" do
-      env = env_with_params("/")
       app = lambda do |env|
         env['warden'].authenticate(:password, :pass, :scope => :failz)
         env['warden'].should_not be_authenticated(:failz)
@@ -254,11 +291,10 @@ describe Warden::Proxy do
         env['warden.spec.strategies'].should == [:password, :pass, :password, :pass]
         valid_response
       end
-      setup_rack(app).call(env)
+      setup_rack(app).call(@env)
     end
 
     it "should not run strategies until cache is cleaned if latest winning strategy halted" do
-      env = env_with_params("/")
       app = lambda do |env|
         env['warden'].authenticate(:failz)
         env['warden'].should_not be_authenticated
@@ -266,12 +302,11 @@ describe Warden::Proxy do
         env['warden'].winning_strategy.message.should == "The Fails Strategy Has Failed You"
         valid_response
       end
-      setup_rack(app).call(env)
+      setup_rack(app).call(@env)
     end
 
     it "should not store user if strategy isn't meant for permanent login" do
-      env = env_with_params("/")
-      session = Warden::SessionSerializer.new(env)
+      session = Warden::SessionSerializer.new(@env)
       app = lambda do |env|
         env['warden'].authenticate(:single)
         env['warden'].should be_authenticated
@@ -279,14 +314,13 @@ describe Warden::Proxy do
         session.should_not be_stored(:default)
         valid_response
       end
-      setup_rack(app).call(env)
+      setup_rack(app).call(@env)
     end
 
   end
 
   describe "set user" do
     it "should store the user into the session" do
-      env = env_with_params("/")
       app = lambda do |env|
         env['warden'].authenticate(:pass)
         env['warden'].should be_authenticated
@@ -294,19 +328,18 @@ describe Warden::Proxy do
         env['rack.session']["warden.user.default.key"].should == "Valid User"
         valid_response
       end
-      setup_rack(app).call(env)
+      setup_rack(app).call(@env)
     end
 
     it "should not store the user if the :store option is set to false" do
-      env = env_with_params("/")
-      app = lambda do |e|
+      app = lambda do |env|
         env['warden'].authenticate(:pass, :store => false)
         env['warden'].should be_authenticated
         env['warden'].user.should == "Valid User"
         env['rack.session']['warden.user.default.key'].should be_nil
         valid_response
       end
-      setup_rack(app).call(env)
+      setup_rack(app).call(@env)
     end
   end
 
@@ -361,10 +394,9 @@ describe Warden::Proxy do
   describe "logout" do
 
     before(:each) do
-      @env = env = env_with_params
       @env['rack.session'] = {"warden.user.default.key" => "default key", "warden.user.foo.key" => "foo key", :foo => "bar"}
       @app = lambda do |e|
-        e['warden'].logout(env['warden.spec.which_logout'])
+        e['warden'].logout(e['warden.spec.which_logout'])
         valid_response
       end
     end
@@ -441,7 +473,7 @@ describe Warden::Proxy do
       app = lambda do |e|
         e['warden'].authenticate! :failz
       end
-      result = setup_rack(app, :failure_app => failure).call(env_with_params)
+      result = setup_rack(app, :failure_app => failure).call(@env)
       result.last.should == ["The Fails Strategy Has Failed You"]
     end
 
@@ -453,7 +485,7 @@ describe Warden::Proxy do
         e['warden'].authenticate! :pass_with_message
         success.call(e)
       end
-      result = setup_rack(app).call(env_with_params)
+      result = setup_rack(app).call(@env)
       result.last.should == ["The Success Strategy Has Accepted You"]
     end
 
@@ -461,7 +493,7 @@ describe Warden::Proxy do
       app = lambda do |e|
         [200, {"Content-Type" => "text/plain"}, [e['warden'].message]]
       end
-      result = setup_rack(app).call(env_with_params)
+      result = setup_rack(app).call(@env)
       result[2].should == [nil]
     end
   end
@@ -559,9 +591,8 @@ describe Warden::Proxy do
             env['warden'].authenticated?(:foo_scope)
             valid_response
           end
-          env = env_with_params
-          setup_rack(app).call(env)
-          env['warden'].user(:foo_scope).should be_nil
+          setup_rack(app).call(@env)
+          @env['warden'].user(:foo_scope).should be_nil
         ensure
           Warden::Manager.serialize_from_session { |k| k }
         end
@@ -699,6 +730,7 @@ describe "dynamic default_strategies" do
 
   before(:each) do
     @app = lambda{|e| e['warden'].authenticate! }
+    @env = env_with_params("/")
     $captures = []
   end
 
@@ -718,7 +750,7 @@ describe "dynamic default_strategies" do
       e['warden'].authenticate!
       Rack::Response.new("OK").finish
     end
-    setup_rack(app).call(env_with_params)
+    setup_rack(app).call(@env)
 
     $captures.should == [:one]
   end
@@ -730,7 +762,7 @@ describe "dynamic default_strategies" do
       e['warden'].authenticate!
       Rack::Response.new("OK").finish
     end
-    setup_rack(app).call(env_with_params)
+    setup_rack(app).call(@env)
 
     $captures.should == [:one]
   end
@@ -747,7 +779,7 @@ describe "dynamic default_strategies" do
       w.authenticate
       $captures.should == [:two]
     end
-    setup_rack(app).call(env_with_params)
+    setup_rack(app).call(@env)
     $captures.should == [:two]
   end
 
@@ -769,7 +801,7 @@ describe "dynamic default_strategies" do
         $captures << :complete
       end)
     end
-    builder.to_app.call(env_with_params)
+    builder.to_app.call(@env)
     $captures.should include(:complete)
   end
 
@@ -781,7 +813,7 @@ describe "dynamic default_strategies" do
       e['warden'].authenticate!
       Rack::Response.new("OK").finish
     end
-    setup_rack(app).call(env_with_params)
+    setup_rack(app).call(@env)
 
     $captures.should == [:one]
   end
@@ -834,9 +866,8 @@ describe "dynamic default_strategies" do
           Rack::Response.new("OK").finish
         end)
       end
-      env = env_with_params
-      session = env["rack.session"] = {}
-      builder.to_app.call(env)
+      session = @env["rack.session"] = {}
+      builder.to_app.call(@env)
       $captures.should include(:complete)
       session['warden.user.default.key'].should == "User"
       session['warden.user.foo.key'].should == "User"
