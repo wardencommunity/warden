@@ -84,7 +84,7 @@ describe Warden::Strategies::Base do
       end
     end
     env = env_with_params
-    env['warden.errors'] = Warden::Proxy::Errors.new
+    env['warden'] = Warden::Proxy.new(env, Warden::Manager.new({}))
     strategy = RAS[:foobar].new(env)
     strategy._run!
     strategy.errors.on(:foo).should == ["foo has an error"]
