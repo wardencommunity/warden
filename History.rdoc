@@ -1,3 +1,7 @@
+== Version 1.0.1 (to be released)
+
+* Added :intercept_401 to Warden::Config
+
 == Version 1.0.0
 * Bump!
 * Allow strategies to configure if user should be stored or not
