@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{warden}
-  s.version = "1.0.1"
+  s.version = "1.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Daniel Neighman"]
-  s.date = %q{2010-10-12}
+  s.date = %q{2010-11-09}
   s.email = %q{has.sox@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -35,8 +35,6 @@ Gem::Specification.new do |s|
      "lib/warden/test/helpers.rb",
      "lib/warden/test/warden_helpers.rb",
      "lib/warden/version.rb",
-     "script/destroy",
-     "script/generate",
      "spec/helpers/request_helper.rb",
      "spec/helpers/strategies/failz.rb",
      "spec/helpers/strategies/invalid.rb",
@@ -56,7 +54,6 @@ Gem::Specification.new do |s|
      "spec/warden/strategies_spec.rb",
      "spec/warden/test/helpers_spec.rb",
      "spec/warden/test/test_mode_spec.rb",
-     "spec/warden_spec.rb",
      "warden.gemspec"
   ]
   s.homepage = %q{http://github.com/hassox/warden}
@@ -84,8 +81,7 @@ Gem::Specification.new do |s|
      "spec/warden/strategies/base_spec.rb",
      "spec/warden/strategies_spec.rb",
      "spec/warden/test/helpers_spec.rb",
-     "spec/warden/test/test_mode_spec.rb",
-     "spec/warden_spec.rb"
+     "spec/warden/test/test_mode_spec.rb"
   ]
 
   if s.respond_to? :specification_version then
