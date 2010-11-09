@@ -44,7 +44,7 @@ module Warden
           result
         end
       when Hash
-        process_unauthenticated(env, result || {})
+        process_unauthenticated(env, result)
       end
     end
 
