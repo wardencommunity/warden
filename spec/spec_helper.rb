@@ -12,7 +12,7 @@ Dir[File.join(File.dirname(__FILE__), "helpers", "**/*.rb")].each do |f|
   require f
 end
 
-Spec::Runner.configure do |config|
+RSpec.configure do |config|
   config.include(Warden::Spec::Helpers)
 
   def load_strategies

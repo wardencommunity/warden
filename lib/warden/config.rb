@@ -32,13 +32,14 @@ module Warden
       end
     end
 
-    hash_accessor :failure_app, :default_scope
+    hash_accessor :failure_app, :default_scope, :intercept_401
 
     def initialize(other={})
       merge!(other)
       self[:default_scope]      ||= :default
       self[:scope_defaults]     ||= {}
       self[:default_strategies] ||= {}
+      self[:intercept_401] = true unless key?(:intercept_401)
     end
 
     def initialize_copy(other)

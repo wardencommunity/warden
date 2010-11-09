@@ -38,13 +38,13 @@ module Warden
       result ||= {}
       case result
       when Array
-        if result.first == 401 && !env['warden'].custom_failure?
+        if result.first == 401 && intercept_401?(env)
           process_unauthenticated(env)
         else
           result
         end
       when Hash
-        process_unauthenticated(env, result || {})
+        process_unauthenticated(env, result)
       end
     end
 
@@ -80,6 +80,10 @@ module Warden
     end
 
   private
+
+    def intercept_401?(env)
+      config[:intercept_401] && !env['warden'].custom_failure?
+    end
 
     # When a request is unauthentiated, here's where the processing occurs.
     # It looks at the result of the proxy to see if it's been executed and what action to take.

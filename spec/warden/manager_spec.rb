@@ -225,6 +225,16 @@ describe Warden::Manager do
         result[2].should == ["Fail From The App"]
       end
 
+      it "should allow you to customize the response without the explicit call to custom_failure! if not intercepting 401" do
+        app = lambda do |e|
+          [401,{'Content-Type' => 'text/plain'},["Fail From The App"]]
+        end
+        env = env_with_params
+        result = setup_rack(app, :intercept_401 => false).call(env)
+        result[0].should == 401
+        result[2].should == ["Fail From The App"]
+      end
+
       it "should render the failure application for a 401 if no custom_failure flag is set" do
         app = lambda do |e|
           [401,{'Content-Type' => 'text/plain'},["Fail From The App"]]

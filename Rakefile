@@ -1,6 +1,5 @@
 require 'rubygems'
-gem 'rspec'
-require 'spec/rake/spectask'
+require 'rspec/core/rake_task'
 require File.join(File.dirname(__FILE__), "lib", "warden", "version")
 
 begin
@@ -26,7 +25,7 @@ end
 task :default => :spec
 
 desc "Run specs"
-Spec::Rake::SpecTask.new do |t|
-  t.spec_files = FileList['spec/**/*_spec.rb']
-  t.spec_opts = %w(-fs --color --backtrace)
+RSpec::Core::RakeTask.new do |t|
+  t.pattern = 'spec/**/*_spec.rb'
+  t.rspec_opts = %w(-fs --color --backtrace)
 end
