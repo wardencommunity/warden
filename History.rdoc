@@ -1,3 +1,4 @@
+== Version 1.0.3
 * Do not renew session on user fetch
 
 == Version 1.0.2
