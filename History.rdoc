@@ -1,3 +1,5 @@
+* Do not renew session on user fetch
+
 == Version 1.0.2
 * Added :intercept_401 to Warden::Config
 

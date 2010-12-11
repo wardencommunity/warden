@@ -194,13 +194,13 @@ describe Warden::Proxy do
 
     SID_REGEXP = /rack\.session=([^;]*);/
 
-    it "should renew session" do
+    it "should renew session when user is set" do
       app = lambda do |env|
         env["rack.session"]["counter"] ||= 0
         env["rack.session"]["counter"] += 1
         if env["warden.on"]
-          env["warden"].authenticate!(:pass) 
-          env['warden'].should be_authenticated
+          env["warden"].authenticate!(:pass)
+          env["warden"].should be_authenticated
         end
         valid_response
       end
@@ -218,23 +218,10 @@ describe Warden::Proxy do
       sid = cookie.match(SID_REGEXP)[1]
       sid.should_not be_nil
 
-      # Do another request, but now passing the session id cookie
-      env = env_with_params("/", {}, "HTTP_COOKIE" => cookie)
-      response = app.call(env)
-      env["rack.session"]["counter"].should == 2
-
-      # Depending on rack version, a cookie will be returned with the
-      # same session id or no cookie is given back (becase it did not change).
-      # If we don't get any of these two behaviors, raise an error.
-      new_cookie = response[1]["Set-Cookie"]
-      if new_cookie && new_cookie.match(SID_REGEXP)[1] != sid
-        raise "Expected a cookie to not be sent or session id to match"
-      end
-
       # Do another request, giving a cookie but turning on warden authentication
       env = env_with_params("/", {}, "HTTP_COOKIE" => cookie, "warden.on" => true)
       response = app.call(env)
-      @env["rack.session"]["counter"].should == 3
+      @env["rack.session"]["counter"].should == 2
 
       # Regardless of rack version, a cookie should be sent back
       new_cookie = response[1]["Set-Cookie"]
@@ -244,6 +231,43 @@ describe Warden::Proxy do
       new_sid = new_cookie.match(SID_REGEXP)[1]
       new_sid.should_not be_nil
       new_sid.should_not == sid
+    end
+
+    it "should not renew session when user is fetch" do
+      app = lambda do |env|
+        env["rack.session"]["counter"] ||= 0
+        env["rack.session"]["counter"] += 1
+        env["warden"].authenticate!(:pass)
+        env["warden"].should be_authenticated
+        valid_response
+      end
+
+      # Setup a rack app with Pool session.
+      app = setup_rack(app, :session => Rack::Session::Pool).to_app
+      response = app.call(@env)
+      @env["rack.session"]["counter"].should == 1
+
+      # Ensure a cookie was given back
+      cookie = response[1]["Set-Cookie"]
+      cookie.should_not be_nil
+
+      # Ensure a session id was given
+      sid = cookie.match(SID_REGEXP)[1]
+      sid.should_not be_nil
+
+      # Do another request, passing the cookie. The user should be fetched from cookie.
+      env = env_with_params("/", {}, "HTTP_COOKIE" => cookie)
+      response = app.call(env)
+      @env["rack.session"]["counter"].should == 2
+
+      # Depending on rack version, a cookie will be returned with the
+      # same session id or no cookie is given back (becase it did not change).
+      # If we don't get any of these two behaviors, raise an error.
+      # Regardless of rack version, a cookie should be sent back
+      new_cookie = response[1]["Set-Cookie"]
+      if new_cookie && new_cookie.match(SID_REGEXP)[1] != sid
+        raise "Expected a cookie to not be sent or session id to match"
+      end
     end
   end
 

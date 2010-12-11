@@ -152,15 +152,15 @@ module Warden
 
       # Get the default options from the master configuration for the given scope
       opts = (@config[:scope_defaults][scope] || {}).merge(opts)
+      opts[:event] ||= :set_user
       @users[scope] = user
 
-      unless opts[:store] == false
+      if opts[:store] != false && opts[:event] != :fetch
         options = env[ENV_SESSION_OPTIONS]
         options[:renew] = true if options
         session_serializer.store(user, scope)
       end
 
-      opts[:event] ||= :set_user
       manager._run_callbacks(:after_set_user, user, self, opts)
       @users[scope]
     end
