@@ -4,7 +4,7 @@ require "warden/version"
 
 Gem::Specification.new do |s|
   s.name        = "warden"
-  s.version     = Warden::VERSION
+  s.version     = Warden::VERSION.dup
   s.platform    = Gem::Platform::RUBY
   s.summary     = "Rack middleware that provides authentication for rack applications"
   s.email       = "has.sox@gmail.com"
