@@ -259,6 +259,14 @@ module Warden
       !!@custom_failure
     end
 
+    def inspect(*args)
+      "Warden::Proxy:#{object_id} @config=#{@config.inspect}"
+    end
+
+    def to_s(*args)
+      inspect(*args)
+    end
+
     private
 
     def _perform_authentication(*args)
