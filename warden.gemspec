@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 
-require 'lib/warden/version'
+require './lib/warden/version'
 
 Gem::Specification.new do |s|
   s.name = %q{warden}
