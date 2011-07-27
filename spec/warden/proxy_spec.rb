@@ -219,9 +219,9 @@ describe Warden::Proxy do
       sid.should_not be_nil
 
       # Do another request, giving a cookie but turning on warden authentication
-      env = env_with_params("/", {}, "HTTP_COOKIE" => cookie, "warden.on" => true)
+      env = env_with_params("/", {}, 'rack.session' => @env['rack.session'], "HTTP_COOKIE" => cookie, "warden.on" => true)
       response = app.call(env)
-      @env["rack.session"]["counter"].should == 2
+      env["rack.session"]["counter"].should == 2
 
       # Regardless of rack version, a cookie should be sent back
       new_cookie = response[1]["Set-Cookie"]
@@ -258,7 +258,7 @@ describe Warden::Proxy do
       # Do another request, passing the cookie. The user should be fetched from cookie.
       env = env_with_params("/", {}, "HTTP_COOKIE" => cookie)
       response = app.call(env)
-      @env["rack.session"]["counter"].should == 2
+      env["rack.session"]["counter"].should == 2
 
       # Depending on rack version, a cookie will be returned with the
       # same session id or no cookie is given back (becase it did not change).
