@@ -1,3 +1,5 @@
+== Version 1.0.6
+* Remove gem files from the packaged gem
 == Version 1.0.3
 * Do not renew session on user fetch
 
