@@ -5,7 +5,7 @@ Warden::Strategies.add(:single) do
     request.env['warden.spec.strategies'] << :single
     success!("Valid User")
   end
-  
+
   def store?
     false
   end
