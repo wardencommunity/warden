@@ -1,6 +1,6 @@
 # encoding: utf-8
 module Warden
-  class Proxy 
+  class Proxy
     # Lifted from DataMapper's dm-validations plugin :)
     # @author Guy van den Berg
     # @since  DM 0.9
@@ -56,7 +56,7 @@ module Warden
       def errors
         @errors ||= {}
       end
-      
+
       def blank?(thing)
         thing.nil? || thing == "" || (thing.respond_to?(:empty?) && thing.empty?)
       end
