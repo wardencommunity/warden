@@ -126,6 +126,27 @@ describe Warden::Manager do
         result[2].body.should == ["Bad"]
         $throw_count.should == 2
       end
+
+      it "should use the default scopes action when a bare throw is used" do
+         env = env_with_params("/", :foo => "bar")
+         action = nil
+
+         failure = lambda do |env|
+           action = env['PATH_INFO'] 
+           [401, {}, ['fail']]
+         end
+
+         app = lambda do |env|
+           throw(:warden)
+         end
+         result = setup_rack(app,
+                             :failure_app => failure,
+                             :configurator => lambda{ |c| c.scope_defaults(:default, :action => 'my_action', :strategies => [:password]) }
+                            ).call(env)
+
+         action.should == "/my_action"
+         result.first.should == 401
+      end
     end # failure
   end
 

@@ -1,3 +1,5 @@
+== Version 1.0.7
+* Use the default scopes action when using a bare throw(:warden)
 == Version 1.0.6
 * Remove gem files from the packaged gem
 == Version 1.0.3

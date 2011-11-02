@@ -15,10 +15,11 @@ module Warden::Spec
       opts[:failure_app]         ||= failure_app
       opts[:default_strategies]  ||= [:password]
       opts[:default_serializers] ||= [:session]
+      blk = opts[:configurator] || lambda{}
 
       Rack::Builder.new do
         use opts[:session] || Warden::Spec::Helpers::Session
-        use Warden::Manager, opts
+        use Warden::Manager, opts, &blk
         run app
       end
     end
