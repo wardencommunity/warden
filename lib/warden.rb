@@ -1,4 +1,6 @@
 # encoding: utf-8
+puts "hello world from Warden"
+
 require 'forwardable'
 
 require 'warden/mixins/common'

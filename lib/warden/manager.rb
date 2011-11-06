@@ -112,13 +112,19 @@ module Warden
     # The before_failure hooks are run on each failure
     # :api: private
     def call_failure_app(env, options = {})
-      if config.failure_app
+      scope = (options[:scope] ||= config.default_scope)
+
+      failure_app = options[:failure_app] || config.failure_app
+
+      puts "[call_failure_app] scope = #{scope} / #{options.inspect} / #{failure_app.inspect}"
+
+      if failure_app
         options.merge!(:attempted_path => ::Rack::Request.new(env).fullpath)
         env["PATH_INFO"] = "/#{options[:action]}"
         env["warden.options"] = options
 
         _run_callbacks(:before_failure, env, options)
-        config.failure_app.call(env).to_a
+        failure_app.call(env).to_a
       else
         raise "No Failure App provided"
       end
