@@ -59,6 +59,31 @@ describe Warden::Manager do
         result.last.should == ["Failure App"]
       end
 
+      it "should render the default failure app when there's a failure and no scoped failure app" do
+        app = lambda do |e|
+          throw(:warden, :action => :unauthenticated, :failure_app => nil) unless e['warden'].authenticated?(:failz)
+        end
+        fail_app = lambda do |e|
+          [401, {"Content-Type" => "text/plain"}, ["Failure App"]]
+        end
+        result = setup_rack(app, :failure_app => fail_app).call(env_with_params)
+        result.last.should == ["Failure App"]
+      end
+
+      it "should render the scoped failure app when there's a failure and a defined scoped failure app" do
+        fail_app = lambda do |e|
+          [401, {"Content-Type" => "text/plain"}, ["Failure App"]]
+        end
+        custom_fail_app = lambda do |e|
+          [401, {"Content-Type" => "text/plain"}, ["Custom Failure App"]]
+        end
+        app = lambda do |e|
+          throw(:warden, :action => :unauthenticated, :scope => :custom, :failure_app => custom_fail_app) unless e['warden'].authenticated?(:failz)
+        end
+        result = setup_rack(app, :failure_app => fail_app).call(env_with_params)
+        result.last.should == ["Custom Failure App"]
+      end
+
       it "should call failure app if warden is thrown even after successful authentication" do
         env = env_with_params("/", {})
         app = lambda do |env|
@@ -132,7 +157,7 @@ describe Warden::Manager do
          action = nil
 
          failure = lambda do |env|
-           action = env['PATH_INFO'] 
+           action = env['PATH_INFO']
            [401, {}, ['fail']]
          end
 
