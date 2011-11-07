@@ -21,6 +21,7 @@ module Warden
       @app, @config = app, Warden::Config.new(options)
       @config.default_strategies *default_strategies if default_strategies
       yield @config if block_given?
+
       self
     end
 
@@ -112,11 +113,7 @@ module Warden
     # The before_failure hooks are run on each failure
     # :api: private
     def call_failure_app(env, options = {})
-      scope = (options[:scope] ||= config.default_scope)
-
       failure_app = options[:failure_app] || config.failure_app
-
-      puts "[call_failure_app] scope = #{scope} / #{options.inspect} / #{failure_app.inspect}"
 
       if failure_app
         options.merge!(:attempted_path => ::Rack::Request.new(env).fullpath)
