@@ -45,6 +45,8 @@ module Warden
         end
       when Hash
         process_unauthenticated(env, result)
+      end.tap do |response|
+        set_warden_cookies(env, response[1]) if response
       end
     end
 
@@ -123,5 +125,15 @@ module Warden
         raise "No Failure App provided"
       end
     end # call_failure_app
+
+    # Sets headers for cookies in env['warden.cookies'].
+    def set_warden_cookies(env, headers)
+      cookies = env['warden.cookies']
+      if cookies and cookies.any?
+        cookies.each do |key, value|
+          Rack::Utils.set_cookie_header!(headers, key, value)
+        end
+      end
+    end # set_warden_cookies
   end
 end # Warden

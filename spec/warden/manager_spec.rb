@@ -219,6 +219,17 @@ describe Warden::Manager do
         result[1]["Location"].should == "/foo/bar?foo=bar"
         result[1]["Content-Type"].should == "text/plain"
       end
+
+      it 'should set warden_cookies' do
+        RAS.add(:foobar) do
+          def authenticate!
+            warden_cookies[:something] = {:value => 'else'}
+            redirect!('/foo/bar')
+          end
+        end
+        result = @app.call(env_with_params)
+        result[1]['Set-Cookie'].should eq('something=else')
+      end
     end
 
     describe "failing" do
@@ -265,6 +276,16 @@ describe Warden::Manager do
         result[2].should == ["You Fail!"]
       end
 
+      it 'should set warden_cookies' do
+        RAS.add(:foobar) do
+          def authenticate!
+            warden_cookies[:something] = {:value => 'else'}
+            fail!
+          end
+        end
+        result = @app.call(env_with_params)
+        result[1]['Set-Cookie'].should eq('something=else')
+      end
     end # failing
 
     describe "custom rack response" do
@@ -279,6 +300,17 @@ describe Warden::Manager do
         result[1]["Custom-Header"].should == "foo"
         result[2].should == ["Custom Stuff"]
       end
+
+      it 'should set warden_cookies' do
+        RAS.add(:foobar) do
+          def authenticate!
+            warden_cookies[:something] = {:value => 'else'}
+            custom!([523, {}, ['bar']])
+          end
+        end
+        result = @app.call(env_with_params)
+        result[1]['Set-Cookie'].should eq('something=else')
+      end
     end
 
     describe "success" do
@@ -292,6 +324,17 @@ describe Warden::Manager do
         result = @app.call(env)
         result[0].should == 200
         result[2].should == ["Foo Is A Winna"]
+      end
+
+      it 'should set warden_cookies' do
+        RAS.add(:foobar) do
+          def authenticate!
+            warden_cookies[:something] = {:value => 'else'}
+            success!('A User')
+          end
+        end
+        result = @app.call(env_with_params)
+        result[1]['Set-Cookie'].should eq('something=else')
       end
     end
   end # integrated strategies
