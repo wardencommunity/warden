@@ -132,7 +132,7 @@ describe Warden::Manager do
          action = nil
 
          failure = lambda do |env|
-           action = env['PATH_INFO'] 
+           action = env['PATH_INFO']
            [401, {}, ['fail']]
          end
 
