@@ -4,7 +4,7 @@ require './lib/warden/version'
 
 Gem::Specification.new do |s|
   s.name = %q{warden}
-  s.version = Warden::VERSION
+  s.version = Warden::VERSION.dup
   s.authors = ["Daniel Neighman"]
   s.date = %q{2011-07-27}
   s.email = %q{has.sox@gmail.com}
