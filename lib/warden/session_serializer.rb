@@ -21,11 +21,13 @@ module Warden
     end
 
     def store(user, scope)
+      return unless session
       return unless user
       session[key_for(scope)] = serialize(user)
     end
 
     def fetch(scope)
+      return unless session
       key = session[key_for(scope)]
       return nil unless key
       user = deserialize(key)
