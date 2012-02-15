@@ -160,10 +160,10 @@ module Warden
         options[:renew] = true if options
         session_serializer.store(user, scope)
       end
-      
+
       run_callbacks = opts.fetch(:run_callbacks, true)
-      
       manager._run_callbacks(:after_set_user, user, self, opts) if run_callbacks
+
       @users[scope]
     end
 
@@ -188,21 +188,13 @@ module Warden
     #  env['warden'].user(:scope => :admin, :run_callbacks => true)
     #
     # :api: public
-    def user(argument = nil)
-      scope = case argument
-        when NilClass then @config.default_scope
-        when Hash then (argument[:scope] || @config.default_scope)
-        when Symbol then argument
-        else argument
-      end
-      
-      opts = argument.is_a?(Hash) ? argument : { :run_callbacks => true }
+    def user(argument = {})
+      opts  = argument.is_a?(Hash) ? argument : { :scope => argument }
+      scope = (opts[:scope] ||= @config.default_scope)
 
       @users[scope] ||= begin
         user = session_serializer.fetch(scope)
-
-        opts.merge!({:scope => scope, :event => :fetch })
-
+        opts[:event] = :fetch
         set_user(user, opts) if user
       end
     end
