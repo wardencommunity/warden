@@ -178,16 +178,30 @@ module Warden
     #   # with scope
     #   env['warden'].user(:admin)
     #
+    #   # as a Hash
+    #   env['warden'].user(:scope => :admin)
+    #
     #   # with default scope and run_callbacks option
-    #   env['warden'].user(nil, :run_callbacks => false)
+    #   env['warden'].user(:run_callbacks => false)
+    #
+    #  # with a scope and run_callbacks option
+    #  env['warden'].user(:scope => :admin, :run_callbacks => true)
+    #
     # :api: public
-    def user(scope = @config.default_scope, opts = {})
-      scope ||= @config.default_scope
+    def user(argument = nil)
+      scope = case argument
+        when NilClass then @config.default_scope
+        when Hash then (argument[:scope] || @config.default_scope)
+        when Symbol then argument
+        else argument
+      end
+      
+      opts = argument.is_a?(Hash) ? argument : { :run_callbacks => true }
 
       @users[scope] ||= begin
         user = session_serializer.fetch(scope)
-        
-        opts.merge!({:scope => scope, :event => :fetch})
+
+        opts.merge!({:scope => scope, :event => :fetch })
 
         set_user(user, opts) if user
       end
@@ -332,6 +346,6 @@ module Warden
         raise "Invalid strategy #{name}"
       end
     end
-
   end # Proxy
+
 end # Warden

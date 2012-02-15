@@ -369,7 +369,7 @@ describe Warden::Proxy do
     it "should not run the callbacks when :run_callbacks is false" do
       app = lambda do |env|
         env['warden'].manager.should_not_receive(:_run_callbacks)
-        env['warden'].authenticate(:pass, :run_callbacks => false)
+        env['warden'].authenticate(:run_callbacks => false, :scope => :pass)
         valid_response
       end
       setup_rack(app).call(@env)
@@ -378,7 +378,7 @@ describe Warden::Proxy do
     it "should run the callbacks when :run_callbacks is true" do
       app = lambda do |env|
         env['warden'].manager.should_receive(:_run_callbacks)
-        env['warden'].authenticate(:pass, :run_callbacks => true)
+        env['warden'].authenticate(:pass)
         valid_response
       end
       setup_rack(app).call(@env)
@@ -444,7 +444,7 @@ describe Warden::Proxy do
         it "should not call run_callbacks when we pass a :run_callback => false" do
           app = lambda do |env|
             env['warden'].manager.should_not_receive(:_run_callbacks)
-            env['warden'].user(nil, :run_callbacks => false)
+            env['warden'].user(:run_callbacks => false)
             valid_response
           end
           setup_rack(app).call(@env)
@@ -453,7 +453,7 @@ describe Warden::Proxy do
         it "should call run_callbacks when we pass a :run_callback => true" do
           app = lambda do |env|
             env['warden'].manager.should_receive(:_run_callbacks)
-            env['warden'].user(nil, :run_callbacks => true)
+            env['warden'].user(:run_callbacks => true)
             valid_response
           end
           setup_rack(app).call(@env)
