@@ -160,8 +160,10 @@ module Warden
         options[:renew] = true if options
         session_serializer.store(user, scope)
       end
-
-      manager._run_callbacks(:after_set_user, user, self, opts)
+      
+      run_callbacks = opts.fetch(:run_callbacks, true)
+      
+      manager._run_callbacks(:after_set_user, user, self, opts) if run_callbacks
       @users[scope]
     end
 
