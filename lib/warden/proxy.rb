@@ -144,7 +144,7 @@ module Warden
     #
     # Parameters:
     #   user - An object that has been setup to serialize into and out of the session.
-    #   opts - An options hash.  Use the :scope option to set the scope of the user, set the :store option to false to skip serializing into the session.
+    #   opts - An options hash.  Use the :scope option to set the scope of the user, set the :store option to false to skip serializing into the session, set the :run_callbacks to false to skip running the callbacks (the default is true).
     #
     # :api: public
     def set_user(user, opts = {})
@@ -178,8 +178,12 @@ module Warden
     #   # with scope
     #   env['warden'].user(:admin)
     #
+    #   # with default scope and run_callbacks option
+    #   env['warden'].user(nil, :run_callbacks => false)
     # :api: public
     def user(scope = @config.default_scope, opts = {})
+      scope ||= @config.default_scope
+
       @users[scope] ||= begin
         user = session_serializer.fetch(scope)
         
