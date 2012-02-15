@@ -144,7 +144,7 @@ module Warden
     #
     # Parameters:
     #   user - An object that has been setup to serialize into and out of the session.
-    #   opts - An options hash.  Use the :scope option to set the scope of the user, set the :store option to false to skip serializing into the session.
+    #   opts - An options hash.  Use the :scope option to set the scope of the user, set the :store option to false to skip serializing into the session, set the :run_callbacks to false to skip running the callbacks (the default is true).
     #
     # :api: public
     def set_user(user, opts = {})
@@ -178,11 +178,32 @@ module Warden
     #   # with scope
     #   env['warden'].user(:admin)
     #
+    #   # as a Hash
+    #   env['warden'].user(:scope => :admin)
+    #
+    #   # with default scope and run_callbacks option
+    #   env['warden'].user(:run_callbacks => false)
+    #
+    #  # with a scope and run_callbacks option
+    #  env['warden'].user(:scope => :admin, :run_callbacks => true)
+    #
     # :api: public
-    def user(scope = @config.default_scope)
+    def user(argument = nil)
+      scope = case argument
+        when NilClass then @config.default_scope
+        when Hash then (argument[:scope] || @config.default_scope)
+        when Symbol then argument
+        else argument
+      end
+      
+      opts = argument.is_a?(Hash) ? argument : { :run_callbacks => true }
+
       @users[scope] ||= begin
         user = session_serializer.fetch(scope)
-        set_user(user, :scope => scope, :event => :fetch) if user
+
+        opts.merge!({:scope => scope, :event => :fetch })
+
+        set_user(user, opts) if user
       end
     end
 
@@ -325,6 +346,6 @@ module Warden
         raise "Invalid strategy #{name}"
       end
     end
-
   end # Proxy
+
 end # Warden
