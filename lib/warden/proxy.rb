@@ -179,10 +179,13 @@ module Warden
     #   env['warden'].user(:admin)
     #
     # :api: public
-    def user(scope = @config.default_scope)
+    def user(scope = @config.default_scope, opts = {})
       @users[scope] ||= begin
         user = session_serializer.fetch(scope)
-        set_user(user, :scope => scope, :event => :fetch) if user
+        
+        opts.merge!({:scope => scope, :event => :fetch})
+
+        set_user(user, opts) if user
       end
     end
 

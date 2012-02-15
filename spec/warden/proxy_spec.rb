@@ -439,6 +439,35 @@ describe Warden::Proxy do
         setup_rack(app).call(@env)
         @env['warden.spec.strategies'].should_not include(:pass)
       end
+
+      describe "run callback option" do
+        it "should not call run_callbacks when we pass a :run_callback => false" do
+          app = lambda do |env|
+            env['warden'].manager.should_not_receive(:_run_callbacks)
+            env['warden'].user(env['warden'].config.default_scope, :run_callbacks => false)
+            valid_response
+          end
+          setup_rack(app).call(@env)
+        end
+
+        it "should call run_callbacks when we pass a :run_callback => true" do
+          app = lambda do |env|
+            env['warden'].manager.should_receive(:_run_callbacks)
+            env['warden'].user(env['warden'].config.default_scope, :run_callbacks => true)
+            valid_response
+          end
+          setup_rack(app).call(@env)
+        end
+
+        it "should call run_callbacks by default" do
+          app = lambda do |env|
+            env['warden'].manager.should_receive(:_run_callbacks)
+            env['warden'].user
+            valid_response
+          end
+          setup_rack(app).call(@env)
+        end
+      end
     end
   end
 
