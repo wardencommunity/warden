@@ -85,7 +85,7 @@ module Warden
       config[:intercept_401] && !env['warden'].custom_failure?
     end
 
-    # When a request is unauthentiated, here's where the processing occurs.
+    # When a request is unauthenticated, here's where the processing occurs.
     # It looks at the result of the proxy to see if it's been executed and what action to take.
     # :api: private
     def process_unauthenticated(env, options={})
