@@ -1,5 +1,6 @@
 # encoding: utf-8
 require 'spec_helper'
+require 'ruby-debug'
 
 describe Warden::Proxy do
 
@@ -954,6 +955,31 @@ describe "dynamic default_strategies" do
       session.key?('warden.user.bar.key').should be_false
       session['warden.user.bar.key'].should be_nil
       session['warden.user.baz.key'].should == "User"
+    end
+  end
+
+  describe "#asset_request?" do
+    before(:each) do
+      @asset_regex = /^\/assets\//
+      ::Warden.asset_paths = @asset_regex
+    end
+
+    it "should return true if PATH_INFO is in asset list" do
+      env = env_with_params('/assets/fun.gif')
+      setup_rack(success_app).call(env)
+      proxy = env["warden"]
+
+      proxy.env['PATH_INFO'].should match(@asset_regex)
+      proxy.should be_asset_request
+    end
+
+    it "should return false if PATH_INFO is not in asset list" do
+      env = env_with_params('/home')
+      setup_rack(success_app).call(env)
+      proxy = env["warden"]
+
+      proxy.env['PATH_INFO'].should_not match(@asset_regex)
+      proxy.should_not be_asset_request
     end
   end
 end

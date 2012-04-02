@@ -268,10 +268,16 @@ module Warden
       @custom_failure = true
     end
 
-    # Check to see if the custom failur flag has been set
+    # Check to see if the custom failure flag has been set
     # :api: public
     def custom_failure?
       !!@custom_failure
+    end
+
+    # Check to see if this is an asset request
+    # :api: public
+    def asset_request?
+      ::Warden::asset_paths.any? { |r| env['PATH_INFO'].to_s.match(r) }
     end
 
     def inspect(*args)

@@ -4,6 +4,20 @@ module Warden
 
   module Test
     module WardenHelpers
+      # Returns list of regex objects that match paths expected to be an asset
+      # @see Warden::Proxy#asset_request?
+      # @api public
+      def asset_paths
+        @asset_paths ||= [/^\/assets\//]
+      end
+
+      # Sets list of regex objects that match paths expected to be an asset
+      # @see Warden::Proxy#asset_request?
+      # @api public
+      def asset_paths=(*vals)
+        @asset_paths = vals
+      end
+
       # Adds a block to be executed on the next request when the stack reaches warden.
       # The warden proxy is yielded to the block
       # @api public
