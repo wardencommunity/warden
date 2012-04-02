@@ -1,6 +1,5 @@
 # encoding: utf-8
 require 'spec_helper'
-require 'ruby-debug'
 
 describe Warden::Proxy do
 

@@ -8,5 +8,4 @@ gem 'rack', '1.3'
 group :test do
   gem 'rspec', '~>2'
   gem 'rack-test'
-  gem 'ruby-debug19'
 end
