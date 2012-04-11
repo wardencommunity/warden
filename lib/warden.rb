@@ -33,8 +33,10 @@ module Warden
     unless Warden::Test::WardenHelpers === Warden
       Warden.extend Warden::Test::WardenHelpers
       Warden::Manager.on_request do |proxy|
-        while blk = Warden._on_next_request.shift
-          blk.call(proxy)
+        unless proxy.asset_request?
+          while blk = Warden._on_next_request.shift
+            blk.call(proxy)
+          end
         end
       end
     end
