@@ -87,4 +87,9 @@ describe Warden::Test::Helpers do
     $captures.should == [:run]
   end
 
+  describe "#asset_paths" do
+    it "should default asset_paths to anything asset path regex" do
+      Warden.asset_paths.should == [/^\/assets\//]      
+    end
+  end
 end

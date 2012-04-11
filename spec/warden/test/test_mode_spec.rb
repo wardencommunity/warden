@@ -64,4 +64,13 @@ describe Warden::Test::WardenHelpers do
     app.call(env_with_params)
     $captures.should == []
   end
+
+  context "asset requests" do
+    it "should not execute on_next_request blocks if this is an asset request" do
+      app = setup_rack(@app)
+      Warden.on_next_request{|w| $captures << :first }
+      app.call(env_with_params("/assets/fun.gif"))
+      $captures.should == []
+    end
+  end
 end
