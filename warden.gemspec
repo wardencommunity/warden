@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
     "LICENSE",
      "README.textile"
   ]
-  s.files = Dir["**/*"] - Dir["*.gem"]
+  s.files = Dir["**/*"] - Dir["*.gem"] - ["Gemfile.lock"]
   s.homepage = %q{http://github.com/hassox/warden}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
