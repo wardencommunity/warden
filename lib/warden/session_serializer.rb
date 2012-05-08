@@ -22,8 +22,8 @@ module Warden
 
     def store(user, scope)
       return unless user
-			method_name = "#{scope}_serialize"
-			specialized = respond_to?(method_name)
+      method_name = "#{scope}_serialize"
+      specialized = respond_to?(method_name)
       session[key_for(scope)] = specialized ? send(method_name, user) : serialize(user)
     end
 
@@ -31,8 +31,8 @@ module Warden
       key = session[key_for(scope)]
       return nil unless key
 
-			method_name = "#{scope}_deserialize"
-			user = respond_to?(method_name) ? send(method_name, key) : deserialize(key)
+      method_name = "#{scope}_deserialize"
+      user = respond_to?(method_name) ? send(method_name, key) : deserialize(key)
       delete(scope) unless user
       user
     end
