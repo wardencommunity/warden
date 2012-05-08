@@ -1,3 +1,7 @@
+== Version 1.2.0 / 2012-05-08
+* Deprecate warden_cookies since it was never functional
+* Add support to serialize_from_session and serialize_into_session per scope
+
 == Version 1.1.1 / 2012-02-16
 * Allow run_callbacks as an option to set_user and user
 

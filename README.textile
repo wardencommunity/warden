@@ -1,11 +1,8 @@
 Please see the "Warden Wiki":http://wiki.github.com/hassox/warden for overview documentation.
 
-h2. Contributors
-
-I'm going to try and keep a list of all the contributors to this project.  If I've missed your name please just let me know and I'll update it.
+h2. Maintainers
 
 * Daniel Neighman (hassox)
-* Mick Staugaard (staugaard)
 * José Valim (josevalim)
-* Carlos Antonio da Silva (carlosantoniodasilva)
-* Justin Smestad (jsmestad)
+
+"A list of all contributors is available on Github.":https://github.com/hassox/warden/contributors
