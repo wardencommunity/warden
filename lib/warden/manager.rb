@@ -58,24 +58,33 @@ module Warden
       # Any object that can be serialized into the session in some way can be used as a "user" object
       # Generally however complex object should not be stored in the session.
       # If possible store only a "key" of the user object that will allow you to reconstitute it.
+			#
+			# You can supply different methods of serialization for different scopes by passing a scope symbol
       #
       # Example:
       #   Warden::Manager.serialize_into_session{ |user| user.id }
+			#   # With Scope:
+			#   Warden::Manager.serialize_into_session(:admin) { |user| user.id }
       #
       # :api: public
-      def serialize_into_session(&block)
-        Warden::SessionSerializer.send :define_method, :serialize, &block
+      def serialize_into_session(scope = nil, &block)
+				method_name = scope.nil? ? :serialize : "#{scope}_serialize"
+        Warden::SessionSerializer.send :define_method, method_name, &block
       end
 
       # Reconstitues the user from the session.
       # Use the results of user_session_key to reconstitue the user from the session on requests after the initial login
+			# You can supply different methods of de-serialization for different scopes by passing a scope symbol
       #
       # Example:
       #   Warden::Manager.serialize_from_session{ |id| User.get(id) }
+			#   # With Scope:
+			#   Warden::Manager.serialize_from_session(:admin) { |id| AdminUser.get(id) }
       #
       # :api: public
-      def serialize_from_session(&block)
-        Warden::SessionSerializer.send :define_method, :deserialize, &block
+      def serialize_from_session(scope = nil, &block)
+				method_name = scope.nil? ? :deserialize : "#{scope}_deserialize"
+        Warden::SessionSerializer.send :define_method, method_name, &block
       end
     end
 
