@@ -22,6 +22,7 @@ module Warden
       # when the response is streamed back from the app.
       # :api: public
       def warden_cookies
+        warn "warden_cookies was never functional and is going to be removed in next versions"
         env['warden.cookies'] ||= {}
       end # response
 
