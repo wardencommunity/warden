@@ -417,6 +417,16 @@ describe Warden::Proxy do
       setup_rack(app).call(@env)
     end
 
+    it "should not fetch user twice" do
+      Warden::SessionSerializer.any_instance.should_receive(:fetch).once
+      app = lambda do |env|
+        env['warden'].user.should be_nil
+        env['warden'].user.should be_nil
+        valid_response
+      end
+      setup_rack(app).call(@env)
+    end
+
     describe "previously logged in" do
       before(:each) do
         @env['rack.session']['warden.user.default.key'] = "A Previous User"

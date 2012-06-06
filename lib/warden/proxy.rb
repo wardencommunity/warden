@@ -192,10 +192,12 @@ module Warden
       opts  = argument.is_a?(Hash) ? argument : { :scope => argument }
       scope = (opts[:scope] ||= @config.default_scope)
 
-      @users[scope] ||= begin
+      if @users.has_key?(scope)
+        @users[scope]
+      else
         user = session_serializer.fetch(scope)
         opts[:event] = :fetch
-        set_user(user, opts) if user
+        @users[scope] = user ? set_user(user, opts) : nil
       end
     end
 
