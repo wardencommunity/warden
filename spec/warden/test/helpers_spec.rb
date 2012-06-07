@@ -2,8 +2,6 @@
 require 'spec_helper'
 
 describe Warden::Test::Helpers do
-  include Warden::Test::Helpers
-
   before{ $captures = [] }
   after{ Warden.test_reset! }
 
