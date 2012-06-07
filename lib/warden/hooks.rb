@@ -117,6 +117,34 @@ module Warden
       @_before_failure ||= []
     end
 
+    # A callback that runs after any user was fetched, which could be a user or no user.
+    #
+    # Parameters:
+    # <options> Some options which specify when the callback should be executed
+    #   scope  - Executes the callback only if it maches the scope(s) given
+    # <block> A block to contain logic for the callback
+    #   Block Parameters: |user, auth, scope|
+    #     user - The authenticated user for the current scope
+    #     auth - The warden proxy object
+    #     opts - any options passed into the authenticate call including :scope
+    #
+    # Example:
+    #   Warden::Manager.after_any_fetch do |user, auth, opts|
+    #     user.forget_me!
+    #   end
+    #
+    # :api: public
+    def after_any_fetch(options = {}, method = :push, &block)
+      raise BlockNotGiven unless block_given?
+      _after_any_fetch.send(method, [block, options])
+    end
+
+    # Provides access to the callback array for after_any_fetch
+    # :api: private
+    def _after_any_fetch
+      @_after_any_fetch ||= []
+    end
+
     # A callback that runs just prior to the logout of each scope.
     #
     # Parameters:

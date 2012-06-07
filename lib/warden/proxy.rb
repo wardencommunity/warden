@@ -197,6 +197,10 @@ module Warden
       else
         user = session_serializer.fetch(scope)
         opts[:event] = :fetch
+
+        run_callbacks = opts.fetch(:run_callbacks, true)
+        manager._run_callbacks(:after_any_fetch, user, self, :scope => scope) if run_callbacks
+
         @users[scope] = user ? set_user(user, opts) : nil
       end
     end
@@ -298,7 +302,7 @@ module Warden
 
       # Look for an existing user in the session for this scope.
       # If there was no user in the session. See if we can get one from the request.
-      return user, opts if user = user(scope)
+      return user, opts if user = user(opts.merge(:scope => scope))
       _run_strategies_for(scope, args)
 
       if winning_strategy && winning_strategy.user
