@@ -417,6 +417,16 @@ describe Warden::Proxy do
       setup_rack(app).call(@env)
     end
 
+    it "should cache unfound user" do
+      Warden::SessionSerializer.any_instance.should_receive(:fetch).once
+      app = lambda do |env|
+        env['warden'].user.should be_nil
+        env['warden'].user.should be_nil
+        valid_response
+      end
+      setup_rack(app).call(@env)
+    end
+
     describe "previously logged in" do
       before(:each) do
         @env['rack.session']['warden.user.default.key'] = "A Previous User"
@@ -425,6 +435,16 @@ describe Warden::Proxy do
 
       it "should take the user from the session when logged in" do
         app = lambda do |env|
+          env['warden'].user.should == "A Previous User"
+          valid_response
+        end
+        setup_rack(app).call(@env)
+      end
+
+      it "should cache found user" do
+        Warden::SessionSerializer.any_instance.should_receive(:fetch).once.and_return "A Previous User"
+        app = lambda do |env|
+          env['warden'].user.should == "A Previous User"
           env['warden'].user.should == "A Previous User"
           valid_response
         end
