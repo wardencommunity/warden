@@ -377,7 +377,7 @@ describe Warden::Proxy do
 
     it "should run the callbacks when :run_callbacks is true" do
       app = lambda do |env|
-        env['warden'].manager.should_receive(:_run_callbacks)
+        env['warden'].manager.should_receive(:_run_callbacks).at_least(:once)
         env['warden'].authenticate(:pass)
         valid_response
       end
@@ -386,7 +386,7 @@ describe Warden::Proxy do
 
     it "should run the callbacks by default" do
       app = lambda do |env|
-        env['warden'].manager.should_receive(:_run_callbacks)
+        env['warden'].manager.should_receive(:_run_callbacks).at_least(:once)
         env['warden'].authenticate(:pass)
         valid_response
       end
@@ -452,7 +452,7 @@ describe Warden::Proxy do
 
         it "should call run_callbacks when we pass a :run_callback => true" do
           app = lambda do |env|
-            env['warden'].manager.should_receive(:_run_callbacks)
+            env['warden'].manager.should_receive(:_run_callbacks).at_least(:once)
             env['warden'].user(:run_callbacks => true)
             valid_response
           end
@@ -461,7 +461,7 @@ describe Warden::Proxy do
 
         it "should call run_callbacks by default" do
           app = lambda do |env|
-            env['warden'].manager.should_receive(:_run_callbacks)
+            env['warden'].manager.should_receive(:_run_callbacks).at_least(:once)
             env['warden'].user
             valid_response
           end
