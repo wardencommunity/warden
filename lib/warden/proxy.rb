@@ -161,8 +161,8 @@ module Warden
         session_serializer.store(user, scope)
       end
 
-      run_callbacks = opts.fetch(:run_callbacks, true)
-      manager._run_callbacks(:after_set_user, user, self, opts) if run_callbacks
+      _run_callback :after_change_user, user, opts
+      _run_callback :after_set_user, user, opts
 
       @users[scope]
     end
@@ -198,10 +198,12 @@ module Warden
         user = session_serializer.fetch(scope)
         opts[:event] = :fetch
 
-        run_callbacks = opts.fetch(:run_callbacks, true)
-        manager._run_callbacks(:after_any_fetch, user, self, :scope => scope) if run_callbacks
-
-        @users[scope] = user ? set_user(user, opts) : nil
+        if user
+          @users[scope] = set_user(user, opts)
+        else
+          _run_callback :after_change_user, user, opts
+          @users[scope] = nil
+        end
       end
     end
 
@@ -350,6 +352,12 @@ module Warden
         raise "Invalid strategy #{name}"
       end
     end
+
+    def _run_callback(callback, user, opts)
+      run_callbacks = opts.fetch(:run_callbacks, true)
+      manager._run_callbacks(callback, user, self, opts) if run_callbacks
+    end
+
   end # Proxy
 
 end # Warden

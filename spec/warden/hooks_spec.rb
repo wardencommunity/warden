@@ -177,7 +177,49 @@ describe "standard authentication hooks" do
         env['warden.spec.order'].should == [1,2,3]
       end
     end
+  end
 
+  describe "after_change_user" do
+    before(:each) do
+      RAM = Warden::Manager unless defined?(RAM)
+      RAM._after_change_user.clear
+    end
+
+    after(:each) do
+      RAM._after_change_user.clear
+    end
+
+    it "should be called once when user is fetched" do
+      calls = 0
+      RAM.after_change_user{|u,a,o| calls += 1 }
+      env = env_with_params
+      setup_rack(lambda { |e| valid_response }).call(env)
+      env['rack.session']['warden.user.default.key'] = "Foo"
+
+      env['warden'].user.should == "Foo"
+      calls.should == 1
+    end
+
+    it "should be called when user is set" do
+      calls = 0
+      RAM.after_change_user{|u,a,o| calls += 1 }
+      app = lambda do |e|
+        e['warden'].set_user("foo")
+        valid_response
+      end
+      env = env_with_params
+      setup_rack(app).call(env)
+      calls.should == 1
+    end
+
+    it "should be called if fetched user is nil" do
+      calls = 0
+      RAM.after_change_user{|u,a,o| calls += 1 }
+      env = env_with_params
+      setup_rack(lambda { |e| valid_response }).call(env)
+      env['warden'].user.should be_nil
+      calls.should == 1
+    end
   end
 
   describe "before_failure" do

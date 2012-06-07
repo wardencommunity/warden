@@ -129,20 +129,20 @@ module Warden
     #     opts - any options passed into the authenticate call including :scope
     #
     # Example:
-    #   Warden::Manager.after_any_fetch do |user, auth, opts|
+    #   Warden::Manager.after_change_user do |user, auth, opts|
     #     user.forget_me!
     #   end
     #
     # :api: public
-    def after_any_fetch(options = {}, method = :push, &block)
+    def after_change_user(options = {}, method = :push, &block)
       raise BlockNotGiven unless block_given?
-      _after_any_fetch.send(method, [block, options])
+      _after_change_user.send(method, [block, options])
     end
 
-    # Provides access to the callback array for after_any_fetch
+    # Provides access to the callback array for after_change_user
     # :api: private
-    def _after_any_fetch
-      @_after_any_fetch ||= []
+    def _after_change_user
+      @_after_change_user ||= []
     end
 
     # A callback that runs just prior to the logout of each scope.
