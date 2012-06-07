@@ -14,6 +14,7 @@ end
 
 RSpec.configure do |config|
   config.include(Warden::Spec::Helpers)
+  config.include(Warden::Test::Helpers)
 
   def load_strategies
     Dir[File.join(File.dirname(__FILE__), "helpers", "strategies", "**/*.rb")].each do |f|
