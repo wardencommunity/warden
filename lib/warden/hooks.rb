@@ -117,7 +117,7 @@ module Warden
       @_before_failure ||= []
     end
 
-    # A callback that runs after any user was fetched, which could be a user or no user.
+    # A callback that runs if no user could be fetched, meaning there is now no user logged in.
     #
     # Parameters:
     # <options> Some options which specify when the callback should be executed
@@ -129,20 +129,20 @@ module Warden
     #     opts - any options passed into the authenticate call including :scope
     #
     # Example:
-    #   Warden::Manager.after_any_fetch do |user, auth, opts|
-    #     user.forget_me!
+    #   Warden::Manager.after_failed_fetch do |user, auth, opts|
+    #     I18n.locale = :en
     #   end
     #
     # :api: public
-    def after_any_fetch(options = {}, method = :push, &block)
+    def after_failed_fetch(options = {}, method = :push, &block)
       raise BlockNotGiven unless block_given?
-      _after_any_fetch.send(method, [block, options])
+      _after_failed_fetch.send(method, [block, options])
     end
 
-    # Provides access to the callback array for after_any_fetch
+    # Provides access to the callback array for after_failed_fetch
     # :api: private
-    def _after_any_fetch
-      @_after_any_fetch ||= []
+    def _after_failed_fetch
+      @_after_failed_fetch ||= []
     end
 
     # A callback that runs just prior to the logout of each scope.

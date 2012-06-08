@@ -195,13 +195,12 @@ module Warden
       if @users.has_key?(scope)
         @users[scope]
       else
-        user = session_serializer.fetch(scope)
-        opts[:event] = :fetch
+        unless user = session_serializer.fetch(scope)
+          run_callbacks = opts.fetch(:run_callbacks, true)
+          manager._run_callbacks(:after_failed_fetch, user, self, :scope => scope) if run_callbacks
+        end
 
-        run_callbacks = opts.fetch(:run_callbacks, true)
-        manager._run_callbacks(:after_any_fetch, user, self, :scope => scope) if run_callbacks
-
-        @users[scope] = user ? set_user(user, opts) : nil
+        @users[scope] = user ? set_user(user, opts.merge(:event => :fetch)) : nil
       end
     end
 
