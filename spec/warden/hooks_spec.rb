@@ -177,7 +177,35 @@ describe "standard authentication hooks" do
         env['warden.spec.order'].should == [1,2,3]
       end
     end
+  end
 
+
+  describe "after_failed_fetch" do
+    before(:each) do
+      RAM = Warden::Manager unless defined?(RAM)
+      RAM._after_failed_fetch.clear
+    end
+
+    after(:each) do
+      RAM._after_failed_fetch.clear
+    end
+
+    it "should not be called when user is fetched" do
+      RAM.after_failed_fetch{|u,a,o| fail }
+      env = env_with_params
+      setup_rack(lambda { |e| valid_response }).call(env)
+      env['rack.session']['warden.user.default.key'] = "Foo"
+      env['warden'].user.should == "Foo"
+    end
+
+    it "should be called if fetched user is nil" do
+      calls = 0
+      RAM.after_failed_fetch{|u,a,o| calls += 1 }
+      env = env_with_params
+      setup_rack(lambda { |e| valid_response }).call(env)
+      env['warden'].user.should be_nil
+      calls.should == 1
+    end
   end
 
   describe "before_failure" do
