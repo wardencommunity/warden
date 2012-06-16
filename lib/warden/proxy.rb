@@ -25,7 +25,7 @@ module Warden
     def_delegators :config, :default_strategies
 
     def initialize(env, manager) #:nodoc:
-      @env, @users, @winning_strategies = env, {}, {}
+      @env, @users, @winning_strategies, @locked = env, {}, {}, false
       @manager, @config = manager, manager.config.dup
       @strategies = Hash.new { |h,k| h[k] = {} }
       manager._run_callbacks(:on_request, self)
@@ -45,9 +45,13 @@ module Warden
       @session_serializer ||= Warden::SessionSerializer.new(@env)
     end
 
-    # Clear the cache of performed strategies so far. It has the same API
-    # as authenticate, allowing you to clear an specific strategies for
-    # given scope:
+    # Clear the cache of performed strategies so far. Warden runs each
+    # strategy just once during the request lifecycle. You can clear the
+    # strategies cache if you want to allow a strategy to be run more than
+    # once.
+    #
+    # This method has the same API as authenticate, allowing you to clear
+    # specific strategies for given scope:
     #
     # Parameters:
     #   args - a list of symbols (labels) that name the strategies to attempt
@@ -73,6 +77,16 @@ module Warden
       end
     end
 
+    # Locks the proxy so new users cannot authenticate during the
+    # request lifecycle. This is useful when the request cannot
+    # be verified (for example, using a CSRF verification token).
+    # Notice that already authenticated users are kept as so.
+    #
+    # :api: public
+    def lock!
+      @locked = true
+    end
+
     # Run the authentiation strategies for the given strategies.
     # If there is already a user logged in for a given scope, the strategies are not run
     # This does not halt the flow of control and is a passive attempt to authenticate only
@@ -93,8 +107,8 @@ module Warden
 
     # Same API as authenticated, but returns a boolean instead of a user.
     # The difference between this method (authenticate?) and authenticated?
-    # is that the former will run strategies if the user has not yet been authenticated,
-    # and the second relies on already performed ones.
+    # is that the former will run strategies if the user has not yet been
+    # authenticated, and the second relies on already performed ones.
     # :api: public
     def authenticate?(*args)
       result = !!authenticate(*args)
@@ -323,6 +337,9 @@ module Warden
     def _run_strategies_for(scope, args) #:nodoc:
       self.winning_strategy = @winning_strategies[scope]
       return if winning_strategy && winning_strategy.halted?
+
+      # Do not run any strategy if locked
+      return if @locked
 
       if args.empty?
         defaults   = @config[:default_strategies]

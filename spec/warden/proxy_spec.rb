@@ -394,6 +394,26 @@ describe Warden::Proxy do
     end    
   end
 
+  describe "lock" do
+    it "should not run any strategy" do
+      app = lambda do |env|
+        env['warden'].lock!
+        env['warden'].authenticate(:pass)
+        env['warden'].user.should be_nil
+        valid_response
+      end
+    end
+
+    it "should keep already authenticated users" do
+      app = lambda do |env|
+        env['warden'].authenticate(:pass)
+        env['warden'].lock!
+        env['warden'].user.should be
+        valid_response
+      end
+    end
+  end
+
   describe "get user" do
     before(:each) do
       @env['rack.session'] ||= {}
