@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    warden (1.2.0)
+    warden (1.2.1)
       rack (>= 1.0)
 
 GEM
