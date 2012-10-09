@@ -10,14 +10,14 @@ describe Warden::Manager do
   it "should insert a Proxy object into the rack env" do
     env = env_with_params
     setup_rack(success_app).call(env)
-    env["warden"].should be_an_instance_of(Warden::Proxy)
+    env["warden.env"].should be_an_instance_of(Warden::Proxy)
   end
 
   describe "thrown auth" do
     before(:each) do
       @basic_app = lambda{|env| [200,{'Content-Type' => 'text/plain'},'OK']}
       @authd_app = lambda do |e|
-        if e['warden'].authenticated?
+        if e['warden.env'].authenticated?
           [200,{'Content-Type' => 'text/plain'},"OK"]
         else
           [401,{'Content-Type' => 'text/plain'},"Fail From The App"]
@@ -31,7 +31,7 @@ describe Warden::Manager do
       it "should respond with a 401 response if the strategy fails authentication" do
          env = env_with_params("/", :foo => "bar")
          app = lambda do |env|
-           env['warden'].authenticate(:failz)
+           env['warden.env'].authenticate(:failz)
            throw(:warden, :action => :unauthenticated)
          end
          result = setup_rack(app, :failure_app => @fail_app).call(env)
@@ -41,7 +41,7 @@ describe Warden::Manager do
       it "should use the failure message given to the failure method" do
         env = env_with_params("/", {})
         app = lambda do |env|
-          env['warden'].authenticate(:failz)
+          env['warden.env'].authenticate(:failz)
           throw(:warden)
         end
         result = setup_rack(app, :failure_app => @fail_app).call(env)
@@ -50,7 +50,7 @@ describe Warden::Manager do
 
       it "should render the failure app when there's a failure" do
         app = lambda do |e|
-          throw(:warden, :action => :unauthenticated) unless e['warden'].authenticated?(:failz)
+          throw(:warden, :action => :unauthenticated) unless e['warden.env'].authenticated?(:failz)
         end
         fail_app = lambda do |e|
           [401, {"Content-Type" => "text/plain"}, ["Failure App"]]
@@ -62,7 +62,7 @@ describe Warden::Manager do
       it "should call failure app if warden is thrown even after successful authentication" do
         env = env_with_params("/", {})
         app = lambda do |env|
-          env['warden'].authenticate(:pass)
+          env['warden.env'].authenticate(:pass)
           throw(:warden)
         end
         result = setup_rack(app, :failure_app => @fail_app).call(env)
@@ -73,7 +73,7 @@ describe Warden::Manager do
       it "should set the attempted url in warden.options hash" do
         env = env_with_params("/access/path", {})
         app = lambda do |env|
-          env['warden'].authenticate(:pass)
+          env['warden.env'].authenticate(:pass)
           throw(:warden)
         end
         result = setup_rack(app, :failure_app => @fail_app).call(env)
@@ -155,7 +155,7 @@ describe Warden::Manager do
       RAS = Warden::Strategies unless defined?(RAS)
       Warden::Strategies.clear!
       @app = setup_rack do |env|
-        env['warden'].authenticate!(:foobar)
+        env['warden.env'].authenticate!(:foobar)
         [200, {"Content-Type" => "text/plain"}, ["Foo Is A Winna"]]
       end
     end
@@ -237,7 +237,7 @@ describe Warden::Manager do
 
       it "should allow you to customize the response" do
         app = lambda do |e|
-          e['warden'].custom_failure!
+          e['warden.env'].custom_failure!
           [401,{'Content-Type' => 'text/plain'},["Fail From The App"]]
         end
         env = env_with_params
@@ -291,7 +291,9 @@ describe Warden::Manager do
         env = env_with_params
         result = @app.call(env)
         result[0].should == 200
-        result[2].should == ["Foo Is A Winna"]
+        body = []
+        result[2].each { |part| body << part}
+        body.should == ["Foo Is A Winna"]
       end
     end
   end # integrated strategies

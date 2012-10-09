@@ -59,13 +59,13 @@ module Warden
     #
     # Example:
     #   # Clear all strategies for the configured default_scope
-    #   env['warden'].clear_strategies_cache!
+    #   env['warden.env'].clear_strategies_cache!
     #
     #   # Clear all strategies for the :admin scope
-    #   env['warden'].clear_strategies_cache!(:scope => :admin)
+    #   env['warden.env'].clear_strategies_cache!(:scope => :admin)
     #
     #   # Clear password strategy for the :admin scope
-    #   env['warden'].clear_strategies_cache!(:password, :scope => :admin)
+    #   env['warden.env'].clear_strategies_cache!(:password, :scope => :admin)
     #
     # :api: public
     def clear_strategies_cache!(*args)
@@ -97,7 +97,7 @@ module Warden
     #   opts - an options hash that contains the :scope of the user to check
     #
     # Example:
-    #   env['warden'].authenticate(:password, :basic, :scope => :sudo)
+    #   env['warden.env'].authenticate(:password, :basic, :scope => :sudo)
     #
     # :api: public
     def authenticate(*args)
@@ -120,7 +120,7 @@ module Warden
     # and rendered through the +failure_app+
     #
     # Example
-    #   env['warden'].authenticate!(:password, :scope => :publisher) # throws if it cannot authenticate
+    #   env['warden.env'].authenticate!(:password, :scope => :publisher) # throws if it cannot authenticate
     #
     # :api: public
     def authenticate!(*args)
@@ -137,7 +137,7 @@ module Warden
     #   scope - the scope to check for authentication. Defaults to default_scope
     #
     # Example:
-    #   env['warden'].authenticated?(:admin)
+    #   env['warden.env'].authenticated?(:admin)
     #
     # :api: public
     def authenticated?(scope = @config.default_scope)
@@ -187,19 +187,19 @@ module Warden
     #
     # Example:
     #   # without scope (default user)
-    #   env['warden'].user
+    #   env['warden.env'].user
     #
     #   # with scope
-    #   env['warden'].user(:admin)
+    #   env['warden.env'].user(:admin)
     #
     #   # as a Hash
-    #   env['warden'].user(:scope => :admin)
+    #   env['warden.env'].user(:scope => :admin)
     #
     #   # with default scope and run_callbacks option
-    #   env['warden'].user(:run_callbacks => false)
+    #   env['warden.env'].user(:run_callbacks => false)
     #
     #  # with a scope and run_callbacks option
-    #  env['warden'].user(:scope => :admin, :run_callbacks => true)
+    #  env['warden.env'].user(:scope => :admin, :run_callbacks => true)
     #
     # :api: public
     def user(argument = {})
@@ -223,10 +223,10 @@ module Warden
     #
     # Example
     #  # default scope
-    #  env['warden'].session[:foo] = "bar"
+    #  env['warden.env'].session[:foo] = "bar"
     #
     #  # :sudo scope
-    #  env['warden'].session(:sudo)[:foo] = "bar"
+    #  env['warden.env'].session(:sudo)[:foo] = "bar"
     #
     # :api: public
     def session(scope = @config.default_scope)
@@ -242,13 +242,13 @@ module Warden
     #
     # Example:
     #  # Logout everyone and clear the session
-    #  env['warden'].logout
+    #  env['warden.env'].logout
     #
     #  # Logout the default user but leave the rest of the session alone
-    #  env['warden'].logout(:default)
+    #  env['warden.env'].logout(:default)
     #
     #  # Logout the :publisher and :admin user
-    #  env['warden'].logout(:publisher, :admin)
+    #  env['warden.env'].logout(:publisher, :admin)
     #
     # :api: public
     def logout(*scopes)
