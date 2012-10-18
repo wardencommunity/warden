@@ -7,6 +7,7 @@ require 'warden'
 
 require 'rubygems'
 require 'rack'
+require 'rspec'
 
 Dir[File.join(File.dirname(__FILE__), "helpers", "**/*.rb")].each do |f|
   require f
