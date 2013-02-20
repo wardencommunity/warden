@@ -37,7 +37,8 @@ module Warden
       # @api overwritable
       def reset_session!
         raw_session.clear
-      end
+      end # reset_session!
+
     end # Common
   end # Mixins
 end # Warden
