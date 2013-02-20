@@ -24,7 +24,7 @@ module Warden
       def warden_cookies
         warn "warden_cookies was never functional and is going to be removed in next versions"
         env['warden.cookies'] ||= {}
-      end # response
+      end # warden_cookies
 
       # Convenience method to access the rack request params
       # :api: public
