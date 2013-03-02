@@ -2,7 +2,6 @@
 require 'spec_helper'
 
 describe Warden::Proxy do
-
   before(:all) do
     load_strategies
   end
@@ -340,7 +339,6 @@ describe Warden::Proxy do
       end
       setup_rack(app).call(@env)
     end
-
   end
 
   describe "set user" do
@@ -512,7 +510,6 @@ describe Warden::Proxy do
   end
 
   describe "logout" do
-
     before(:each) do
       @env['rack.session'] = {"warden.user.default.key" => "default key", "warden.user.foo.key" => "foo key", :foo => "bar"}
       @app = lambda do |e|
@@ -665,7 +662,7 @@ describe Warden::Proxy do
         app = lambda do |e|
           e['warden'].should be_authenticated
         end
-        result = setup_rack(app).call(@env)
+        setup_rack(app).call(@env)
       end
 
       it "should yield to a block when the block is passed and authenticated" do
@@ -700,7 +697,7 @@ describe Warden::Proxy do
         app = lambda do |e|
           e['warden'].should_not be_authenticated
         end
-        result = setup_rack(app).call(@env)
+        setup_rack(app).call(@env)
       end
 
       it "should return false if scope cannot be retrieved from session" do
@@ -786,7 +783,7 @@ describe Warden::Proxy do
         app = lambda do |e|
           e['warden'].should be_unauthenticated
         end
-        result = setup_rack(app).call(@env)
+        setup_rack(app).call(@env)
       end
 
       it "should yield to a block when the block is passed and authenticated" do
@@ -828,6 +825,8 @@ end
 
 describe "dynamic default_strategies" do
   before(:all) do
+    load_strategies
+
     class ::DynamicDefaultStrategies
       def initialize(app, &blk)
         @app, @blk = app, blk
