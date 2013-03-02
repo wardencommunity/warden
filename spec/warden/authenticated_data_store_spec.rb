@@ -14,13 +14,13 @@ describe "authenticated data store" do
 
   it "should store data for the default scope" do
     app = lambda do |e|
-      e['warden'].authenticate(:pass)
-      e['warden'].authenticate(:pass, :scope => :foo)
-      e['warden'].should be_authenticated
-      e['warden'].should be_authenticated(:foo)
+      e['warden.env'].authenticate(:pass)
+      e['warden.env'].authenticate(:pass, :scope => :foo)
+      e['warden.env'].should be_authenticated
+      e['warden.env'].should be_authenticated(:foo)
 
       # Store the data for :default
-      e['warden'].session[:key] = "value"
+      e['warden.env'].session[:key] = "value"
       valid_response
     end
     setup_rack(app).call(@env)
@@ -30,7 +30,7 @@ describe "authenticated data store" do
 
   it "should store data for the foo user" do
     app = lambda do |e|
-      e['warden'].session(:foo)[:key] = "value"
+      e['warden.env'].session(:foo)[:key] = "value"
       valid_response
     end
     setup_rack(app).call(@env)
@@ -39,8 +39,8 @@ describe "authenticated data store" do
 
   it "should store the data seperately" do
     app = lambda do |e|
-      e['warden'].session[:key] = "value"
-      e['warden'].session(:foo)[:key] = "another value"
+      e['warden.env'].session[:key] = "value"
+      e['warden.env'].session(:foo)[:key] = "another value"
       valid_response
     end
     setup_rack(app).call(@env)
@@ -50,9 +50,9 @@ describe "authenticated data store" do
 
   it "should clear the foo scoped data when foo logs out" do
     app = lambda do |e|
-      e['warden'].session[:key] = "value"
-      e['warden'].session(:foo)[:key] = "another value"
-      e['warden'].logout(:foo)
+      e['warden.env'].session[:key] = "value"
+      e['warden.env'].session(:foo)[:key] = "another value"
+      e['warden.env'].logout(:foo)
       valid_response
     end
     setup_rack(app).call(@env)
@@ -62,9 +62,9 @@ describe "authenticated data store" do
 
   it "should clear out the default data when :default logs out" do
     app = lambda do |e|
-      e['warden'].session[:key] = "value"
-      e['warden'].session(:foo)[:key] = "another value"
-      e['warden'].logout(:default)
+      e['warden.env'].session[:key] = "value"
+      e['warden.env'].session(:foo)[:key] = "another value"
+      e['warden.env'].logout(:default)
       valid_response
     end
     setup_rack(app).call(@env)
@@ -74,9 +74,9 @@ describe "authenticated data store" do
 
   it "should clear out all data when a general logout is performed" do
     app = lambda do |e|
-      e['warden'].session[:key] = "value"
-      e['warden'].session(:foo)[:key] = "another value"
-      e['warden'].logout
+      e['warden.env'].session[:key] = "value"
+      e['warden.env'].session(:foo)[:key] = "another value"
+      e['warden.env'].logout
       valid_response
     end
     setup_rack(app).call(@env)
@@ -88,10 +88,10 @@ describe "authenticated data store" do
     @env['rack.session']['warden.user.bar.key'] = "bar user"
 
     app = lambda do |e|
-      e['warden'].session[:key] = "value"
-      e['warden'].session(:foo)[:key] = "another value"
-      e['warden'].session(:bar)[:key] = "yet another"
-      e['warden'].logout(:bar, :default)
+      e['warden.env'].session[:key] = "value"
+      e['warden.env'].session(:foo)[:key] = "another value"
+      e['warden.env'].session(:bar)[:key] = "yet another"
+      e['warden.env'].logout(:bar, :default)
       valid_response
     end
     setup_rack(app).call(@env)
@@ -103,7 +103,7 @@ describe "authenticated data store" do
   it "should not store data for a user who is not logged in" do
     @env['rack.session']
     app = lambda do |e|
-      e['warden'].session(:not_here)[:key] = "value"
+      e['warden.env'].session(:not_here)[:key] = "value"
       valid_response
     end
 

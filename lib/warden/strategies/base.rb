@@ -83,7 +83,7 @@ module Warden
       # Access to the errors object.
       # :api: public
       def errors
-        @env['warden'].errors
+        @env['warden.env'].errors
       end
 
       # Cause the processing of the strategies to stop and cascade no further

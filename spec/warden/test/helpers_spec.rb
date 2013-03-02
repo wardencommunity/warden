@@ -10,8 +10,8 @@ describe Warden::Test::Helpers do
     login_as user
     app = lambda{|e|
       $captures << :run
-      e['warden'].should be_authenticated
-      e['warden'].user.should == "A User"
+      e['warden.env'].should be_authenticated
+      e['warden.env'].user.should == "A User"
       valid_response
     }
     setup_rack(app).call(env_with_params)
@@ -23,7 +23,7 @@ describe Warden::Test::Helpers do
     login_as user, :scope => :foo_scope
     app = lambda{|e|
       $captures << :run
-      w = e['warden']
+      w = e['warden.env']
       w.should be_authenticated(:foo_scope)
       w.user(:foo_scope).should == {:some => "user"}
     }
@@ -38,7 +38,7 @@ describe Warden::Test::Helpers do
     login_as foo_user, :scope => :foo
     app = lambda{|e|
       $captures << :run
-      w = e['warden']
+      w = e['warden.env']
       w.user.should == "A user"
       w.user(:foo).should == "A foo user"
       w.should be_authenticated
@@ -55,7 +55,7 @@ describe Warden::Test::Helpers do
     login_as foo, :scope => :foo
     app = lambda{|e|
       $captures << :run
-      w = e['warden']
+      w = e['warden.env']
       w.user.should == "A user"
       w.user(:foo).should == "Foo"
       w.logout
@@ -75,7 +75,7 @@ describe Warden::Test::Helpers do
     login_as foo, :scope => :foo
     app = lambda{|e|
       $captures << :run
-      w = e['warden']
+      w = e['warden.env']
       w.logout :foo
       w.user.should == "A User"
       w.user(:foo).should be_nil

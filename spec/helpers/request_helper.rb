@@ -10,7 +10,7 @@ module Warden::Spec
     end
 
     def setup_rack(app = nil, opts = {}, &block)
-      app ||= block if block_given?
+      app ||= Rack::Lint.new(block) if block_given?
 
       opts[:failure_app]         ||= failure_app
       opts[:default_strategies]  ||= [:password]
