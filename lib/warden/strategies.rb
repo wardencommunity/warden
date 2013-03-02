@@ -11,7 +11,8 @@ module Warden
           raise NoMethodError, "authenticate! is not declared in the #{label.inspect} strategy"
         end
 
-        unless strategy.ancestors.include?(Warden::Strategies::Base)
+        base = Warden::Strategies::Base
+        unless strategy.ancestors.include?(base)
           raise "#{label.inspect} is not a #{base}"
         end
 
