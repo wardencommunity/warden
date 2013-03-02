@@ -11,11 +11,21 @@ describe Warden::Strategies do
     Warden::Strategies[:strategy1].ancestors.should include(Warden::Strategies::Base)
   end
 
-  it "should raise an error if I add a strategy via a block, that does not have an autheniticate! method" do
+  it "should raise an error if I add a strategy via a block, that does not have an authenticate! method" do
     lambda do
       Warden::Strategies.add(:strategy2) do
       end
     end.should raise_error
+  end
+
+  it "should raise an error if I add a strategy that does not extend Warden::Strategies::Base" do
+    non_base = Class.new do
+      def authenticate!
+      end
+    end
+    expect do
+      Warden::Strategies.add(:strategy_non_base, non_base)
+    end.to raise_error(/is not a Warden::Strategies::Base/)
   end
 
   it "should allow me to get access to a particular strategy" do
