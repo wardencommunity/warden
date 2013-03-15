@@ -7,6 +7,7 @@ Gem::Specification.new do |s|
   s.version = Warden::VERSION.dup
   s.authors = ["Daniel Neighman"]
   s.email = %q{has.sox@gmail.com}
+  s.license = "MIT"
   s.extra_rdoc_files = [
     "LICENSE",
      "README.textile"
