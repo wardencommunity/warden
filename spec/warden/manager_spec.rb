@@ -13,6 +13,12 @@ describe Warden::Manager do
     env["warden"].should be_an_instance_of(Warden::Proxy)
   end
 
+  it "should name the proxy accordingly to the specified namespace" do
+    env = env_with_params
+    setup_rack(success_app, :namespace => 'foobar').call(env)
+    env["warden.foobar"].should be_an_instance_of(Warden::Proxy)
+  end
+
   describe "thrown auth" do
     before(:each) do
       @basic_app = lambda{|env| [200,{'Content-Type' => 'text/plain'},'OK']}

@@ -35,6 +35,12 @@ describe Warden::Config do
     @config.default_scope.should == :foo
   end
 
+  it "should set the namespace" do
+    @config.namespace.should == nil
+    @config.namespace = :foo
+    @config.namespace.should == :foo
+  end
+
   it "should merge given options on initialization" do
     Warden::Config.new(:foo => :bar)[:foo].should == :bar
   end
