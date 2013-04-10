@@ -342,6 +342,14 @@ describe Warden::Proxy do
   end
 
   describe "set user" do
+    it "should raise an exception if the :scope option is not a symbol or string" do
+      app = lambda do |env|
+        env['warden'].authenticate(:pass, :scope => Object.new)
+      end
+
+      expect { setup_rack(app).call(@env) }.to raise_error
+    end
+
     it "should store the user into the session" do
       app = lambda do |env|
         env['warden'].authenticate(:pass)
