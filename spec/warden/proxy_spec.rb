@@ -364,6 +364,17 @@ describe Warden::Proxy do
       setup_rack(app).call(@env)
     end
 
+    it "should not throw error when no session is configured and store is false" do
+      app = lambda do |env|
+        env['rack.session'] = nil
+        env['warden'].authenticate(:pass, :store => false)
+        env['warden'].should be_authenticated
+        env['warden'].user.should == "Valid User"
+        valid_response
+      end
+      setup_rack(app).call(@env)
+    end
+
     it "should not run the callbacks when :run_callbacks is false" do
       app = lambda do |env|
         env['warden'].manager.should_not_receive(:_run_callbacks)
