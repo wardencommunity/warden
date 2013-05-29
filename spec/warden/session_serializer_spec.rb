@@ -45,4 +45,9 @@ describe Warden::SessionSerializer do
     @session.fetch(:default)
     @env['rack.session'].should_not have_key("warden.user.default.key")
   end
+
+  it "should support a nil session store" do
+    @env['rack.session'] = nil
+    @session.fetch(:default).should be_nil
+  end
 end
