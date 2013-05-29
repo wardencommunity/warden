@@ -1,11 +1,11 @@
 # encoding: utf-8
 module Warden
   class SessionSerializer
-    attr_reader :env
-    include ::Warden::Mixins::Common
+    attr_reader :env, :session
 
-    def initialize(env)
+    def initialize(env, session=env['rack.session'])
       @env = env
+      @session = session || {}
     end
 
     def key_for(scope)
