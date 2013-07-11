@@ -18,7 +18,7 @@ module Warden::Spec
       blk = opts[:configurator] || proc{}
 
       Rack::Builder.new do
-        use opts[:session] || Warden::Spec::Helpers::Session
+        use opts[:session] || Warden::Spec::Helpers::Session unless opts[:nil_session]
         use Warden::Manager, opts, &blk
         run app
       end
