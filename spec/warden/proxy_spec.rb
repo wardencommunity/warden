@@ -557,6 +557,13 @@ describe Warden::Proxy do
       @env['rack.session'].should be_empty
     end
 
+    it "should not raise exception if raw_session is nil" do
+      @app = setup_rack(@app, { nil_session: true })
+      @env['rack.session'] = nil
+      @env['warden.spec.which_logout'] = :foo
+      expect { @app.call(@env) }.to_not raise_error(NoMethodError)
+    end
+
     it "should clear the user when logging out" do
       @env['rack.session'].should_not be_nil
       app = lambda do |e|
