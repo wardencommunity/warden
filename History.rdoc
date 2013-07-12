@@ -1,3 +1,7 @@
+== Version 1.2.2 / 2013-07-12
+* Support nil session stores on logout
+* Fix strategies blowing up with undefined method base
+
 == Version 1.2.1 / 2012-06-16
 * Minor caching and speed improvements
 * Add support to #lock in the proxy
