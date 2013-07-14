@@ -1,11 +1,10 @@
 # encoding: utf-8
 module Warden
   class SessionSerializer
-    attr_reader :env, :session
+    attr_reader :env
 
-    def initialize(env, session=env['rack.session'])
+    def initialize(env)
       @env = env
-      @session = session || {}
     end
 
     def key_for(scope)
@@ -43,6 +42,11 @@ module Warden
 
     def delete(scope, user=nil)
       session.delete(key_for(scope))
+    end
+
+    # We can't cache this result because the session can be lazy loaded
+    def session
+      env["rack.session"] || {}
     end
   end # SessionSerializer
 end # Warden
