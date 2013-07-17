@@ -69,7 +69,7 @@ module Warden
     #
     # :api: public
     def clear_strategies_cache!(*args)
-      scope, opts = _retrieve_scope_and_opts(args)
+      scope, _opts = _retrieve_scope_and_opts(args)
 
       @winning_strategies.delete(scope)
       @strategies[scope].each do |k, v|
@@ -101,7 +101,7 @@ module Warden
     #
     # :api: public
     def authenticate(*args)
-      user, opts = _perform_authentication(*args)
+      user, _opts = _perform_authentication(*args)
       user
     end
 
@@ -290,7 +290,11 @@ module Warden
     # Check to see if the custom failure flag has been set
     # :api: public
     def custom_failure?
-      !!@custom_failure
+      if instance_variable_defined?(:@custom_failure)
+        !!@custom_failure
+      else
+        false
+      end
     end
 
     # Check to see if this is an asset request

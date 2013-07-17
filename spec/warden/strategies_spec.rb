@@ -59,6 +59,7 @@ describe Warden::Strategies do
     end
 
     Warden::Strategies.add(:foo, MyStrategy) do
+      remove_method :authenticate!
       def authenticate!; end
     end
 
@@ -67,6 +68,7 @@ describe Warden::Strategies do
 
   it "should allow me to update a previously given strategy" do
     class MyStrategy < Warden::Strategies::Base
+      remove_method :authenticate!
       def authenticate!; end
     end
 

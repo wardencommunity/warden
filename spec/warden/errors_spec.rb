@@ -8,23 +8,23 @@ describe Warden::Proxy::Errors do
   end
 
   it "should report that it is empty on first creation" do
-    @errors.empty?.should == true
+    @errors.empty?.should be_true
   end
 
   it "should continue to report that it is empty even after being checked" do
     @errors.on(:foo)
-    @errors.empty?.should == true
+    @errors.empty?.should be_true
   end
 
   it "should add an error" do
     @errors.add(:login, "Login or password incorrect")
-    @errors[:login].should == ["Login or password incorrect"]
+    @errors[:login].should eq(["Login or password incorrect"])
   end
 
   it "should allow many errors to be added to the same field" do
     @errors.add(:login, "bad 1")
     @errors.add(:login, "bad 2")
-    @errors.on(:login).should == ["bad 1", "bad 2"]
+    @errors.on(:login).should eq(["bad 1", "bad 2"])
   end
 
   it "should give the full messages for an error" do
@@ -37,7 +37,7 @@ describe Warden::Proxy::Errors do
 
   it "should return the error for a specific field / label" do
     @errors.add(:login, "wrong")
-    @errors.on(:login).should == ["wrong"]
+    @errors.on(:login).should eq(["wrong"])
   end
 
   it "should return nil for a specific field if it's not been set" do

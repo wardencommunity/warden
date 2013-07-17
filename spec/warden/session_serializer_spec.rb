@@ -10,7 +10,7 @@ describe Warden::SessionSerializer do
 
   it "should store data for the default scope" do
     @session.store("user", :default)
-    @env['rack.session'].should == { "warden.user.default.key"=>"user" }
+    @env['rack.session'].should eq({ "warden.user.default.key"=>"user" })
   end
 
   it "should check if a data is stored or not" do
@@ -22,18 +22,18 @@ describe Warden::SessionSerializer do
   it "should load an user from store" do
     @session.fetch(:default).should be_nil
     @session.store("user", :default)
-    @session.fetch(:default).should == "user"
+    @session.fetch(:default).should eq("user")
   end
 
   it "should store data based on the scope" do
     @session.store("user", :default)
-    @session.fetch(:default).should == "user"
+    @session.fetch(:default).should eq("user")
     @session.fetch(:another).should be_nil
   end
 
   it "should delete data from store" do
     @session.store("user", :default)
-    @session.fetch(:default).should == "user"
+    @session.fetch(:default).should eq("user")
     @session.delete(:default)
     @session.fetch(:default).should be_nil
   end
@@ -41,7 +41,7 @@ describe Warden::SessionSerializer do
   it "should delete information from store if user cannot be retrieved" do
     @session.store("user", :default)
     @env['rack.session'].should have_key("warden.user.default.key")
-    @session.instance_eval "def deserialize(key); nil; end"
+    @session.stub(:deserialize) { nil }
     @session.fetch(:default)
     @env['rack.session'].should_not have_key("warden.user.default.key")
   end

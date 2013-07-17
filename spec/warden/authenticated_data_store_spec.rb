@@ -24,7 +24,7 @@ describe "authenticated data store" do
       valid_response
     end
     setup_rack(app).call(@env)
-    @env['rack.session']['warden.user.default.session'].should == {:key => "value"}
+    @env['rack.session']['warden.user.default.session'].should eq({:key => "value"})
     @env['rack.session']['warden.user.foo.session'].should be_nil
   end
 
@@ -34,7 +34,7 @@ describe "authenticated data store" do
       valid_response
     end
     setup_rack(app).call(@env)
-    @env['rack.session']['warden.user.foo.session'].should == {:key => "value"}
+    @env['rack.session']['warden.user.foo.session'].should eq({:key => "value"})
   end
 
   it "should store the data seperately" do
@@ -44,8 +44,8 @@ describe "authenticated data store" do
       valid_response
     end
     setup_rack(app).call(@env)
-    @env['rack.session']['warden.user.default.session'].should == {:key => "value"}
-    @env['rack.session']['warden.user.foo.session'    ].should == {:key => "another value"}
+    @env['rack.session']['warden.user.default.session'].should eq({:key => "value"})
+    @env['rack.session']['warden.user.foo.session'    ].should eq({:key => "another value"})
   end
 
   it "should clear the foo scoped data when foo logs out" do
@@ -56,7 +56,7 @@ describe "authenticated data store" do
       valid_response
     end
     setup_rack(app).call(@env)
-    @env['rack.session']['warden.user.default.session'].should == {:key => "value"}
+    @env['rack.session']['warden.user.default.session'].should eq({:key => "value"})
     @env['rack.session']['warden.user.foo.session'    ].should be_nil
   end
 
@@ -69,7 +69,7 @@ describe "authenticated data store" do
     end
     setup_rack(app).call(@env)
     @env['rack.session']['warden.user.default.session'].should be_nil
-    @env['rack.session']['warden.user.foo.session'    ].should == {:key => "another value"}
+    @env['rack.session']['warden.user.foo.session'    ].should eq({:key => "another value"})
   end
 
   it "should clear out all data when a general logout is performed" do
@@ -96,7 +96,7 @@ describe "authenticated data store" do
     end
     setup_rack(app).call(@env)
     @env['rack.session']['warden.user.default.session'].should be_nil
-    @env['rack.session']['warden.user.foo.session'    ].should == {:key => "another value"}
+    @env['rack.session']['warden.user.foo.session'    ].should eq({:key => "another value"})
     @env['rack.session']['warden.user.bar.session'    ].should be_nil
   end
 
