@@ -18,7 +18,7 @@ module Warden
     # A callback hook set to run every time after a user is set.
     # This callback is triggered the first time one of those three events happens
     # during a request: :authentication, :fetch (from session) and :set_user (when manually set).
-    # You can supply as many hooks as you like, and they will be run in order of decleration.
+    # You can supply as many hooks as you like, and they will be run in order of declaration.
     #
     # If you want to run the callbacks for a given scope and/or event, you can specify them as options.
     # See parameters and example below.
