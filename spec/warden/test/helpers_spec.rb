@@ -11,11 +11,11 @@ describe Warden::Test::Helpers do
     app = lambda{|e|
       $captures << :run
       e['warden'].should be_authenticated
-      e['warden'].user.should == "A User"
+      e['warden'].user.should eq("A User")
       valid_response
     }
     setup_rack(app).call(env_with_params)
-    $captures.should == [:run]
+    $captures.should eq([:run])
   end
 
   it "should log me in as a user of a given scope" do
@@ -25,10 +25,10 @@ describe Warden::Test::Helpers do
       $captures << :run
       w = e['warden']
       w.should be_authenticated(:foo_scope)
-      w.user(:foo_scope).should == {:some => "user"}
+      w.user(:foo_scope).should eq({:some => "user"})
     }
     setup_rack(app).call(env_with_params)
-    $captures.should == [:run]
+    $captures.should eq([:run])
   end
 
   it "should login multiple users with different scopes" do
@@ -39,13 +39,13 @@ describe Warden::Test::Helpers do
     app = lambda{|e|
       $captures << :run
       w = e['warden']
-      w.user.should == "A user"
-      w.user(:foo).should == "A foo user"
+      w.user.should eq("A user")
+      w.user(:foo).should eq("A foo user")
       w.should be_authenticated
       w.should be_authenticated(:foo)
     }
     setup_rack(app).call(env_with_params)
-    $captures.should == [:run]
+    $captures.should eq([:run])
   end
 
   it "should log out all users" do
@@ -56,8 +56,8 @@ describe Warden::Test::Helpers do
     app = lambda{|e|
       $captures << :run
       w = e['warden']
-      w.user.should == "A user"
-      w.user(:foo).should == "Foo"
+      w.user.should eq("A user")
+      w.user(:foo).should eq("Foo")
       w.logout
       w.user.should be_nil
       w.user(:foo).should be_nil
@@ -65,7 +65,7 @@ describe Warden::Test::Helpers do
       w.should_not be_authenticated(:foo)
     }
     setup_rack(app).call(env_with_params)
-    $captures.should == [:run]
+    $captures.should eq([:run])
   end
 
   it "should logout a specific user" do
@@ -77,17 +77,17 @@ describe Warden::Test::Helpers do
       $captures << :run
       w = e['warden']
       w.logout :foo
-      w.user.should == "A User"
+      w.user.should eq("A User")
       w.user(:foo).should be_nil
       w.should_not be_authenticated(:foo)
     }
     setup_rack(app).call(env_with_params)
-    $captures.should == [:run]
+    $captures.should eq([:run])
   end
 
   describe "#asset_paths" do
     it "should default asset_paths to anything asset path regex" do
-      Warden.asset_paths.should == [/^\/assets\//]      
+      Warden.asset_paths.should eq([/^\/assets\//]      )
     end
   end
 end

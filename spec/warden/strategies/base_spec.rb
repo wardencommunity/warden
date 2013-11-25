@@ -17,7 +17,7 @@ describe Warden::Strategies::Base do
       end
       strategy = Warden::Strategies[:foo].new(env_with_params)
       strategy._run!
-      strategy.headers["foo"].should == "bar"
+      strategy.headers["foo"].should eq("bar")
     end
 
     it "should allow us to clear the headers" do
@@ -28,7 +28,7 @@ describe Warden::Strategies::Base do
       end
       strategy = Warden::Strategies[:foo].new(env_with_params)
       strategy._run!
-      strategy.headers["foo"].should == "bar"
+      strategy.headers["foo"].should eq("bar")
       strategy.headers.clear
       strategy.headers.should be_empty
     end
@@ -42,7 +42,7 @@ describe Warden::Strategies::Base do
     end
     strategy = RAS[:foobar].new(env_with_params)
     strategy._run!
-    strategy.user.should == "foo"
+    strategy.user.should eq("foo")
   end
 
   it "should be performed after run" do
@@ -60,10 +60,10 @@ describe Warden::Strategies::Base do
   it "should set the scope" do
     RAS.add(:foobar) do
       def authenticate!
-        self.scope.should == :user
+        self.scope.should be(:user) # TODO: Not being called at all. What's this?
       end
     end
-    strategy = RAS[:foobar].new(env_with_params, :user)
+    _strategy = RAS[:foobar].new(env_with_params, :user)
   end
 
   it "should allow you to set a message" do
@@ -74,7 +74,7 @@ describe Warden::Strategies::Base do
     end
     strategy = RAS[:foobar].new(env_with_params)
     strategy._run!
-    strategy.message.should == "foo message"
+    strategy.message.should eq("foo message")
   end
 
   it "should provide access to the errors" do
@@ -87,7 +87,7 @@ describe Warden::Strategies::Base do
     env['warden'] = Warden::Proxy.new(env, Warden::Manager.new({}))
     strategy = RAS[:foobar].new(env)
     strategy._run!
-    strategy.errors.on(:foo).should == ["foo has an error"]
+    strategy.errors.on(:foo).should eq(["foo has an error"])
   end
 
   describe "halting" do
@@ -160,7 +160,7 @@ describe Warden::Strategies::Base do
       end
       str = RAS[:foobar].new(env_with_params)
       str._run!
-      str.headers["Location"].should == "/foo/bar?foo=bar"
+      str.headers["Location"].should eq("/foo/bar?foo=bar")
     end
 
     it "should allow you to set a message" do
@@ -171,8 +171,8 @@ describe Warden::Strategies::Base do
       end
       str = RAS[:foobar].new(env_with_params)
       str._run!
-      str.headers["Location"].should == "/foo/bar?foo=bar"
-      str.message.should == "You are being redirected foo"
+      str.headers["Location"].should eq("/foo/bar?foo=bar")
+      str.message.should eq("You are being redirected foo")
     end
 
     it "should set the action as :redirect" do
@@ -183,7 +183,7 @@ describe Warden::Strategies::Base do
       end
       str = RAS[:foobar].new(env_with_params)
       str._run!
-      str.result.should == :redirect
+      str.result.should be(:redirect)
     end
   end
 
@@ -217,12 +217,12 @@ describe Warden::Strategies::Base do
 
     it "should allow you to set a message when failing hard" do
       @hard._run!
-      @hard.message.should == "You are not cool enough"
+      @hard.message.should eq("You are not cool enough")
     end
 
     it "should set the action as :failure when failing hard" do
       @hard._run!
-      @hard.result.should == :failure
+      @hard.result.should be(:failure)
     end
 
     it "should allow you to fail soft" do
@@ -237,12 +237,12 @@ describe Warden::Strategies::Base do
 
     it "should allow you to set a message when failing soft" do
       @soft._run!
-      @soft.message.should == "You are too soft"
+      @soft.message.should eq("You are too soft")
     end
 
     it "should set the action as :failure when failing soft" do
       @soft._run!
-      @soft.result.should == :failure
+      @soft.result.should be(:failure)
     end
   end
 
@@ -267,17 +267,17 @@ describe Warden::Strategies::Base do
 
     it "should allow you to set a message when succeeding" do
       @str._run!
-      @str.message.should == "Welcome to the club!"
+      @str.message.should eq("Welcome to the club!")
     end
 
     it "should store the user" do
       @str._run!
-      @str.user.should == "Foo User"
+      @str.user.should eq("Foo User")
     end
 
     it "should set the action as :success" do
       @str._run!
-      @str.result.should == :success
+      @str.result.should be(:success)
     end
   end
 
@@ -301,12 +301,12 @@ describe Warden::Strategies::Base do
     end
 
     it "should provide access to the custom rack response" do
-      @str.custom_response.should == [521, {"foo" => "bar"}, ["BAD"]]
+      @str.custom_response.should eq([521, {"foo" => "bar"}, ["BAD"]])
     end
 
     it "should set the action as :custom" do
       @str._run!
-      @str.result.should == :custom
+      @str.result.should be(:custom)
     end
   end
 

@@ -19,7 +19,7 @@ module Warden
       default_strategies = options.delete(:default_strategies)
 
       @app, @config = app, Warden::Config.new(options)
-      @config.default_strategies *default_strategies if default_strategies
+      @config.default_strategies(*default_strategies) if default_strategies
       yield @config if block_given?
       self
     end
@@ -84,6 +84,11 @@ module Warden
       # :api: public
       def serialize_from_session(scope = nil, &block)
         method_name = scope.nil? ? :deserialize : "#{scope}_deserialize"
+
+        if Warden::SessionSerializer.method_defined? method_name
+          Warden::SessionSerializer.send :remove_method, method_name
+        end
+
         Warden::SessionSerializer.send :define_method, method_name, &block
       end
     end

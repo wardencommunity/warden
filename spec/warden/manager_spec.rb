@@ -30,22 +30,22 @@ describe Warden::Manager do
     describe "Failure" do
       it "should respond with a 401 response if the strategy fails authentication" do
          env = env_with_params("/", :foo => "bar")
-         app = lambda do |env|
-           env['warden'].authenticate(:failz)
+         app = lambda do |_env|
+           _env['warden'].authenticate(:failz)
            throw(:warden, :action => :unauthenticated)
          end
-         result = setup_rack(app, :failure_app => @fail_app).call(env)
-         result.first.should == 401
+         result = setup_rack(app, :failure_app => @fail_app).call(env) # TODO: What is @fail_app?
+         result.first.should be(401)
       end
 
       it "should use the failure message given to the failure method" do
         env = env_with_params("/", {})
-        app = lambda do |env|
-          env['warden'].authenticate(:failz)
+        app = lambda do |_env|
+          _env['warden'].authenticate(:failz)
           throw(:warden)
         end
-        result = setup_rack(app, :failure_app => @fail_app).call(env)
-        result.last.should == ["You Fail!"]
+        result = setup_rack(app, :failure_app => @fail_app).call(env) # TODO: What is @fail_app?
+        result.last.should eq(["You Fail!"])
       end
 
       it "should render the failure app when there's a failure" do
@@ -56,29 +56,29 @@ describe Warden::Manager do
           [401, {"Content-Type" => "text/plain"}, ["Failure App"]]
         end
         result = setup_rack(app, :failure_app => fail_app).call(env_with_params)
-        result.last.should == ["Failure App"]
+        result.last.should eq(["Failure App"])
       end
 
       it "should call failure app if warden is thrown even after successful authentication" do
         env = env_with_params("/", {})
-        app = lambda do |env|
-          env['warden'].authenticate(:pass)
+        app = lambda do |_env|
+          _env['warden'].authenticate(:pass)
           throw(:warden)
         end
         result = setup_rack(app, :failure_app => @fail_app).call(env)
-        result.first.should == 401
-        result.last.should == ["You Fail!"]
+        result.first.should be(401)
+        result.last.should eq(["You Fail!"])
       end
 
       it "should set the attempted url in warden.options hash" do
         env = env_with_params("/access/path", {})
-        app = lambda do |env|
-          env['warden'].authenticate(:pass)
+        app = lambda do |_env|
+          _env['warden'].authenticate(:pass)
           throw(:warden)
         end
-        result = setup_rack(app, :failure_app => @fail_app).call(env)
-        result.first.should == 401
-        env["warden.options"][:attempted_path].should == "/access/path"
+        result = setup_rack(app, :failure_app => @fail_app).call(env) # TODO: What is @fail_app?
+        result.first.should be(401)
+        env["warden.options"][:attempted_path].should eq("/access/path")
       end
 
       it "should catch a resubmitted request" do
@@ -122,21 +122,21 @@ describe Warden::Manager do
         end
 
         result = builder.to_app.call(env)
-        result[0].should == 401
-        result[2].body.should == ["Bad"]
-        $throw_count.should == 2
+        result[0].should be(401)
+        result[2].body.should eq(["Bad"])
+        $throw_count.should be(2)
       end
 
       it "should use the default scopes action when a bare throw is used" do
          env = env_with_params("/", :foo => "bar")
          action = nil
 
-         failure = lambda do |env|
-           action = env['PATH_INFO'] 
+         failure = lambda do |_env|
+           action = _env['PATH_INFO'] 
            [401, {}, ['fail']]
          end
 
-         app = lambda do |env|
+         app = lambda do |_env|
            throw(:warden)
          end
          result = setup_rack(app,
@@ -144,8 +144,8 @@ describe Warden::Manager do
                              :configurator => lambda{ |c| c.scope_defaults(:default, :action => 'my_action', :strategies => [:password]) }
                             ).call(env)
 
-         action.should == "/my_action"
-         result.first.should == 401
+         action.should eq("/my_action")
+         result.first.should be(401)
       end
     end # failure
   end
@@ -169,9 +169,9 @@ describe Warden::Manager do
           end
         end
         result = @app.call(env_with_params)
-        result[0].should == 302
-        result[1]["Location"].should == "/foo/bar?foo=bar"
-        result[2].should == ["custom redirection message"]
+        result[0].should be(302)
+        result[1]["Location"].should eq("/foo/bar?foo=bar")
+        result[2].should eq(["custom redirection message"])
       end
 
       it "should redirect with a default message" do
@@ -181,9 +181,9 @@ describe Warden::Manager do
           end
         end
         result = @app.call(env_with_params)
-        result[0].should == 302
-        result[1]['Location'].should == "/foo/bar?foo=bar"
-        result[2].should == ["You are being redirected to /foo/bar?foo=bar"]
+        result[0].should be(302)
+        result[1]['Location'].should eq("/foo/bar?foo=bar")
+        result[2].should eq(["You are being redirected to /foo/bar?foo=bar"])
       end
 
       it "should redirect with a permanent redirect" do
@@ -193,7 +193,7 @@ describe Warden::Manager do
           end
         end
         result = @app.call(env_with_params)
-        result[0].should == 301
+        result[0].should be(301)
       end
 
       it "should redirect with a content type" do
@@ -203,9 +203,9 @@ describe Warden::Manager do
           end
         end
         result = @app.call(env_with_params)
-        result[0].should == 302
-        result[1]["Location"].should == "/foo/bar?foo=bar"
-        result[1]["Content-Type"].should == "text/xml"
+        result[0].should be(302)
+        result[1]["Location"].should eq("/foo/bar?foo=bar")
+        result[1]["Content-Type"].should eq("text/xml")
       end
 
       it "should redirect with a default content type" do
@@ -215,9 +215,9 @@ describe Warden::Manager do
           end
         end
         result = @app.call(env_with_params)
-        result[0].should == 302
-        result[1]["Location"].should == "/foo/bar?foo=bar"
-        result[1]["Content-Type"].should == "text/plain"
+        result[0].should be(302)
+        result[1]["Location"].should eq("/foo/bar?foo=bar")
+        result[1]["Content-Type"].should eq("text/plain")
       end
     end
 
@@ -230,9 +230,9 @@ describe Warden::Manager do
         end
         env = env_with_params
         result = @app.call(env)
-        result[0].should == 401
-        result[2].should == ["You Fail!"]
-        env['PATH_INFO'].should == "/unauthenticated"
+        result[0].should be(401)
+        result[2].should eq(["You Fail!"])
+        env['PATH_INFO'].should eq("/unauthenticated")
       end
 
       it "should allow you to customize the response" do
@@ -242,8 +242,8 @@ describe Warden::Manager do
         end
         env = env_with_params
         result = setup_rack(app).call(env)
-        result[0].should == 401
-        result[2].should == ["Fail From The App"]
+        result[0].should be(401)
+        result[2].should eq(["Fail From The App"])
       end
 
       it "should allow you to customize the response without the explicit call to custom_failure! if not intercepting 401" do
@@ -252,8 +252,8 @@ describe Warden::Manager do
         end
         env = env_with_params
         result = setup_rack(app, :intercept_401 => false).call(env)
-        result[0].should == 401
-        result[2].should == ["Fail From The App"]
+        result[0].should be(401)
+        result[2].should eq(["Fail From The App"])
       end
 
       it "should render the failure application for a 401 if no custom_failure flag is set" do
@@ -261,8 +261,8 @@ describe Warden::Manager do
           [401,{'Content-Type' => 'text/plain'},["Fail From The App"]]
         end
         result = setup_rack(app).call(env_with_params)
-        result[0].should == 401
-        result[2].should == ["You Fail!"]
+        result[0].should be(401)
+        result[2].should eq(["You Fail!"])
       end
 
     end # failing
@@ -275,9 +275,9 @@ describe Warden::Manager do
           end
         end
         result = @app.call(env_with_params)
-        result[0].should == 523
-        result[1]["Custom-Header"].should == "foo"
-        result[2].should == ["Custom Stuff"]
+        result[0].should be(523)
+        result[1]["Custom-Header"].should eq("foo")
+        result[2].should eq(["Custom Stuff"])
       end
     end
 
@@ -290,8 +290,8 @@ describe Warden::Manager do
         end
         env = env_with_params
         result = @app.call(env)
-        result[0].should == 200
-        result[2].should == ["Foo Is A Winna"]
+        result[0].should be(200)
+        result[2].should eq(["Foo Is A Winna"])
       end
     end
   end # integrated strategies
@@ -299,9 +299,9 @@ describe Warden::Manager do
   it "should allow me to set a different default scope for warden" do
     Rack::Builder.new do
       use Warden::Manager, :default_scope => :default do |manager|
-        manager.default_scope.should == :default
+        manager.default_scope.should be(:default)
         manager.default_scope = :other
-        manager.default_scope.should == :other
+        manager.default_scope.should be(:other)
       end
     end
   end
@@ -309,7 +309,7 @@ describe Warden::Manager do
   it "should allow me to access strategies through manager" do
     Rack::Builder.new do
       use Warden::Manager do |manager|
-        manager.strategies.should == Warden::Strategies
+        manager.strategies.should be(Warden::Strategies)
       end
     end
   end

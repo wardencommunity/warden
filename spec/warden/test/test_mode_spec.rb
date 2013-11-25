@@ -34,14 +34,14 @@ describe Warden::Test::WardenHelpers do
     Warden.on_next_request{|w| $captures << :second   }
     setup_rack(@app).call(env_with_params)
     $captures.should have(2).items
-    $captures.should == [:first, :second]
+    $captures.should eq([:first, :second])
   end
 
   it "should not execute on_next_request blocks on subsequent requests" do
     app = setup_rack(@app)
     Warden.on_next_request{|w| $captures << :first }
     app.call(env_with_params)
-    $captures.should == [:first]
+    $captures.should eq([:first])
     $captures.clear
     app.call(env_with_params)
     $captures.should be_empty
@@ -51,10 +51,10 @@ describe Warden::Test::WardenHelpers do
     app = setup_rack(@app)
     Warden.on_next_request{|w| $captures << :first }
     app.call(env_with_params)
-    $captures.should == [:first]
+    $captures.should eq([:first])
     Warden.on_next_request{|w| $captures << :second }
     app.call(env_with_params)
-    $captures.should == [:first, :second]
+    $captures.should eq([:first, :second])
   end
 
   it "should remove the on_next_request items when test is reset" do
@@ -62,7 +62,7 @@ describe Warden::Test::WardenHelpers do
     Warden.on_next_request{|w| $captures << :first }
     Warden.test_reset!
     app.call(env_with_params)
-    $captures.should == []
+    $captures.should eq([])
   end
 
   context "asset requests" do
@@ -70,7 +70,7 @@ describe Warden::Test::WardenHelpers do
       app = setup_rack(@app)
       Warden.on_next_request{|w| $captures << :first }
       app.call(env_with_params("/assets/fun.gif"))
-      $captures.should == []
+      $captures.should eq([])
     end
   end
 end
