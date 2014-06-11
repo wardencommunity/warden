@@ -32,7 +32,7 @@ module Warden
         _on_next_request.clear
       end
 
-      # A containter for the on_next_request items.
+      # A container for the on_next_request items.
       # @api private
       def _on_next_request
         @_on_next_request ||= []

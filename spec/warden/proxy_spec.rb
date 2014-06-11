@@ -26,7 +26,7 @@ describe Warden::Proxy do
       app.call(@env).first.should be(200)
     end
 
-    it "should check the authentication if it is explicity checked" do
+    it "should check the authentication if it is explicitly checked" do
       app = setup_rack(@authd_app)
       app.call(@env).first.should be(401)
     end
@@ -56,7 +56,7 @@ describe Warden::Proxy do
       setup_rack(app).call(env)
     end
 
-    it "should allow me to select which strategies I use in my appliction" do
+    it "should allow me to select which strategies I use in my application" do
       env = env_with_params("/", :foo => "bar")
       app = lambda do |_env|
         _env['warden'].authenticate(:failz)
@@ -400,7 +400,7 @@ describe Warden::Proxy do
         valid_response
       end
       setup_rack(app).call(@env)
-    end    
+    end
   end
 
   describe "lock" do
@@ -624,7 +624,7 @@ describe Warden::Proxy do
       result.last.should eq(["The Success Strategy Has Accepted You"])
     end
 
-    it "should not die when accessing a message from a source where no authentication has occured" do
+    it "should not die when accessing a message from a source where no authentication has occurred" do
       app = lambda do |e|
         [200, {"Content-Type" => "text/plain"}, [e['warden'].message]]
       end

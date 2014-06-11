@@ -25,14 +25,14 @@ module Warden
     #
     # Parameters:
     # <options> Some options which specify when the callback should be executed
-    #   scope  - Executes the callback only if it maches the scope(s) given
+    #   scope  - Executes the callback only if it matches the scope(s) given
     #   only   - Executes the callback only if it matches the event(s) given
     #   except - Executes the callback except if it matches the event(s) given
     # <block> A block where you can set arbitrary logic to run every time a user is set
     #   Block Parameters: |user, auth, opts|
     #     user - The user object that is being set
     #     auth - The raw authentication proxy object.
-    #     opts - any options passed into the set_user call includeing :scope
+    #     opts - any options passed into the set_user call including :scope
     #
     # Example:
     #   Warden::Manager.after_set_user do |user,auth,opts|
@@ -77,7 +77,7 @@ module Warden
     end
 
     # after_fetch is just a wrapper to after_set_user, which is only invoked
-    # when the user is fetched from sesion. The options and yielded arguments
+    # when the user is fetched from session. The options and yielded arguments
     # are the same as in after_set_user.
     #
     # :api: public
@@ -85,18 +85,18 @@ module Warden
       after_set_user(options.merge(:event => :fetch), method, &block)
     end
 
-    # A callback that runs just prior to the failur application being called.
+    # A callback that runs just prior to the failure application being called.
     # This callback occurs after PATH_INFO has been modified for the failure (default /unauthenticated)
     # In this callback you can mutate the environment as required by the failure application
     # If a Rails controller were used for the failure_app for example, you would need to set request[:params][:action] = :unauthenticated
     #
     # Parameters:
     # <options> Some options which specify when the callback should be executed
-    #   scope  - Executes the callback only if it maches the scope(s) given
+    #   scope  - Executes the callback only if it matches the scope(s) given
     # <block> A block to contain logic for the callback
     #   Block Parameters: |env, opts|
     #     env - The rack env hash
-    #     opts - any options passed into the authenticate call includeing :scope
+    #     opts - any options passed into the authenticate call including :scope
     #
     # Example:
     #   Warden::Manager.before_failure do |env, opts|
@@ -121,7 +121,7 @@ module Warden
     #
     # Parameters:
     # <options> Some options which specify when the callback should be executed
-    #   scope  - Executes the callback only if it maches the scope(s) given
+    #   scope  - Executes the callback only if it matches the scope(s) given
     # <block> A block to contain logic for the callback
     #   Block Parameters: |user, auth, scope|
     #     user - The authenticated user for the current scope
@@ -149,7 +149,7 @@ module Warden
     #
     # Parameters:
     # <options> Some options which specify when the callback should be executed
-    #   scope  - Executes the callback only if it maches the scope(s) given
+    #   scope  - Executes the callback only if it matches the scope(s) given
     # <block> A block to contain logic for the callback
     #   Block Parameters: |user, auth, scope|
     #     user - The authenticated user for the current scope
