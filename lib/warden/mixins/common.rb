@@ -3,7 +3,7 @@ module Warden
   module Mixins
     module Common
 
-      # Convinience method to access the session
+      # Convenience method to access the session
       # :api: public
       def session
         env['rack.session']

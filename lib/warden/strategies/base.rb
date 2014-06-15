@@ -11,9 +11,9 @@ module Warden
     #
     # The parameters for Warden::Strategies.add method is:
     #   <label: Symbol> The label is the name given to a strategy.  Use the label to refer to the strategy when authenticating
-    #   <strategy: Class|nil> The optional stragtegy argument if set _must_ be a class that inherits from Warden::Strategies::Base and _must_
+    #   <strategy: Class|nil> The optional strategy argument if set _must_ be a class that inherits from Warden::Strategies::Base and _must_
     #                         implement an @authenticate!@ method
-    #   <block> The block acts as a convinient way to declare your strategy.  Inside is the class definition of a strategy.
+    #   <block> The block acts as a convenient way to declare your strategy.  Inside is the class definition of a strategy.
     #
     # Examples:
     #
@@ -109,7 +109,7 @@ module Warden
       def pass; end
 
       # Whenever you want to provide a user object as "authenticated" use the +success!+ method.
-      # This will halt the strategy, and set the user in the approprieate scope.
+      # This will halt the strategy, and set the user in the appropriate scope.
       # It is the "login" method
       #
       # Parameters:
@@ -133,7 +133,7 @@ module Warden
         @result = :failure
       end
 
-      # Casuses the strategy to fail, but not halt.  The strategies will cascade after this failure and warden will check the next strategy.  The last strategy to fail will have it's message displayed.
+      # Causes the strategy to fail, but not halt.  The strategies will cascade after this failure and warden will check the next strategy.  The last strategy to fail will have it's message displayed.
       # :api: public
       def fail(message = "Failed to Login")
         @message = message
@@ -144,8 +144,8 @@ module Warden
       #
       # Parameters:
       #  url <String> - The string representing the URL to be redirected to
-      #  pararms <Hash> - Any parameters to encode into the URL
-      #  opts <Hash> - Any options to recirect with.
+      #  params <Hash> - Any parameters to encode into the URL
+      #  opts <Hash> - Any options to redirect with.
       #    available options: permanent => (true || false)
       #
       # :api: public

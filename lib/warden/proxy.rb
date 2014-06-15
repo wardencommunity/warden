@@ -87,7 +87,7 @@ module Warden
       @locked = true
     end
 
-    # Run the authentiation strategies for the given strategies.
+    # Run the authentication strategies for the given strategies.
     # If there is already a user logged in for a given scope, the strategies are not run
     # This does not halt the flow of control and is a passive attempt to authenticate only
     # When scope is not specified, the default_scope is assumed.
@@ -181,7 +181,7 @@ module Warden
       @users[scope]
     end
 
-    # Provides acccess to the user object in a given scope for a request.
+    # Provides access to the user object in a given scope for a request.
     # Will be nil if not logged in. Please notice that this method does not
     # perform strategies.
     #
@@ -280,7 +280,7 @@ module Warden
       winning_strategy && winning_strategy.message
     end
 
-    # Provides a way to return a 401 without warden defering to the failure app
+    # Provides a way to return a 401 without warden deferring to the failure app
     # The result is a direct passthrough of your own response
     # :api: public
     def custom_failure!
@@ -360,7 +360,7 @@ module Warden
       end
     end
 
-    # Fetchs strategies and keep them in a hash cache.
+    # Fetches strategies and keep them in a hash cache.
     def _fetch_strategy(name, scope)
       @strategies[scope][name] ||= if klass = Warden::Strategies[name]
         klass.new(@env, scope)

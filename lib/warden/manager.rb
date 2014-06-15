@@ -4,7 +4,7 @@ require 'warden/config'
 
 module Warden
   # The middleware for Rack Authentication
-  # The middlware requires that there is a session upstream
+  # The middleware requires that there is a session upstream
   # The middleware injects an authentication object into
   # the rack environment hash
   class Manager
@@ -72,8 +72,8 @@ module Warden
         Warden::SessionSerializer.send :define_method, method_name, &block
       end
 
-      # Reconstitues the user from the session.
-      # Use the results of user_session_key to reconstitue the user from the session on requests after the initial login
+      # Reconstitutes the user from the session.
+      # Use the results of user_session_key to reconstitute the user from the session on requests after the initial login
       # You can supply different methods of de-serialization for different scopes by passing a scope symbol
       #
       # Example:

@@ -37,7 +37,7 @@ describe "authenticated data store" do
     @env['rack.session']['warden.user.foo.session'].should eq({:key => "value"})
   end
 
-  it "should store the data seperately" do
+  it "should store the data separately" do
     app = lambda do |e|
       e['warden'].session[:key] = "value"
       e['warden'].session(:foo)[:key] = "another value"
@@ -84,7 +84,7 @@ describe "authenticated data store" do
     @env['rack.session']['warden.user.foo.session'    ].should be_nil
   end
 
-  it "should logout multuiple personas at once" do
+  it "should logout multiple persons at once" do
     @env['rack.session']['warden.user.bar.key'] = "bar user"
 
     app = lambda do |e|
