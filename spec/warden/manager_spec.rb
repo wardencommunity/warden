@@ -48,6 +48,16 @@ describe Warden::Manager do
         result.last.should eq(["You Fail!"])
       end
 
+      it "should set the message from the winning strategy in warden.options hash" do
+        env = env_with_params("/", {})
+        app = lambda do |_env|
+          _env['warden'].authenticate(:failz)
+          throw(:warden)
+        end
+        setup_rack(app, :failure_app => @fail_app).call(env) # TODO: What is @fail_app?
+        env["warden.options"][:message].should eq("The Fails Strategy Has Failed You")
+      end
+
       it "should render the failure app when there's a failure" do
         app = lambda do |e|
           throw(:warden, :action => :unauthenticated) unless e['warden'].authenticated?(:failz)
