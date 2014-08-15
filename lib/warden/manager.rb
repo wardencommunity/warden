@@ -118,6 +118,7 @@ module Warden
       when :custom
         proxy.custom_response
       else
+        options[:message] ||= proxy.message
         call_failure_app(env, options)
       end
     end
