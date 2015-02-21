@@ -9,7 +9,7 @@ module Warden
     # You _may_ provide a @valid?@ method.
     # The valid method should return true or false depending on if the strategy is a valid one for the request.
     #
-    # The parameters for Warden::Strategies.add method is:
+    # The parameters for Warden::Strategies.add method are:
     #   <label: Symbol> The label is the name given to a strategy.  Use the label to refer to the strategy when authenticating
     #   <strategy: Class|nil> The optional strategy argument if set _must_ be a class that inherits from Warden::Strategies::Base and _must_
     #                         implement an @authenticate!@ method
