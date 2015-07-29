@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 module Warden
-  # This class is yield inside Warden::Manager. If you have a plugin and want to
+  # This class is yielded inside Warden::Manager. If you have a plugin and want to
   # add more configuration to warden, you just need to extend this class.
   class Config < Hash
     # Creates an accessor that simply sets and reads a key in the hash:
