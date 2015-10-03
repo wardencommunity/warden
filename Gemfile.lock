@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    warden (1.2.2)
+    warden (1.2.3)
       rack (>= 1.0)
 
 GEM
@@ -30,3 +30,6 @@ DEPENDENCIES
   rake
   rspec (~> 2)
   warden!
+
+BUNDLED WITH
+   1.10.6
