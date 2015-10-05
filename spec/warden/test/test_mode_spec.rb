@@ -15,9 +15,9 @@ describe Warden::Test::WardenHelpers do
     Warden.test_reset!
   end
 
-  it{ Warden.should respond_to(:test_mode!)       }
-  it{ Warden.should respond_to(:on_next_request)  }
-  it{ Warden.should respond_to(:test_reset!)      }
+  it{ expect(Warden).to respond_to(:test_mode!)       }
+  it{ expect(Warden).to respond_to(:on_next_request)  }
+  it{ expect(Warden).to respond_to(:test_reset!)      }
 
   it "should execute the on_next_request block on the next request" do
     Warden.on_next_request do |warden|
@@ -25,36 +25,36 @@ describe Warden::Test::WardenHelpers do
     end
 
     setup_rack(@app).call(env_with_params)
-    $captures.should have(1).item
-    $captures.first.should be_an_instance_of(Warden::Proxy)
+    expect($captures.size).to eq(1)
+    expect($captures.first).to be_an_instance_of(Warden::Proxy)
   end
 
   it "should execute many on_next_request blocks on the next request" do
     Warden.on_next_request{|w| $captures << :first    }
     Warden.on_next_request{|w| $captures << :second   }
     setup_rack(@app).call(env_with_params)
-    $captures.should have(2).items
-    $captures.should eq([:first, :second])
+    expect($captures.size).to eq(2)
+    expect($captures).to eq([:first, :second])
   end
 
   it "should not execute on_next_request blocks on subsequent requests" do
     app = setup_rack(@app)
     Warden.on_next_request{|w| $captures << :first }
     app.call(env_with_params)
-    $captures.should eq([:first])
+    expect($captures).to eq([:first])
     $captures.clear
     app.call(env_with_params)
-    $captures.should be_empty
+    expect($captures).to be_empty
   end
 
   it "should allow me to set new_on_next_request items to execute in the same test" do
     app = setup_rack(@app)
     Warden.on_next_request{|w| $captures << :first }
     app.call(env_with_params)
-    $captures.should eq([:first])
+    expect($captures).to eq([:first])
     Warden.on_next_request{|w| $captures << :second }
     app.call(env_with_params)
-    $captures.should eq([:first, :second])
+    expect($captures).to eq([:first, :second])
   end
 
   it "should remove the on_next_request items when test is reset" do
@@ -62,7 +62,7 @@ describe Warden::Test::WardenHelpers do
     Warden.on_next_request{|w| $captures << :first }
     Warden.test_reset!
     app.call(env_with_params)
-    $captures.should eq([])
+    expect($captures).to eq([])
   end
 
   context "asset requests" do
@@ -70,7 +70,7 @@ describe Warden::Test::WardenHelpers do
       app = setup_rack(@app)
       Warden.on_next_request{|w| $captures << :first }
       app.call(env_with_params("/assets/fun.gif"))
-      $captures.should eq([])
+      expect($captures).to eq([])
     end
   end
 end
