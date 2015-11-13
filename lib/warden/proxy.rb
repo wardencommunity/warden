@@ -322,7 +322,7 @@ module Warden
       return user, opts if user = user(opts.merge(:scope => scope))
       _run_strategies_for(scope, args)
 
-      if winning_strategy && winning_strategy.user
+      if winning_strategy && winning_strategy.successful?
         opts[:store] = opts.fetch(:store, winning_strategy.store?)
         set_user(winning_strategy.user, opts.merge!(:event => :authentication))
       end
