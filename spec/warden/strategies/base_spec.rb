@@ -17,7 +17,7 @@ describe Warden::Strategies::Base do
       end
       strategy = Warden::Strategies[:foo].new(env_with_params)
       strategy._run!
-      strategy.headers["foo"].should eq("bar")
+      expect(strategy.headers["foo"]).to eq("bar")
     end
 
     it "should allow us to clear the headers" do
@@ -28,9 +28,9 @@ describe Warden::Strategies::Base do
       end
       strategy = Warden::Strategies[:foo].new(env_with_params)
       strategy._run!
-      strategy.headers["foo"].should eq("bar")
+      expect(strategy.headers["foo"]).to eq("bar")
       strategy.headers.clear
-      strategy.headers.should be_empty
+      expect(strategy.headers).to be_empty
     end
   end
 
@@ -42,7 +42,7 @@ describe Warden::Strategies::Base do
     end
     strategy = RAS[:foobar].new(env_with_params)
     strategy._run!
-    strategy.user.should eq("foo")
+    expect(strategy.user).to eq("foo")
   end
 
   it "should be performed after run" do
@@ -50,17 +50,17 @@ describe Warden::Strategies::Base do
       def authenticate!; end
     end
     strategy = RAS[:foobar].new(env_with_params)
-    strategy.should_not be_performed
+    expect(strategy).not_to be_performed
     strategy._run!
-    strategy.should be_performed
+    expect(strategy).to be_performed
     strategy.clear!
-    strategy.should_not be_performed
+    expect(strategy).not_to be_performed
   end
 
   it "should set the scope" do
     RAS.add(:foobar) do
       def authenticate!
-        self.scope.should be(:user) # TODO: Not being called at all. What's this?
+        expect(self.scope).to eq(:user) # TODO: Not being called at all. What's this?
       end
     end
     _strategy = RAS[:foobar].new(env_with_params, :user)
@@ -74,7 +74,7 @@ describe Warden::Strategies::Base do
     end
     strategy = RAS[:foobar].new(env_with_params)
     strategy._run!
-    strategy.message.should eq("foo message")
+    expect(strategy.message).to eq("foo message")
   end
 
   it "should provide access to the errors" do
@@ -87,7 +87,7 @@ describe Warden::Strategies::Base do
     env['warden'] = Warden::Proxy.new(env, Warden::Manager.new({}))
     strategy = RAS[:foobar].new(env)
     strategy._run!
-    strategy.errors.on(:foo).should eq(["foo has an error"])
+    expect(strategy.errors.on(:foo)).to eq(["foo has an error"])
   end
 
   describe "halting" do
@@ -99,7 +99,7 @@ describe Warden::Strategies::Base do
       end
       str = RAS[:foobar].new(env_with_params)
       str._run!
-      str.should be_halted
+      expect(str).to be_halted
     end
 
     it "should not be halted if halt was not called" do
@@ -110,7 +110,7 @@ describe Warden::Strategies::Base do
       end
       str = RAS[:foobar].new(env_with_params)
       str._run!
-      str.should_not be_halted
+      expect(str).not_to be_halted
     end
 
   end
@@ -124,8 +124,8 @@ describe Warden::Strategies::Base do
       end
       str = RAS[:foobar].new(env_with_params)
       str._run!
-      str.should_not be_halted
-      str.user.should be_nil
+      expect(str).not_to be_halted
+      expect(str.user).to be_nil
     end
   end
 
@@ -138,7 +138,7 @@ describe Warden::Strategies::Base do
       end
       str = RAS[:foobar].new(env_with_params)
       str._run!
-      str.user.should be_nil
+      expect(str.user).to be_nil
     end
 
     it "should mark the strategy as halted when redirecting" do
@@ -149,7 +149,7 @@ describe Warden::Strategies::Base do
       end
       str = RAS[:foobar].new(env_with_params)
       str._run!
-      str.should be_halted
+      expect(str).to be_halted
     end
 
     it "should escape redirected url parameters" do
@@ -160,7 +160,7 @@ describe Warden::Strategies::Base do
       end
       str = RAS[:foobar].new(env_with_params)
       str._run!
-      str.headers["Location"].should eq("/foo/bar?foo=bar")
+      expect(str.headers["Location"]).to eq("/foo/bar?foo=bar")
     end
 
     it "should allow you to set a message" do
@@ -171,8 +171,8 @@ describe Warden::Strategies::Base do
       end
       str = RAS[:foobar].new(env_with_params)
       str._run!
-      str.headers["Location"].should eq("/foo/bar?foo=bar")
-      str.message.should eq("You are being redirected foo")
+      expect(str.headers["Location"]).to eq("/foo/bar?foo=bar")
+      expect(str.message).to eq("You are being redirected foo")
     end
 
     it "should set the action as :redirect" do
@@ -183,7 +183,7 @@ describe Warden::Strategies::Base do
       end
       str = RAS[:foobar].new(env_with_params)
       str._run!
-      str.result.should be(:redirect)
+      expect(str.result).to be(:redirect)
     end
   end
 
@@ -207,42 +207,42 @@ describe Warden::Strategies::Base do
 
     it "should allow you to fail hard" do
       @hard._run!
-      @hard.user.should be_nil
+      expect(@hard.user).to be_nil
     end
 
     it "should halt the strategies when failing hard" do
       @hard._run!
-      @hard.should be_halted
+      expect(@hard).to be_halted
     end
 
     it "should allow you to set a message when failing hard" do
       @hard._run!
-      @hard.message.should eq("You are not cool enough")
+      expect(@hard.message).to eq("You are not cool enough")
     end
 
     it "should set the action as :failure when failing hard" do
       @hard._run!
-      @hard.result.should be(:failure)
+      expect(@hard.result).to be(:failure)
     end
 
     it "should allow you to fail soft" do
       @soft._run!
-      @soft.user.should be_nil
+      expect(@soft.user).to be_nil
     end
 
     it "should not halt the strategies when failing soft" do
       @soft._run!
-      @soft.should_not be_halted
+      expect(@soft).not_to be_halted
     end
 
     it "should allow you to set a message when failing soft" do
       @soft._run!
-      @soft.message.should eq("You are too soft")
+      expect(@soft.message).to eq("You are too soft")
     end
 
     it "should set the action as :failure when failing soft" do
       @soft._run!
-      @soft.result.should be(:failure)
+      expect(@soft.result).to be(:failure)
     end
   end
 
@@ -262,22 +262,22 @@ describe Warden::Strategies::Base do
 
     it "should be authenticated after success" do
       @str._run!
-      @str.user.should_not be_nil
+      expect(@str.user).not_to be_nil
     end
 
     it "should allow you to set a message when succeeding" do
       @str._run!
-      @str.message.should eq("Welcome to the club!")
+      expect(@str.message).to eq("Welcome to the club!")
     end
 
     it "should store the user" do
       @str._run!
-      @str.user.should eq("Foo User")
+      expect(@str.user).to eq("Foo User")
     end
 
     it "should set the action as :success" do
       @str._run!
-      @str.result.should be(:success)
+      expect(@str.result).to be(:success)
     end
   end
 
@@ -293,20 +293,20 @@ describe Warden::Strategies::Base do
     end
 
     it "should allow me to set a custom rack response" do
-      @str.user.should be_nil
+      expect(@str.user).to be_nil
     end
 
     it "should halt the strategy" do
-      @str.should be_halted
+      expect(@str).to be_halted
     end
 
     it "should provide access to the custom rack response" do
-      @str.custom_response.should eq([521, {"foo" => "bar"}, ["BAD"]])
+      expect(@str.custom_response).to eq([521, {"foo" => "bar"}, ["BAD"]])
     end
 
     it "should set the action as :custom" do
       @str._run!
-      @str.result.should be(:custom)
+      expect(@str.result).to eq(:custom)
     end
   end
 
