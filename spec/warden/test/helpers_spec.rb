@@ -10,12 +10,12 @@ describe Warden::Test::Helpers do
     login_as user
     app = lambda{|e|
       $captures << :run
-      e['warden'].should be_authenticated
-      e['warden'].user.should eq("A User")
+      expect(e['warden']).to be_authenticated
+      expect(e['warden'].user).to eq("A User")
       valid_response
     }
     setup_rack(app).call(env_with_params)
-    $captures.should eq([:run])
+    expect($captures).to eq([:run])
   end
 
   it "should log me in as a user of a given scope" do
@@ -24,11 +24,11 @@ describe Warden::Test::Helpers do
     app = lambda{|e|
       $captures << :run
       w = e['warden']
-      w.should be_authenticated(:foo_scope)
-      w.user(:foo_scope).should eq({:some => "user"})
+      expect(w).to be_authenticated(:foo_scope)
+      expect(w.user(:foo_scope)).to eq({:some => "user"})
     }
     setup_rack(app).call(env_with_params)
-    $captures.should eq([:run])
+    expect($captures).to eq([:run])
   end
 
   it "should login multiple users with different scopes" do
@@ -39,13 +39,13 @@ describe Warden::Test::Helpers do
     app = lambda{|e|
       $captures << :run
       w = e['warden']
-      w.user.should eq("A user")
-      w.user(:foo).should eq("A foo user")
-      w.should be_authenticated
-      w.should be_authenticated(:foo)
+      expect(w.user).to eq("A user")
+      expect(w.user(:foo)).to eq("A foo user")
+      expect(w).to be_authenticated
+      expect(w).to be_authenticated(:foo)
     }
     setup_rack(app).call(env_with_params)
-    $captures.should eq([:run])
+    expect($captures).to eq([:run])
   end
 
   it "should log out all users" do
@@ -56,16 +56,16 @@ describe Warden::Test::Helpers do
     app = lambda{|e|
       $captures << :run
       w = e['warden']
-      w.user.should eq("A user")
-      w.user(:foo).should eq("Foo")
+      expect(w.user).to eq("A user")
+      expect(w.user(:foo)).to eq("Foo")
       w.logout
-      w.user.should be_nil
-      w.user(:foo).should be_nil
-      w.should_not be_authenticated
-      w.should_not be_authenticated(:foo)
+      expect(w.user).to be_nil
+      expect(w.user(:foo)).to be_nil
+      expect(w).not_to be_authenticated
+      expect(w).not_to be_authenticated(:foo)
     }
     setup_rack(app).call(env_with_params)
-    $captures.should eq([:run])
+    expect($captures).to eq([:run])
   end
 
   it "should logout a specific user" do
@@ -77,17 +77,17 @@ describe Warden::Test::Helpers do
       $captures << :run
       w = e['warden']
       w.logout :foo
-      w.user.should eq("A User")
-      w.user(:foo).should be_nil
-      w.should_not be_authenticated(:foo)
+      expect(w.user).to eq("A User")
+      expect(w.user(:foo)).to be_nil
+      expect(w).not_to be_authenticated(:foo)
     }
     setup_rack(app).call(env_with_params)
-    $captures.should eq([:run])
+    expect($captures).to eq([:run])
   end
 
   describe "#asset_paths" do
     it "should default asset_paths to anything asset path regex" do
-      Warden.asset_paths.should eq([/^\/assets\//]      )
+      expect(Warden.asset_paths).to eq([/^\/assets\//]      )
     end
   end
 end

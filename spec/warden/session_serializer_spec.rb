@@ -10,44 +10,44 @@ describe Warden::SessionSerializer do
 
   it "should store data for the default scope" do
     @session.store("user", :default)
-    @env['rack.session'].should eq({ "warden.user.default.key"=>"user" })
+    expect(@env['rack.session']).to eq({ "warden.user.default.key"=>"user" })
   end
 
   it "should check if a data is stored or not" do
-    @session.should_not be_stored(:default)
+    expect(@session).not_to be_stored(:default)
     @session.store("user", :default)
-    @session.should be_stored(:default)
+    expect(@session).to be_stored(:default)
   end
 
   it "should load an user from store" do
-    @session.fetch(:default).should be_nil
+    expect(@session.fetch(:default)).to be_nil
     @session.store("user", :default)
-    @session.fetch(:default).should eq("user")
+    expect(@session.fetch(:default)).to eq("user")
   end
 
   it "should store data based on the scope" do
     @session.store("user", :default)
-    @session.fetch(:default).should eq("user")
-    @session.fetch(:another).should be_nil
+    expect(@session.fetch(:default)).to eq("user")
+    expect(@session.fetch(:another)).to be_nil
   end
 
   it "should delete data from store" do
     @session.store("user", :default)
-    @session.fetch(:default).should eq("user")
+    expect(@session.fetch(:default)).to eq("user")
     @session.delete(:default)
-    @session.fetch(:default).should be_nil
+    expect(@session.fetch(:default)).to be_nil
   end
 
   it "should delete information from store if user cannot be retrieved" do
     @session.store("user", :default)
-    @env['rack.session'].should have_key("warden.user.default.key")
-    @session.stub(:deserialize) { nil }
+    expect(@env['rack.session']).to have_key("warden.user.default.key")
+    allow(@session).to receive(:deserialize) { nil }
     @session.fetch(:default)
-    @env['rack.session'].should_not have_key("warden.user.default.key")
+    expect(@env['rack.session']).not_to have_key("warden.user.default.key")
   end
 
   it "should support a nil session store" do
     @env['rack.session'] = nil
-    @session.fetch(:default).should be_nil
+    expect(@session.fetch(:default)).to be_nil
   end
 end

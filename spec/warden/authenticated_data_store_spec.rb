@@ -16,16 +16,16 @@ describe "authenticated data store" do
     app = lambda do |e|
       e['warden'].authenticate(:pass)
       e['warden'].authenticate(:pass, :scope => :foo)
-      e['warden'].should be_authenticated
-      e['warden'].should be_authenticated(:foo)
+      expect(e['warden']).to be_authenticated
+      expect(e['warden']).to be_authenticated(:foo)
 
       # Store the data for :default
       e['warden'].session[:key] = "value"
       valid_response
     end
     setup_rack(app).call(@env)
-    @env['rack.session']['warden.user.default.session'].should eq({:key => "value"})
-    @env['rack.session']['warden.user.foo.session'].should be_nil
+    expect(@env['rack.session']['warden.user.default.session']).to eq({:key => "value"})
+    expect(@env['rack.session']['warden.user.foo.session']).to be_nil
   end
 
   it "should store data for the foo user" do
@@ -34,7 +34,7 @@ describe "authenticated data store" do
       valid_response
     end
     setup_rack(app).call(@env)
-    @env['rack.session']['warden.user.foo.session'].should eq({:key => "value"})
+    expect(@env['rack.session']['warden.user.foo.session']).to eq({:key => "value"})
   end
 
   it "should store the data separately" do
@@ -44,8 +44,8 @@ describe "authenticated data store" do
       valid_response
     end
     setup_rack(app).call(@env)
-    @env['rack.session']['warden.user.default.session'].should eq({:key => "value"})
-    @env['rack.session']['warden.user.foo.session'    ].should eq({:key => "another value"})
+    expect(@env['rack.session']['warden.user.default.session']).to eq({:key => "value"})
+    expect(@env['rack.session']['warden.user.foo.session'    ]).to eq({:key => "another value"})
   end
 
   it "should clear the foo scoped data when foo logs out" do
@@ -56,8 +56,8 @@ describe "authenticated data store" do
       valid_response
     end
     setup_rack(app).call(@env)
-    @env['rack.session']['warden.user.default.session'].should eq({:key => "value"})
-    @env['rack.session']['warden.user.foo.session'    ].should be_nil
+    expect(@env['rack.session']['warden.user.default.session']).to eq({:key => "value"})
+    expect(@env['rack.session']['warden.user.foo.session'    ]).to be_nil
   end
 
   it "should clear out the default data when :default logs out" do
@@ -68,8 +68,8 @@ describe "authenticated data store" do
       valid_response
     end
     setup_rack(app).call(@env)
-    @env['rack.session']['warden.user.default.session'].should be_nil
-    @env['rack.session']['warden.user.foo.session'    ].should eq({:key => "another value"})
+    expect(@env['rack.session']['warden.user.default.session']).to be_nil
+    expect(@env['rack.session']['warden.user.foo.session'    ]).to eq({:key => "another value"})
   end
 
   it "should clear out all data when a general logout is performed" do
@@ -80,8 +80,8 @@ describe "authenticated data store" do
       valid_response
     end
     setup_rack(app).call(@env)
-    @env['rack.session']['warden.user.default.session'].should be_nil
-    @env['rack.session']['warden.user.foo.session'    ].should be_nil
+    expect(@env['rack.session']['warden.user.default.session']).to be_nil
+    expect(@env['rack.session']['warden.user.foo.session'    ]).to be_nil
   end
 
   it "should logout multiple persons at once" do
@@ -95,9 +95,9 @@ describe "authenticated data store" do
       valid_response
     end
     setup_rack(app).call(@env)
-    @env['rack.session']['warden.user.default.session'].should be_nil
-    @env['rack.session']['warden.user.foo.session'    ].should eq({:key => "another value"})
-    @env['rack.session']['warden.user.bar.session'    ].should be_nil
+    expect(@env['rack.session']['warden.user.default.session']).to be_nil
+    expect(@env['rack.session']['warden.user.foo.session'    ]).to eq({:key => "another value"})
+    expect(@env['rack.session']['warden.user.bar.session'    ]).to be_nil
   end
 
   it "should not store data for a user who is not logged in" do
@@ -107,8 +107,8 @@ describe "authenticated data store" do
       valid_response
     end
 
-    lambda do
+    expect do
       setup_rack(app).call(@env)
-    end.should raise_error(Warden::NotAuthenticated)
+    end.to raise_error(Warden::NotAuthenticated)
   end
 end
