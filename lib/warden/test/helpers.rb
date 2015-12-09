@@ -10,7 +10,7 @@ module Warden
         ::Warden.test_mode!
       end
 
-      # A helper method that will perform a login of a user in warden for the next request
+      # A helper method that will perform a login of a user in warden for the next request.
       # Provide it the same options as you would to Warden::Proxy#set_user
       # @see Warden::Proxy#set_user
       # @api public
