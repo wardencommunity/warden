@@ -21,13 +21,13 @@ describe "standard authentication hooks" do
       RAM.after_set_user do |user, auth, opts|
         "boo"
       end
-      RAM._after_set_user.should have(1).item
+      expect(RAM._after_set_user.length).to eq(1)
     end
 
     it "should allow me to add multiple after_set_user hooks" do
       RAM.after_set_user{|user, auth, opts| "foo"}
       RAM.after_set_user{|u,a| "bar"}
-      RAM._after_set_user.should have(2).items
+      expect(RAM._after_set_user.length).to eq(2)
     end
 
     it "should run each after_set_user hook after the user is set" do
@@ -40,9 +40,9 @@ describe "standard authentication hooks" do
       end
       env = env_with_params
       setup_rack(app).call(env)
-      env['warden'].user.should be_nil
-      env['warden.spec.hook.foo'].should eq("run foo")
-      env['warden.spec.hook.bar'].should eq("run bar")
+      expect(env['warden'].user).to be_nil
+      expect(env['warden.spec.hook.foo']).to eq("run foo")
+      expect(env['warden.spec.hook.bar']).to eq("run bar")
     end
 
     it "should not run the event specified with except" do
@@ -76,22 +76,22 @@ describe "standard authentication hooks" do
       end
       env = env_with_params
       setup_rack(app).call(env)
-      env['warden.spec.order'].should eq([1,2,3])
+      expect(env['warden.spec.order']).to eq([1,2,3])
     end
 
     context "after_authentication" do
       it "should be a wrapper to after_set_user behavior" do
         RAM.after_authentication{|u,a,o| a.env['warden.spec.hook.baz'] = "run baz"}
         RAM.after_authentication{|u,a,o| a.env['warden.spec.hook.paz'] = "run paz"}
-        RAM.after_authentication{|u,a,o| o[:event].should be(:authentication) }
+        RAM.after_authentication{|u,a,o| expect(o[:event]).to eq(:authentication) }
         app = lambda do |e|
           e['warden'].authenticate(:pass)
           valid_response
         end
         env = env_with_params
         setup_rack(app).call(env)
-        env['warden.spec.hook.baz'].should eq('run baz')
-        env['warden.spec.hook.paz'].should eq('run paz')
+        expect(env['warden.spec.hook.baz']).to eq('run baz')
+        expect(env['warden.spec.hook.paz']).to eq('run paz')
       end
 
       it "should not be invoked on default after_set_user scenario" do
@@ -115,7 +115,7 @@ describe "standard authentication hooks" do
         end
         env = env_with_params
         setup_rack(app).call(env)
-        env['warden.spec.order'].should eq([1,2,3])
+        expect(env['warden.spec.order']).to eq([1,2,3])
       end
 
       it "should allow me to log out a user in an after_set_user block" do
@@ -127,7 +127,7 @@ describe "standard authentication hooks" do
         end
         env = env_with_params
         setup_rack(app).call(env)
-        env['warden'].authenticated?.should be_false
+        expect(env['warden']).not_to be_authenticated
       end
     end
 
@@ -135,13 +135,13 @@ describe "standard authentication hooks" do
       it "should be a wrapper to after_set_user behavior" do
         RAM.after_fetch{|u,a,o| a.env['warden.spec.hook.baz'] = "run baz"}
         RAM.after_fetch{|u,a,o| a.env['warden.spec.hook.paz'] = "run paz"}
-        RAM.after_fetch{|u,a,o| o[:event].should be(:fetch) }
+        RAM.after_fetch{|u,a,o| expect(o[:event]).to eq(:fetch) }
         env = env_with_params
         setup_rack(lambda { |e| valid_response }).call(env)
         env['rack.session']['warden.user.default.key'] = "Foo"
-        env['warden'].user.should eq("Foo")
-        env['warden.spec.hook.baz'].should eq('run baz')
-        env['warden.spec.hook.paz'].should eq('run paz')
+        expect(env['warden'].user).to eq("Foo")
+        expect(env['warden.spec.hook.baz']).to eq('run baz')
+        expect(env['warden.spec.hook.paz']).to eq('run paz')
       end
 
       it "should not be invoked on default after_set_user scenario" do
@@ -159,7 +159,7 @@ describe "standard authentication hooks" do
         env = env_with_params
         setup_rack(lambda { |e| valid_response }).call(env)
         env['rack.session']['warden.user.default.key'] = nil
-        env['warden'].user.should be_nil
+        expect(env['warden'].user).to be_nil
       end
 
       it "should run filters in the given order" do
@@ -174,7 +174,7 @@ describe "standard authentication hooks" do
         end
         env = env_with_params
         setup_rack(app).call(env)
-        env['warden.spec.order'].should eq([1,2,3])
+        expect(env['warden.spec.order']).to eq([1,2,3])
       end
     end
   end
@@ -195,7 +195,7 @@ describe "standard authentication hooks" do
       env = env_with_params
       setup_rack(lambda { |e| valid_response }).call(env)
       env['rack.session']['warden.user.default.key'] = "Foo"
-      env['warden'].user.should eq("Foo")
+      expect(env['warden'].user).to eq("Foo")
     end
 
     it "should be called if fetched user is nil" do
@@ -203,8 +203,8 @@ describe "standard authentication hooks" do
       RAM.after_failed_fetch{|u,a,o| calls += 1 }
       env = env_with_params
       setup_rack(lambda { |e| valid_response }).call(env)
-      env['warden'].user.should be_nil
-      calls.should be(1)
+      expect(env['warden'].user).to be_nil
+      expect(calls).to eq(1)
     end
   end
 
@@ -220,13 +220,13 @@ describe "standard authentication hooks" do
 
     it "should allow me to add a before_failure hook" do
       RAM.before_failure{|env, opts| "foo"}
-      RAM._before_failure.should have(1).item
+      expect(RAM._before_failure.length).to eq(1)
     end
 
     it "should allow me to add multiple before_failure hooks" do
       RAM.before_failure{|env, opts| "foo"}
       RAM.before_failure{|env, opts| "bar"}
-      RAM._before_failure.should have(2).items
+      expect(RAM._before_failure.length).to eq(2)
     end
 
     it "should run each before_failure hooks before failing" do
@@ -235,8 +235,8 @@ describe "standard authentication hooks" do
       app = lambda{|e| e['warden'].authenticate!(:failz); valid_response}
       env = env_with_params
       setup_rack(app).call(env)
-      env['warden.spec.before_failure.foo'].should eq("foo")
-      env['warden.spec.before_failure.bar'].should eq("bar")
+      expect(env['warden.spec.before_failure.foo']).to eq("foo")
+      expect(env['warden.spec.before_failure.bar']).to eq("bar")
     end
 
     it "should run filters in the given order" do
@@ -250,7 +250,7 @@ describe "standard authentication hooks" do
       end
       env = env_with_params
       setup_rack(app).call(env)
-      env['warden.spec.order'].should eq([1,2,3])
+      expect(env['warden.spec.order']).to eq([1,2,3])
     end
   end
 
@@ -266,13 +266,13 @@ describe "standard authentication hooks" do
 
     it "should allow me to add an before_logout hook" do
       RAM.before_logout{|user, auth, scopes| "foo"}
-      RAM._before_logout.should have(1).item
+      expect(RAM._before_logout.length).to eq(1)
     end
 
     it "should allow me to add multiple after_authentication hooks" do
       RAM.before_logout{|u,a,o| "bar"}
       RAM.before_logout{|u,a,o| "baz"}
-      RAM._before_logout.should have(2).items
+      expect(RAM._before_logout.length).to eq(2)
     end
 
     it "should run each before_logout hook before logout is run" do
@@ -282,8 +282,8 @@ describe "standard authentication hooks" do
       env = env_with_params
       setup_rack(app).call(env)
       env['warden'].logout
-      env['warden.spec.hook.lorem'].should eq('run lorem')
-      env['warden.spec.hook.ipsum'].should eq('run ipsum')
+      expect(env['warden.spec.hook.lorem']).to eq('run lorem')
+      expect(env['warden.spec.hook.ipsum']).to eq('run ipsum')
     end
 
     it "should run before_logout hook for a specified scope" do
@@ -301,12 +301,12 @@ describe "standard authentication hooks" do
       setup_rack(app).call(env)
 
       env['warden'].logout(:scope1)
-      env['warden.spec.hook.a'].should eq([:scope1])
-      env['warden.spec.hook.b'].should eq([])
+      expect(env['warden.spec.hook.a']).to eq([:scope1])
+      expect(env['warden.spec.hook.b']).to eq([])
 
       env['warden'].logout(:scope2)
-      env['warden.spec.hook.a'].should eq([:scope1])
-      env['warden.spec.hook.b'].should eq([:scope2])
+      expect(env['warden.spec.hook.a']).to eq([:scope1])
+      expect(env['warden.spec.hook.b']).to eq([:scope2])
     end
 
     it "should run filters in the given order" do
@@ -321,7 +321,7 @@ describe "standard authentication hooks" do
       end
       env = env_with_params
       setup_rack(app).call(env)
-      env['warden.spec.order'].should eq([1,2,3])
+      expect(env['warden.spec.order']).to eq([1,2,3])
     end
   end
 
@@ -339,13 +339,13 @@ describe "standard authentication hooks" do
 
     it "should allow me to add an on_request hook" do
       RAM.on_request{|proxy| "foo"}
-      RAM._on_request.should have(1).item
+      expect(RAM._on_request.length).to eq(1)
     end
 
     it "should allow me to add multiple on_request hooks" do
       RAM.on_request{|proxy| "foo"}
       RAM.on_request{|proxy| "bar"}
-      RAM._on_request.should have(2).items
+      expect(RAM._on_request.length).to eq(2)
     end
 
     it "should run each on_request hooks when initializing" do
@@ -354,8 +354,8 @@ describe "standard authentication hooks" do
       app = lambda{|e| valid_response}
       env = env_with_params
       setup_rack(app).call(env)
-      env['warden.spec.on_request.foo'].should eq("foo")
-      env['warden.spec.on_request.bar'].should  eq("bar")
+      expect(env['warden.spec.on_request.foo']).to eq("foo")
+      expect(env['warden.spec.on_request.bar']).to  eq("bar")
     end
 
     it "should run filters in the given order" do
@@ -367,7 +367,7 @@ describe "standard authentication hooks" do
       end
       env = Rack::MockRequest.env_for("/", "warden.spec.order" => [])
       setup_rack(app).call(env)
-      env['warden.spec.order'].should eq([1,2,3])
+      expect(env['warden.spec.order']).to eq([1,2,3])
     end
   end
 end
