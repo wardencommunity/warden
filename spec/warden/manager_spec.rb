@@ -142,7 +142,7 @@ describe Warden::Manager do
          action = nil
 
          failure = lambda do |_env|
-           action = _env['PATH_INFO'] 
+           action = _env['PATH_INFO']
            [401, {}, ['fail']]
          end
 
@@ -288,6 +288,20 @@ describe Warden::Manager do
         result[0].should be(523)
         result[1]["Custom-Header"].should eq("foo")
         result[2].should eq(["Custom Stuff"])
+      end
+    end
+
+    describe "app returns Rack::Response" do
+      it "should return it" do
+        RAS.add(:foobar) do
+          def authenticate!
+            custom!(Rack::Response.new(['body'], 201, {"Content-Type" => "text/plain"}))
+          end
+        end
+        result = @app.call(env_with_params)
+        result.status.should be(201)
+        result.body.should eq(['body'])
+        result.header['Content-Type'].should eq('text/plain')
       end
     end
 

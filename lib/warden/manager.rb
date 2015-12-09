@@ -38,13 +38,11 @@ module Warden
       result ||= {}
       case result
       when Array
-        if result.first == 401 && intercept_401?(env)
-          process_unauthenticated(env)
-        else
-          result
-        end
+        handle_chain_result(result.first, result, env)
       when Hash
         process_unauthenticated(env, result)
+      when Rack::Response
+        handle_chain_result(result.status, result, env)
       end
     end
 
@@ -94,6 +92,14 @@ module Warden
     end
 
   private
+
+    def handle_chain_result(status, result, env)
+      if status == 401 && intercept_401?(env)
+        process_unauthenticated(env)
+      else
+        result
+      end
+    end
 
     def intercept_401?(env)
       config[:intercept_401] && !env['warden'].custom_failure?
