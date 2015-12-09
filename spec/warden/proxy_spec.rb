@@ -76,6 +76,15 @@ describe Warden::Proxy do
       }.should raise_error(RuntimeError, "Invalid strategy unknown")
     end
 
+    it "should raise error if the strategy failed" do
+      app = lambda do |env|
+        env['warden'].authenticate(:fail_with_user)
+        env['warden'].user.should be_nil
+        valid_response
+      end
+      setup_rack(app).call(@env)
+    end
+
     it "should not raise error on missing strategies if silencing" do
       app = lambda do |env|
         env['warden'].authenticate

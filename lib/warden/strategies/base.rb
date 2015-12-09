@@ -108,6 +108,11 @@ module Warden
       # :api: public
       def pass; end
 
+      # Returns true only if the result is a success and a user was assigned.
+      def successful?
+        @result == :success && !user.nil?
+      end
+
       # Whenever you want to provide a user object as "authenticated" use the +success!+ method.
       # This will halt the strategy, and set the user in the appropriate scope.
       # It is the "login" method
