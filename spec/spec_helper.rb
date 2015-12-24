@@ -3,6 +3,8 @@ $TESTING=true
 
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 $:.unshift File.expand_path(File.join(File.dirname(__FILE__)))
+require 'bundler/setup'
+
 require 'warden'
 
 require 'rubygems'
