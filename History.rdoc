@@ -1,3 +1,6 @@
+== Version 1.2.5 / 2016-01-28
+* Expands on the test helpers available to make it easier for testing gems
+
 == Version 1.2.3 / 2013-07-14
 * Fix an issue with lazy loaded sessions
 
