@@ -38,43 +38,41 @@ module Warden
       # @api public
       def warden
         @warden ||= begin
-          env = env_with_params
-          setup_rack(success_app).call(env)
           env['warden']
         end
       end
 
       private
 
-      FAILURE_APP = lambda{|e|[401, {"Content-Type" => "text/plain"}, ["You Fail!"]] }
+      def env
+        @env ||= begin
+          request = Rack::MockRequest.env_for(
+            "/?#{Rack::Utils.build_query({})}",
+            { 'HTTP_VERSION' => '1.1', 'REQUEST_METHOD' => 'GET' }
+          )
+          app.call(request)
 
-      def env_with_params(path = "/", params = {}, env = {})
-        method = params.delete(:method) || "GET"
-        env = { 'HTTP_VERSION' => '1.1', 'REQUEST_METHOD' => "#{method}" }.merge(env)
-        Rack::MockRequest.env_for("#{path}?#{Rack::Utils.build_query(params)}", env)
-      end
-
-      def setup_rack(app = nil, opts = {}, &block)
-        app ||= block if block_given?
-
-        opts[:failure_app]         ||= failure_app
-        opts[:default_strategies]  ||= [:password]
-        opts[:default_serializers] ||= [:session]
-        blk = opts[:configurator] || proc{}
-
-        Rack::Builder.new do
-          use opts[:session] || Warden::Test::Helpers::Session unless opts[:nil_session]
-          use Warden::Manager, opts, &blk
-          run app
+          request
         end
       end
 
-      def failure_app
-        Warden::Test::Helpers::FAILURE_APP
-      end
-
-      def success_app
-        lambda{|e| [200, {"Content-Type" => "text/plain"}, ["You Win"]]}
+      def app
+        @app ||= begin
+          opts = {
+            failure_app: lambda {
+              [401, { 'Content-Type' => 'text/plain' }, ['You Fail!']]
+            },
+            default_strategies: :password,
+            default_serializers: :session
+          }
+          Rack::Builder.new do
+            use Warden::Test::Helpers::Session
+            use Warden::Manager, opts, &proc {}
+            run lambda { |e|
+              [200, { 'Content-Type' => 'text/plain' }, ['You Win']]
+            }
+          end
+        end
       end
 
       class Session
