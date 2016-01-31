@@ -15,6 +15,7 @@ module Warden
   module Test
     autoload :WardenHelpers,  'warden/test/warden_helpers'
     autoload :Helpers,        'warden/test/helpers'
+    autoload :Mock,        'warden/test/mock'
   end
 
   # Provides helper methods to warden for testing.

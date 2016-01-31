@@ -85,14 +85,6 @@ describe Warden::Test::Helpers do
     expect($captures).to eq([:run])
   end
 
-  it "should return a valid mocked warden" do
-    user = "A User"
-    login_as user
-
-    expect(warden.class).to eq(Warden::Proxy)
-    expect(warden.user).to eq(user)
-  end
-
   describe "#asset_paths" do
     it "should default asset_paths to anything asset path regex" do
       expect(Warden.asset_paths).to eq([/^\/assets\//]      )
