@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # encoding: utf-8
 module Warden
   module Strategies
@@ -157,7 +158,7 @@ module Warden
       def redirect!(url, params = {}, opts = {})
         halt!
         @status = opts[:permanent] ? 301 : 302
-        headers["Location"] = url
+        headers["Location"] = url.dup
         headers["Location"] << "?" << Rack::Utils.build_query(params) unless params.empty?
         headers["Content-Type"] = opts[:content_type] || 'text/plain'
 
