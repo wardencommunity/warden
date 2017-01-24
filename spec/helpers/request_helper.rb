@@ -1,4 +1,5 @@
 # encoding: utf-8
+# frozen_string_literal: true
 module Warden::Spec
   module Helpers
     FAILURE_APP = lambda{|e|[401, {"Content-Type" => "text/plain"}, ["You Fail!"]] }
