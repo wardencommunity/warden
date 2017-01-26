@@ -1,5 +1,5 @@
-# frozen_string_literal: true
 # encoding: utf-8
+# frozen_string_literal: true
 
 module Warden
   # This class is yielded inside Warden::Manager. If you have a plugin and want to
