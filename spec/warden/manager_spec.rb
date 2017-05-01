@@ -338,4 +338,29 @@ describe Warden::Manager do
       end
     end
   end
+
+  describe "rack middleware of return value is Rack::Response (not an array)" do
+    before(:each) do
+      RAS = Warden::Strategies unless defined?(RAS)
+      Warden::Strategies.clear!
+      @app_rack_response = setup_rack do |env|
+        env['warden'].authenticate!(:foobar)
+        Rack::Response.new(["Foo Is A Winna"], 200, {"Content-Type" => "text/plain"})
+      end
+    end
+
+    describe "success" do
+      it "should pass through to the application when there is success" do
+        RAS.add(:foobar) do
+          def authenticate!
+            success!("A User")
+          end
+        end
+        env = env_with_params
+        result = @app_rack_response.call(env)
+        result[0].should be(200)
+        result[2].body.should eq(["Foo Is A Winna"])
+      end
+    end
+  end
 end

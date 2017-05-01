@@ -36,6 +36,7 @@ module Warden
         @app.call(env)
       end
 
+      result = result.instance_of?(Rack::Response) ? result.to_a : result
       result ||= {}
       case result
       when Array
