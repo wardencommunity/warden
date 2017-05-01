@@ -163,6 +163,7 @@ module Warden
     #
     # :api: public
     def set_user(user, opts = {})
+      raise TypeError.new("scope must be a Symbol or String") if opts[:scope] && !(opts[:scope].is_a?(Symbol) || opts[:scope].is_a?(String))
       scope = (opts[:scope] ||= @config.default_scope)
 
       # Get the default options from the master configuration for the given scope
