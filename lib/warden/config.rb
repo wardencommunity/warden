@@ -32,7 +32,7 @@ module Warden
       end
     end
 
-    hash_accessor :failure_app, :default_scope, :intercept_401
+    hash_accessor :failure_app, :default_scope, :intercept_401, :namespace
 
     def initialize(other={})
       merge!(other)

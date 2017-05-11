@@ -36,6 +36,12 @@ describe Warden::Config do
     expect(@config.default_scope).to eq(:foo)
   end
 
+  it "should set the namespace" do
+    @config.namespace.should == nil
+    @config.namespace = :foo
+    @config.namespace.should == :foo
+  end
+
   it "should merge given options on initialization" do
     expect(Warden::Config.new(:foo => :bar)[:foo]).to eq(:bar)
   end
