@@ -21,6 +21,7 @@ module Warden
     end
 
     def store(user, scope)
+      return unless session
       return unless user
       method_name = "#{scope}_serialize"
       specialized = respond_to?(method_name)
@@ -28,6 +29,7 @@ module Warden
     end
 
     def fetch(scope)
+      return unless session
       key = session[key_for(scope)]
       return nil unless key
 
