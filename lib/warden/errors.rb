@@ -1,5 +1,5 @@
-# frozen_string_literal: true
 # encoding: utf-8
+# frozen_string_literal: true
 module Warden
   class Proxy
     # Lifted from DataMapper's dm-validations plugin :)
