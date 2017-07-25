@@ -6,7 +6,7 @@ require './lib/warden/version'
 Gem::Specification.new do |s|
   s.name = %q{warden}
   s.version = Warden::VERSION.dup
-  s.authors = ["Daniel Neighman"]
+  s.authors = ["Daniel Neighman", "Justin Smestad", "Whitney Smestad", "José Valim"]
   s.email = %q{has.sox@gmail.com}
   s.license = "MIT"
   s.extra_rdoc_files = [
