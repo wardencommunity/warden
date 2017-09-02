@@ -137,7 +137,7 @@
 
 === Version 0.5.1 / 2009-10-25
 * enhancements
-  * Adds yeilding to authenticated? and unauthenticated? methods (hassox)
+  * Adds yielding to authenticated? and unauthenticated? methods (hassox)
   * Adds an option to silence missing strategies (josevalim)
   * Add an option to authenticate(!) to prevent storage of a user into the session (hassox)
   * allow custom :action to be thrown (josevalim)
