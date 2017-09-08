@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
      "README.textile"
   ]
   s.files = Dir["**/*"] - Dir["*.gem"] - ["Gemfile.lock"]
-  s.homepage = %q{http://github.com/hassox/warden}
+  s.homepage = %q{https://github.com/hassox/warden}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{warden}
