@@ -4,7 +4,7 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'rake'
-gem 'rack', '1.3'
+gem 'rack', '~> 2.0'
 
 group :test do
   gem 'rspec', '~>3'
