@@ -92,6 +92,18 @@ describe Warden::Manager do
         expect(env["warden.options"][:attempted_path]).to eq("/access/path")
       end
 
+      it "should set action in warden.options if overridden" do
+        env = env_with_params("/access/path", {})
+        app = lambda do |_env|
+          _env['warden'].authenticate(:pass)
+          throw(:warden, action: :different_action)
+        end
+        result = setup_rack(app, :failure_app => @fail_app).call(env)
+        expect(result.first).to eq(401)
+        expect(env["warden.options"][:action]).to eq(:different_action)
+      end
+
+
       it "should catch a resubmitted request" do
         # this is a bit convoluted. but it's occurred in the field with Rack::OpenID
         $count = 0
