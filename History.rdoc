@@ -1,4 +1,5 @@
 == Version 1.2.8 / Not released
+* Bugfix: Flips two lines to allow scopes authenticating from another without stepping on each other's toes. (PR #144)
 * Internal: Add Rubocop Lint checking
 * Internal: Update RSpec to use `.rspec` file
 * Internal: Update `rack` dependency to 2.x
