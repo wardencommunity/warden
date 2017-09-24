@@ -1,8 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
-require 'spec_helper'
-
-describe Warden::Test::Helpers do
+RSpec.describe Warden::Test::Helpers do
   before{ $captures = [] }
   after{ Warden.test_reset! }
 

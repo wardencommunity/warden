@@ -1,14 +1,12 @@
 # encoding: utf-8
 # frozen_string_literal: true
-require 'spec_helper'
-
-describe Warden::Proxy do
+RSpec.describe Warden::Proxy do
   before(:all) do
     load_strategies
   end
 
   before(:each) do
-    @basic_app = lambda{|env| [200,{'Content-Type' => 'text/plain'},'OK']}
+    @basic_app = lambda{|_env| [200,{'Content-Type' => 'text/plain'},'OK']}
     @authd_app = lambda do |e|
       e['warden'].authenticate
       if e['warden'].authenticated?
@@ -48,10 +46,10 @@ describe Warden::Proxy do
 
     it "should allow authentication in my application" do
       env = env_with_params('/', :username => "fred", :password => "sekrit")
-      app = lambda do |_env|
-        _env['warden'].authenticate
-        expect(_env['warden']).to be_authenticated
-        expect(_env['warden.spec.strategies']).to eq([:password])
+      app = lambda do |env|
+        env['warden'].authenticate
+        expect(env['warden']).to be_authenticated
+        expect(env['warden.spec.strategies']).to eq([:password])
         valid_response
       end
       setup_rack(app).call(env)
@@ -59,10 +57,10 @@ describe Warden::Proxy do
 
     it "should allow me to select which strategies I use in my application" do
       env = env_with_params("/", :foo => "bar")
-      app = lambda do |_env|
-        _env['warden'].authenticate(:failz)
-        expect(_env['warden']).not_to be_authenticated
-        expect(_env['warden.spec.strategies']).to eq([:failz])
+      app = lambda do |env|
+        env['warden'].authenticate(:failz)
+        expect(env['warden']).not_to be_authenticated
+        expect(env['warden.spec.strategies']).to eq([:failz])
         valid_response
       end
       setup_rack(app).call(env)
@@ -730,7 +728,7 @@ describe Warden::Proxy do
 
       it "should return false if scope cannot be retrieved from session" do
         begin
-          Warden::Manager.serialize_from_session { |k| nil }
+          Warden::Manager.serialize_from_session { |_k| nil }
           app = lambda do |env|
             env['rack.session']['warden.user.foo_scope.key'] = "a foo user"
             env['warden'].authenticated?(:foo_scope)

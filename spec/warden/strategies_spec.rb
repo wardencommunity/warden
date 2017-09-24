@@ -1,8 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
-require 'spec_helper'
-
-describe Warden::Strategies do
+RSpec.describe Warden::Strategies do
   it "should let me add a strategy via a block" do
     Warden::Strategies.add(:strategy1) do
       def authenticate!
