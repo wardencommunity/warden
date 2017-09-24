@@ -8,7 +8,7 @@ module Warden
     # A mock of an application to get a Warden object to test on
     # Note: During the teardown phase of your specs you should include: Warden.test_reset!
     module Mock
-      def self.included(base)
+      def self.included(_base)
         ::Warden.test_mode!
       end
 
@@ -46,7 +46,7 @@ module Warden
           Rack::Builder.new do
             use Warden::Test::Mock::Session
             use Warden::Manager, opts, &proc {}
-            run lambda { |e|
+            run lambda { |_e|
               [200, { 'Content-Type' => 'text/plain' }, ['You Win']]
             }
           end
@@ -55,7 +55,7 @@ module Warden
 
       class Session
         attr_accessor :app
-        def initialize(app,configs = {})
+        def initialize(app, _configs={})
           @app = app
         end
 

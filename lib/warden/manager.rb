@@ -22,7 +22,6 @@ module Warden
       @app, @config = app, Warden::Config.new(options)
       @config.default_strategies(*default_strategies) if default_strategies
       yield @config if block_given?
-      self
     end
 
     # Invoke the application guarding for throw :warden.

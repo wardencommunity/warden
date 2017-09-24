@@ -39,7 +39,7 @@ module Warden
       end
 
       def each
-        errors.map.each do |k,v|
+        errors.map.each do |_k,v|
           next if blank?(v)
           yield(v)
         end

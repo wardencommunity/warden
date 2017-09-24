@@ -7,7 +7,7 @@ module Warden
     # These provide the ability to login and logout on any given request
     # Note: During the teardown phase of your specs you should include: Warden.test_reset!
     module Helpers
-      def self.included(base)
+      def self.included(_base)
         ::Warden.test_mode!
       end
 
