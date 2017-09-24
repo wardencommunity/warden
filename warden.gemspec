@@ -1,24 +1,27 @@
 # -*- encoding: utf-8 -*-
 # frozen_string_literal: true
 
-require './lib/warden/version'
+lib = File.expand_path("../lib", __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'warden/version'
 
-Gem::Specification.new do |s|
-  s.name = %q{warden}
-  s.version = Warden::VERSION.dup
-  s.authors = ["Daniel Neighman", "Justin Smestad", "Whitney Smestad", "José Valim"]
-  s.email = %q{has.sox@gmail.com justin.smestad@gmail.com whitcolorado@gmail.com}
-  s.license = "MIT"
-  s.extra_rdoc_files = [
+Gem::Specification.new do |spec|
+  spec.name = "warden"
+  spec.version = Warden::VERSION.dup
+  spec.authors = ["Daniel Neighman", "Justin Smestad", "Whitney Smestad", "José Valim"]
+  spec.email = %q{hasox.sox@gmail.com justin.smestad@gmail.com whitcolorado@gmail.com}
+  spec.homepage = "https://github.com/hassox/warden"
+  spec.summary = "An authentication library compatible with all Rack-based frameworks"
+  spec.license = "MIT"
+  spec.extra_rdoc_files = [
     "LICENSE",
      "README.md"
   ]
-  s.files = Dir["**/*"] - Dir["*.gem"] - ["Gemfile.lock"]
-  s.homepage = %q{https://github.com/hassox/warden}
-  s.rdoc_options = ["--charset=UTF-8"]
-  s.require_paths = ["lib"]
-  s.rubyforge_project = %q{warden}
-  s.rubygems_version = %q{1.3.7}
-  s.summary = %q{Rack middleware that provides authentication for rack applications}
-  s.add_dependency "rack", ">= 1.0"
+  spec.files = `git ls-files -z`.split("\x0").reject do |f|
+    f.match(%r{^(test|spec|features)/})
+  end
+  spec.rdoc_options = ["--charset=UTF-8"]
+  spec.require_paths = ["lib"]
+  spec.rubyforge_project = %q{warden}
+  spec.add_dependency "rack", ">= 1.0"
 end
