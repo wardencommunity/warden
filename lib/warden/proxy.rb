@@ -355,8 +355,8 @@ module Warden
         strategy = _fetch_strategy(name, scope)
         next unless strategy && !strategy.performed? && strategy.valid?
 
-        self.winning_strategy = @winning_strategies[scope] = strategy
         strategy._run!
+        self.winning_strategy = @winning_strategies[scope] = strategy
         break if strategy.halted?
       end
     end
