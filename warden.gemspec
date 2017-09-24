@@ -7,11 +7,11 @@ Gem::Specification.new do |s|
   s.name = %q{warden}
   s.version = Warden::VERSION.dup
   s.authors = ["Daniel Neighman", "Justin Smestad", "Whitney Smestad", "José Valim"]
-  s.email = %q{has.sox@gmail.com}
+  s.email = %q{has.sox@gmail.com justin.smestad@gmail.com whitcolorado@gmail.com}
   s.license = "MIT"
   s.extra_rdoc_files = [
     "LICENSE",
-     "README.textile"
+     "README.md"
   ]
   s.files = Dir["**/*"] - Dir["*.gem"] - ["Gemfile.lock"]
   s.homepage = %q{https://github.com/hassox/warden}
@@ -22,4 +22,3 @@ Gem::Specification.new do |s|
   s.summary = %q{Rack middleware that provides authentication for rack applications}
   s.add_dependency "rack", ">= 1.0"
 end
-
