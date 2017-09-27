@@ -1,8 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
-require 'spec_helper'
-
-describe Warden::Manager do
+RSpec.describe Warden::Manager do
 
   before(:all) do
     load_strategies

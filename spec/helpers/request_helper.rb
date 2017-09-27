@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 module Warden::Spec
   module Helpers
-    FAILURE_APP = lambda{|e|[401, {"Content-Type" => "text/plain"}, ["You Fail!"]] }
+    FAILURE_APP = lambda{|_e|[401, {"Content-Type" => "text/plain"}, ["You Fail!"]] }
 
     def env_with_params(path = "/", params = {}, env = {})
       method = params.delete(:method) || "GET"

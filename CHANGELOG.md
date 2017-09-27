@@ -1,3 +1,9 @@
+== Version 1.2.8 / Not released
+* Bugfix: Flips two lines to allow scopes authenticating from another without stepping on each other's toes. (PR #144)
+* Internal: Add Rubocop Lint checking
+* Internal: Update RSpec to use `.rspec` file
+* Internal: Update `rack` dependency to 2.x
+
 == Version 1.2.7 / 2016-10-12
 * Added 'frozen_string_literal' comment, bump ruby to 2.3
 
@@ -155,5 +161,3 @@
 
 * enhancements
   * add a hook for plugins to specify how they can clear the whole section
-
-

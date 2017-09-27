@@ -1,8 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
-require 'spec_helper'
-
-describe "standard authentication hooks" do
+RSpec.describe "standard authentication hooks" do
 
   before(:all) do
     load_strategies

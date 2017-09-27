@@ -1,8 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
-require 'spec_helper'
-
-describe Warden::Config do
+RSpec.describe Warden::Config do
 
   before(:each) do
     @config = Warden::Config.new

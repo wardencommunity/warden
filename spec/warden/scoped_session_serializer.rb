@@ -1,8 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
-require 'spec_helper'
-
-describe Warden::Manager do
+RSpec.describe Warden::Manager do
   before(:each) do
     @env = env_with_params
     @env['rack.session'] ||= {}
@@ -17,6 +15,7 @@ describe Warden::Manager do
     rescue
     end
   end
+
   after(:each) do
     Warden::Manager.serialize_from_session { |k| k }
     Warden::Manager.serialize_into_session { |u| u }
@@ -40,14 +39,14 @@ describe Warden::Manager do
   end
 
   it "should respond to {scope}_deserialize if Manager.serialize_from_session is called with scope" do
-    Rack::Builder.new do 
-      Warden::Manager.serialize_from_session ( :admin ) { |n| n }
+    Rack::Builder.new do
+      Warden::Manager.serialize_from_session(:admin) { |n| n }
     end
     serializer_respond_to?(:admin_deserialize).should be_true
   end
 
   it "should respond to {scope}_serialize if Manager.serialize_into_session is called with scope" do
-    Rack::Builder.new do 
+    Rack::Builder.new do
       Warden::Manager.serialize_into_session(:admin) { |n| n }
     end
     serializer_respond_to?(:admin_serialize).should be_true

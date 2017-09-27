@@ -1,8 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
-require 'spec_helper'
-
-describe "authenticated data store" do
+RSpec.describe "authenticated data store" do
 
   before(:each) do
     @env = env_with_params
