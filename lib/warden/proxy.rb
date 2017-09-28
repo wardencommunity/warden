@@ -172,7 +172,13 @@ module Warden
 
       if opts[:store] != false && opts[:event] != :fetch
         options = env[ENV_SESSION_OPTIONS]
-        options[:renew] = true if options
+        if options
+          if options.frozen?
+            env[ENV_SESSION_OPTIONS] = options.merge(:renew => true).freeze
+          else
+            options[:renew] = true
+          end
+        end
         session_serializer.store(user, scope)
       end
 

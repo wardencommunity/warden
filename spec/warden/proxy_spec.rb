@@ -409,25 +409,59 @@ RSpec.describe Warden::Proxy do
       end
       setup_rack(app).call(@env)
     end
+
+    it "should set renew on rack.session.options" do
+      app = lambda do |env|
+        env['warden'].authenticate(:pass)
+        valid_response
+      end
+
+      @env[Warden::Proxy::ENV_SESSION_OPTIONS] = {}
+
+      setup_rack(app).call(@env)
+
+      expect(@env[Warden::Proxy::ENV_SESSION_OPTIONS]).to include(renew: true)
+      expect(@env[Warden::Proxy::ENV_SESSION_OPTIONS]).to_not be_frozen
+    end
+
+    it "should not modify attempt to modify a frozen rack.session.options" do
+      app = lambda do |env|
+        env['warden'].authenticate(:pass)
+        valid_response
+      end
+
+      original_options = {}.freeze
+      @env[Warden::Proxy::ENV_SESSION_OPTIONS] = original_options
+
+      setup_rack(app).call(@env)
+
+      expect(original_options).to be_empty
+      expect(@env[Warden::Proxy::ENV_SESSION_OPTIONS]).to include(renew: true)
+      expect(@env[Warden::Proxy::ENV_SESSION_OPTIONS]).to be_frozen
+    end
   end
 
   describe "lock" do
     it "should not run any strategy" do
-      _app = lambda do |env|
+      app = lambda do |env|
         env['warden'].lock!
         env['warden'].authenticate(:pass)
         expect(env['warden'].user).to be_nil
         valid_response
       end
+
+      setup_rack(app).call(@env)
     end
 
     it "should keep already authenticated users" do
-      _app = lambda do |env|
+      app = lambda do |env|
         env['warden'].authenticate(:pass)
         env['warden'].lock!
         expect(env['warden'].user).not_to be_nil
         valid_response
       end
+
+      setup_rack(app).call(@env)
     end
   end
 
