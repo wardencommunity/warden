@@ -413,21 +413,25 @@ RSpec.describe Warden::Proxy do
 
   describe "lock" do
     it "should not run any strategy" do
-      _app = lambda do |env|
+      app = lambda do |env|
         env['warden'].lock!
         env['warden'].authenticate(:pass)
         expect(env['warden'].user).to be_nil
         valid_response
       end
+
+      setup_rack(app).call(@env)
     end
 
     it "should keep already authenticated users" do
-      _app = lambda do |env|
+      app = lambda do |env|
         env['warden'].authenticate(:pass)
         env['warden'].lock!
         expect(env['warden'].user).not_to be_nil
         valid_response
       end
+
+      setup_rack(app).call(@env)
     end
   end
 
