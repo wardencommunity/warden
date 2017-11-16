@@ -29,6 +29,11 @@ module Warden
       @env, @users, @winning_strategies, @locked = env, {}, {}, false
       @manager, @config = manager, manager.config.dup
       @strategies = Hash.new { |h,k| h[k] = {} }
+    end
+
+    # Run the on_request callbacks
+    # :api: private
+    def on_request
       manager._run_callbacks(:on_request, self)
     end
 

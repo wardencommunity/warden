@@ -368,5 +368,22 @@ RSpec.describe "standard authentication hooks" do
       setup_rack(app).call(env)
       expect(env['warden.spec.order']).to eq([1,2,3])
     end
+
+    it "should have the proxy on env in on_request" do
+      warden = nil
+      RAM.on_request{|proxy| warden = proxy.env['warden']}
+      app = lambda{|e| valid_response}
+      env = env_with_params
+      setup_rack(app).call(env)
+      expect(warden).to eq(env['warden'])
+    end
+
+    it "should be able to throw in on_request" do
+      RAM.on_request{|proxy| throw :warden}
+      app = lambda{|e| valid_response}
+      env = env_with_params
+      result = setup_rack(app).call(env)
+      expect(result.first).to eq(401)
+    end
   end
 end

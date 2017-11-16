@@ -32,6 +32,7 @@ module Warden
 
       env['warden'] = Proxy.new(env, self)
       result = catch(:warden) do
+        env['warden'].on_request
         @app.call(env)
       end
 
