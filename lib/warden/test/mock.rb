@@ -37,7 +37,7 @@ module Warden
       def app
         @app ||= begin
           opts = {
-            failure_app: lambda {
+            failure_app: lambda { |_e|
               [401, { 'Content-Type' => 'text/plain' }, ['You Fail!']]
             },
             default_strategies: :password,
