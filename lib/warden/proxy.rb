@@ -330,7 +330,7 @@ module Warden
       user = nil
 
       # Look for an existing user in the session for this scope.
-      # If there was no user in the session. See if we can get one from the request.
+      # If there was no user in the session, see if we can get one from the request.
       return user, opts if user = user(opts.merge(:scope => scope))
       _run_strategies_for(scope, args)
 
