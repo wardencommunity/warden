@@ -1,8 +1,8 @@
-== Version 1.2.8 / Not released
+== Version 1.2.8 / 2018-11-15
 * Bugfix: Flips two lines to allow scopes authenticating from another without stepping on each other's toes. (PR #144)
+* Update `rack` dependency to >= 2.0.6 due to security vulnerability
 * Internal: Add Rubocop Lint checking
 * Internal: Update RSpec to use `.rspec` file
-* Internal: Update `rack` dependency to 2.x
 
 == Version 1.2.7 / 2016-10-12
 * Added 'frozen_string_literal' comment, bump ruby to 2.3
