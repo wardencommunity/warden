@@ -23,5 +23,5 @@ Gem::Specification.new do |spec|
   spec.rdoc_options = ["--charset=UTF-8"]
   spec.require_paths = ["lib"]
   spec.rubyforge_project = %q{warden}
-  spec.add_dependency "rack", ">= 1.0"
+  spec.add_dependency "rack", ">= 2.0.6"
 end
