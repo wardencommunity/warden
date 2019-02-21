@@ -2,7 +2,7 @@
 
 ## Getting Started
 
-Please see the [Warden Wiki](https://wiki.github.com/hassox/warden) for overview documentation.
+Please see the [Warden Wiki](https://github.com/wardencommunity/warden/wiki) for overview documentation.
 
 ## Maintainers
 
