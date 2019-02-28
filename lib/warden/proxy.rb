@@ -111,7 +111,7 @@ module Warden
       user
     end
 
-    # Same API as authenticated, but returns a boolean instead of a user.
+    # Same API as authenticate, but returns a boolean instead of a user.
     # The difference between this method (authenticate?) and authenticated?
     # is that the former will run strategies if the user has not yet been
     # authenticated, and the second relies on already performed ones.
