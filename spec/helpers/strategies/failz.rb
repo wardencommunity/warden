@@ -5,5 +5,6 @@ Warden::Strategies.add(:failz) do
     request.env['warden.spec.strategies'] ||= []
     request.env['warden.spec.strategies'] << :failz
     fail!("The Fails Strategy Has Failed You")
+    throw :warden
   end
 end
