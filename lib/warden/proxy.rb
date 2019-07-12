@@ -365,9 +365,12 @@ module Warden
       (strategies || args).each do |name|
         strategy = _fetch_strategy(name, scope)
         next unless strategy && !strategy.performed? && strategy.valid?
+        catch(:warden) do
+          _update_winning_strategy(strategy, scope)
+        end
 
         strategy._run!
-        self.winning_strategy = @winning_strategies[scope] = strategy
+        _update_winning_strategy(strategy, scope)
         break if strategy.halted?
       end
     end
@@ -381,6 +384,11 @@ module Warden
       else
         raise "Invalid strategy #{name}"
       end
+    end
+
+    # Updates the winning strategy for a given scope
+    def _update_winning_strategy(strategy, scope)
+      self.winning_strategy = @winning_strategies[scope] = strategy
     end
   end # Proxy
 
