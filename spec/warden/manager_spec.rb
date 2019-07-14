@@ -33,7 +33,7 @@ RSpec.describe Warden::Manager do
            _env['warden'].authenticate(:failz)
            throw(:warden, :action => :unauthenticated)
          end
-         result = setup_rack(app, :failure_app => @fail_app).call(env) # TODO: What is @fail_app?
+         result = setup_rack(app).call(env)
          expect(result.first).to eq(401)
       end
 
@@ -43,7 +43,10 @@ RSpec.describe Warden::Manager do
           _env['warden'].authenticate(:failz)
           throw(:warden)
         end
-        result = setup_rack(app, :failure_app => @fail_app).call(env) # TODO: What is @fail_app?
+        fail_app = lambda do |_env|
+          [401, {"Content-Type" => "text/plain"}, ["You Fail!"]]
+        end
+        result = setup_rack(app, :failure_app => fail_app).call(env)
         expect(result.last).to eq(["You Fail!"])
       end
 
@@ -53,7 +56,7 @@ RSpec.describe Warden::Manager do
           _env['warden'].authenticate(:failz)
           throw(:warden)
         end
-        setup_rack(app, :failure_app => @fail_app).call(env) # TODO: What is @fail_app?
+        setup_rack(app).call(env)
         expect(env["warden.options"][:message]).to eq("The Fails Strategy Has Failed You")
       end
 
@@ -74,7 +77,10 @@ RSpec.describe Warden::Manager do
           _env['warden'].authenticate(:pass)
           throw(:warden)
         end
-        result = setup_rack(app, :failure_app => @fail_app).call(env)
+        fail_app = lambda do |_env|
+          [401, {"Content-Type" => "text/plain"}, ["You Fail!"]]
+        end
+        result = setup_rack(app, :failure_app => fail_app).call(env)
         expect(result.first).to eq(401)
         expect(result.last).to eq(["You Fail!"])
       end
@@ -85,7 +91,7 @@ RSpec.describe Warden::Manager do
           _env['warden'].authenticate(:pass)
           throw(:warden)
         end
-        result = setup_rack(app, :failure_app => @fail_app).call(env) # TODO: What is @fail_app?
+        result = setup_rack(app).call(env)
         expect(result.first).to eq(401)
         expect(env["warden.options"][:attempted_path]).to eq("/access/path")
       end
@@ -96,7 +102,7 @@ RSpec.describe Warden::Manager do
           _env['warden'].authenticate(:pass)
           throw(:warden, action: :different_action)
         end
-        result = setup_rack(app, :failure_app => @fail_app).call(env)
+        result = setup_rack(app).call(env)
         expect(result.first).to eq(401)
         expect(env["warden.options"][:action]).to eq(:different_action)
       end
