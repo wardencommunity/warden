@@ -1,11 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
 RSpec.describe "standard authentication hooks" do
-
-  before(:all) do
-    load_strategies
-  end
-
   describe "after_set_user" do
     before(:each) do
       RAM = Warden::Manager unless defined?(RAM)

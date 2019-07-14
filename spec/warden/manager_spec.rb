@@ -1,11 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
 RSpec.describe Warden::Manager do
-
-  before(:all) do
-    load_strategies
-  end
-
   it "should insert a Proxy object into the rack env" do
     env = env_with_params
     setup_rack(success_app).call(env)
@@ -13,19 +8,6 @@ RSpec.describe Warden::Manager do
   end
 
   describe "thrown auth" do
-    before(:each) do
-      @basic_app = lambda{|env| [200,{'Content-Type' => 'text/plain'},'OK']}
-      @authd_app = lambda do |e|
-        if e['warden'].authenticated?
-          [200,{'Content-Type' => 'text/plain'},"OK"]
-        else
-          [401,{'Content-Type' => 'text/plain'},"Fail From The App"]
-        end
-      end
-      @env = Rack::MockRequest.
-        env_for('/', 'HTTP_VERSION' => '1.1', 'REQUEST_METHOD' => 'GET')
-    end # before(:each)
-
     describe "Failure" do
       it "should respond with a 401 response if the strategy fails authentication" do
          env = env_with_params("/", :foo => "bar")
