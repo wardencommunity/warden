@@ -58,13 +58,12 @@ describe Warden::Strategies::Base do
     expect(strategy).not_to be_performed
   end
 
-  it "should set the scope" do
+  it "should set the scope when initialized with one" do
     RAS.add(:foobar) do
-      def authenticate!
-        expect(self.scope).to eq(:user) # TODO: Not being called at all. What's this?
-      end
+      def authenticate!; end
     end
-    _strategy = RAS[:foobar].new(env_with_params, :user)
+    strategy = RAS[:foobar].new(env_with_params, :user)
+    expect(strategy.scope).to eq(:user)
   end
 
   it "should allow you to set a message" do
