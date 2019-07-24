@@ -885,8 +885,6 @@ end
 
 describe "dynamic default_strategies" do
   before(:all) do
-    load_strategies
-
     class ::DynamicDefaultStrategies
       def initialize(app, &blk)
         @app, @blk = app, blk

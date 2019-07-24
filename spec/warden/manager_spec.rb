@@ -1,11 +1,6 @@
 # encoding: utf-8
 # frozen_string_literal: true
 RSpec.describe Warden::Manager do
-
-  before(:all) do
-    load_strategies
-  end
-
   it "should insert a Proxy object into the rack env" do
     env = env_with_params
     setup_rack(success_app).call(env)
@@ -13,19 +8,6 @@ RSpec.describe Warden::Manager do
   end
 
   describe "thrown auth" do
-    before(:each) do
-      @basic_app = lambda{|env| [200,{'Content-Type' => 'text/plain'},'OK']}
-      @authd_app = lambda do |e|
-        if e['warden'].authenticated?
-          [200,{'Content-Type' => 'text/plain'},"OK"]
-        else
-          [401,{'Content-Type' => 'text/plain'},"Fail From The App"]
-        end
-      end
-      @env = Rack::MockRequest.
-        env_for('/', 'HTTP_VERSION' => '1.1', 'REQUEST_METHOD' => 'GET')
-    end # before(:each)
-
     describe "Failure" do
       it "should respond with a 401 response if the strategy fails authentication" do
          env = env_with_params("/", :foo => "bar")
@@ -33,7 +15,7 @@ RSpec.describe Warden::Manager do
            _env['warden'].authenticate(:failz)
            throw(:warden, :action => :unauthenticated)
          end
-         result = setup_rack(app, :failure_app => @fail_app).call(env) # TODO: What is @fail_app?
+         result = setup_rack(app).call(env)
          expect(result.first).to eq(401)
       end
 
@@ -43,7 +25,10 @@ RSpec.describe Warden::Manager do
           _env['warden'].authenticate(:failz)
           throw(:warden)
         end
-        result = setup_rack(app, :failure_app => @fail_app).call(env) # TODO: What is @fail_app?
+        fail_app = lambda do |_env|
+          [401, {"Content-Type" => "text/plain"}, ["You Fail!"]]
+        end
+        result = setup_rack(app, :failure_app => fail_app).call(env)
         expect(result.last).to eq(["You Fail!"])
       end
 
@@ -53,7 +38,7 @@ RSpec.describe Warden::Manager do
           _env['warden'].authenticate(:failz)
           throw(:warden)
         end
-        setup_rack(app, :failure_app => @fail_app).call(env) # TODO: What is @fail_app?
+        setup_rack(app).call(env)
         expect(env["warden.options"][:message]).to eq("The Fails Strategy Has Failed You")
       end
 
@@ -74,7 +59,10 @@ RSpec.describe Warden::Manager do
           _env['warden'].authenticate(:pass)
           throw(:warden)
         end
-        result = setup_rack(app, :failure_app => @fail_app).call(env)
+        fail_app = lambda do |_env|
+          [401, {"Content-Type" => "text/plain"}, ["You Fail!"]]
+        end
+        result = setup_rack(app, :failure_app => fail_app).call(env)
         expect(result.first).to eq(401)
         expect(result.last).to eq(["You Fail!"])
       end
@@ -85,7 +73,7 @@ RSpec.describe Warden::Manager do
           _env['warden'].authenticate(:pass)
           throw(:warden)
         end
-        result = setup_rack(app, :failure_app => @fail_app).call(env) # TODO: What is @fail_app?
+        result = setup_rack(app).call(env)
         expect(result.first).to eq(401)
         expect(env["warden.options"][:attempted_path]).to eq("/access/path")
       end
@@ -96,7 +84,7 @@ RSpec.describe Warden::Manager do
           _env['warden'].authenticate(:pass)
           throw(:warden, action: :different_action)
         end
-        result = setup_rack(app, :failure_app => @fail_app).call(env)
+        result = setup_rack(app).call(env)
         expect(result.first).to eq(401)
         expect(env["warden.options"][:action]).to eq(:different_action)
       end
