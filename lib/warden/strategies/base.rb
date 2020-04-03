@@ -45,6 +45,7 @@ module Warden
         @env, @scope = env, scope
         @status, @headers = nil, {}
         @halted, @performed = false, false
+        @result = nil
       end
 
       # The method that is called from above. This method calls the underlying authenticate! method
