@@ -8,7 +8,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     diff-lcs (1.3)
-    rack (2.0.8)
+    rack (2.2.3)
     rack-test (0.7.0)
       rack (>= 1.0, < 3)
     rake (13.0.1)
@@ -35,4 +35,3 @@ DEPENDENCIES
   rake
   rspec (~> 3)
   warden!
-
