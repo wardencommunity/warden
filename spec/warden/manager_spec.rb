@@ -132,7 +132,7 @@ RSpec.describe Warden::Manager do
 
         result = builder.to_app.call(env)
         expect(result[0]).to eq(401)
-        expect(result[2].body).to eq(["Bad"])
+        expect(result[2]).to eq(["Bad"])
         expect($throw_count).to eq(2)
       end
 
