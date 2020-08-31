@@ -7,7 +7,7 @@ require 'warden/version'
 
 Gem::Specification.new do |spec|
   spec.name = "warden"
-  spec.version = Warden::VERSION.dup
+  spec.version = Warden::VERSION
   spec.authors = ["Daniel Neighman", "Justin Smestad", "Whitney Smestad", "José Valim"]
   spec.email = %q{hasox.sox@gmail.com justin.smestad@gmail.com whitcolorado@gmail.com}
   spec.homepage = "https://github.com/hassox/warden"
@@ -20,7 +20,6 @@ Gem::Specification.new do |spec|
   spec.files = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
   end
-  spec.rdoc_options = ["--charset=UTF-8"]
   spec.require_paths = ["lib"]
   spec.add_dependency "rack", ">= 2.0.6"
 end
