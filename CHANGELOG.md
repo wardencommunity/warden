@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## Version 1.2.9 / 2020-08-31
+* Avoid warning on uninitialized instance variable (#188)
+* Bump rack to 2.2.3 (#190)
+* Remove Gemfile.lock
+* Resolve outstanding TODO entries (#179)
+* A bunch of gem structure cleanup (thanks @olleolleolle)
+* Set winning strategy when :warden is thrown (#174)
+* Bump rack dependency to >= 2.0.9 due to CVEs
+
 ## Version 1.2.8 / 2018-11-15
 
 * Bugfix: Flips two lines to allow scopes authenticating from another without stepping on each other's toes. (PR #144)
