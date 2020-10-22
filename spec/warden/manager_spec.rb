@@ -53,6 +53,46 @@ RSpec.describe Warden::Manager do
         expect(result.last).to eq(["Failure App"])
       end
 
+      it "should raise an error when no matching failure app by scope is found" do
+        app = lambda { |e| throw(:warden, :scope => :default) }
+        fail_app = lambda { |e| [401, {"Content-Type" => "text/plain"}, ["Failure App"]] }
+
+        expect {
+          setup_rack(
+            app,
+            :failure_app => { app: fail_app, scope: :foo }
+          ).call(env_with_params)
+        }.to raise_error(RuntimeError, 'No Failure App provided for scope')
+      end
+
+      it "should render the matching failure app by scope" do
+        app = lambda { |e| throw(:warden, :scope => :default) }
+        fail_app = lambda { |e| [401, {"Content-Type" => "text/plain"}, ["Failure App"]] }
+
+        result = setup_rack(
+          app,
+          :failure_app => { app: fail_app, scope: :default }
+        ).call(env_with_params)
+
+        expect(result.last).to eq(["Failure App"])
+      end
+
+      it "should render the right configured matching failure app by scope" do
+        app = lambda { |e| throw(:warden, :scope => :default) }
+        fail_app1 = lambda { |e| [401, {"Content-Type" => "text/plain"}, ["Failure App #1"]] }
+        fail_app2 = lambda { |e| [401, {"Content-Type" => "text/plain"}, ["Failure App #2"]] }
+
+        result = setup_rack(
+          app,
+          :failure_app => [
+            { app: fail_app1, scope: :foo },
+            { app: fail_app2, scope: :default }
+          ]
+        ).call(env_with_params)
+
+        expect(result.last).to eq(["Failure App #2"])
+      end
+
       it "should call failure app if warden is thrown even after successful authentication" do
         env = env_with_params("/", {})
         app = lambda do |_env|
