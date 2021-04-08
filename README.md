@@ -1,5 +1,7 @@
 # Warden
 
+[![Build Status](https://github.com/wardencommunity/warden/workflows/Tests/badge.svg?branch=master)](https://github.com/wardencommunity/warden/actions)
+
 ## Getting Started
 
 Please see the [Warden Wiki](https://github.com/wardencommunity/warden/wiki) for overview documentation.
