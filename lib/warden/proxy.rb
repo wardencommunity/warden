@@ -331,7 +331,7 @@ module Warden
 
       # Look for an existing user in the session for this scope.
       # If there was no user in the session, see if we can get one from the request.
-      return user, opts if user = user(opts.merge(:scope => scope))
+      return user, opts if !opts[:ignore_session] && user = user(opts.merge(:scope => scope))
       _run_strategies_for(scope, args)
 
       if winning_strategy && winning_strategy.successful?

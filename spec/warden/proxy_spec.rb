@@ -276,6 +276,38 @@ RSpec.describe Warden::Proxy do
         raise "Expected a cookie to not be sent or session id to match"
       end
     end
+
+    describe "`ignore_session` option provided" do
+      it "should not look for an active user in the session with authenticate" do
+        app = lambda do |env|
+          env['rack.session']["warden.user.default.key"] = "foo as a user"
+          env['warden'].authenticate(:pass, ignore_session: true)
+          valid_response
+        end
+        setup_rack(app).call(@env)
+        expect(@env['warden'].user).to eq("Valid User")
+      end
+
+      it "should not look for an active user in the session with authenticate?" do
+        app = lambda do |env|
+          env['rack.session']['warden.user.foo_scope.key'] = "a foo user"
+          env['warden'].authenticate?(:pass, scope: :foo_scope, ignore_session: true)
+          valid_response
+        end
+        setup_rack(app).call(@env)
+        expect(@env['warden'].user(:foo_scope)).to eq("Valid User")
+      end
+
+      it "should not look for an active user in the session with authenticate!" do
+        app = lambda do |env|
+          env['rack.session']['warden.user.foo_scope.key'] = "a foo user"
+          env['warden'].authenticate!(:pass, scope: :foo_scope, ignore_session: true)
+          valid_response
+        end
+        setup_rack(app).call(@env)
+        expect(@env['warden'].user(:foo_scope)).to eq("Valid User")
+      end
+    end
   end
 
   describe "authentication cache" do
@@ -1051,6 +1083,46 @@ describe "dynamic default_strategies" do
       expect(session.key?('warden.user.bar.key')).to eq(false)
       expect(session['warden.user.bar.key']).to be_nil
       expect(session['warden.user.baz.key']).to eq("User")
+    end
+
+    it "should allow me to set `ignore_session` on a given scope" do
+      $captures = []
+      warden = []
+      builder = Rack::Builder.new do
+        use Warden::Manager do |config|
+          config.default_strategies :one
+          config.default_strategies :two, :one, scope: :foo
+          config.default_strategies :two, :one, scope: :bar
+
+          config.scope_defaults :bar, ignore_session: false
+          config.scope_defaults :baz, ignore_session: true
+          config.failure_app = Warden::Spec::Helpers::FAILURE_APP
+        end
+        run(lambda do |e|
+          w = e['warden']
+          w.authenticate
+          w.authenticate(scope: :foo)
+          w.authenticate(:one, scope: :bar, ignore_session: true)
+          w.authenticate(:one, scope: :baz)
+          warden << w
+          $captures << :complete
+          Rack::Response.new("OK").finish
+        end)
+      end
+      @env["rack.session"] = {
+        "warden.user.default.key" => "foo as a user",
+        "warden.user.foo.key" => "foo as a user",
+        "warden.user.bar.key" => "foo as a user",
+        "warden.user.baz.key" => "foo as a user"
+      }
+      builder.to_app.call(@env)
+
+      expect($captures).to include(:complete)
+      w = warden.first
+      expect(w.user).to eq("foo as a user")
+      expect(w.user(:foo)).to eq("foo as a user")
+      expect(w.user(:bar)).to eq("User")
+      expect(w.user(:baz)).to eq("User")
     end
   end
 
