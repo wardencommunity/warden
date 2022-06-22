@@ -83,10 +83,4 @@ RSpec.describe Warden::Test::Helpers do
     setup_rack(app).call(env_with_params)
     expect($captures).to eq([:run])
   end
-
-  describe "#asset_paths" do
-    it "should default asset_paths to anything asset path regex" do
-      expect(Warden.asset_paths).to eq([/^\/assets\//]      )
-    end
-  end
 end
