@@ -122,7 +122,7 @@ module Warden
       result
     end
 
-    # The same as +authenticate+ except on failure it will throw an :warden symbol causing the request to be halted
+    # The same as +authenticate+ except on failure it will throw a :warden symbol causing the request to be halted
     # and rendered through the +failure_app+
     #
     # Example
