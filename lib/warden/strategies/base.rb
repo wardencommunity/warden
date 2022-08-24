@@ -130,8 +130,8 @@ module Warden
         @result = :success
       end
 
-      # This causes the strategy to fail.  It does not throw an :warden symbol to drop the request out to the failure application
-      # You must throw an :warden symbol somewhere in the application to enforce this
+      # This causes the strategy to fail.  It does not throw a :warden symbol to drop the request out to the failure application
+      # You must throw a :warden symbol somewhere in the application to enforce this
       # Halts the strategies so that this is the last strategy checked
       # :api: public
       def fail!(message = "Failed to Login")
@@ -147,7 +147,7 @@ module Warden
         @result = :failure
       end
 
-      # Causes the authentication to redirect.  An :warden symbol must be thrown to actually execute this redirect
+      # Causes the authentication to redirect.  A :warden symbol must be thrown to actually execute this redirect
       #
       # Parameters:
       #  url <String> - The string representing the URL to be redirected to
