@@ -32,6 +32,24 @@ module Warden
           proxy.logout(*scopes)
         end
       end
+
+      # Removes the user(s) from the list of logged-in users, but doesn't log
+      # them out of the session. The user will then be fetched from the session
+      # and deserialized when requested by Warden::Proxy#user. This lets you
+      # test cookie deserialization and after_fetch hooks in your app context.
+      # Without arguments, all scopes will have their users cleared.
+      # Provide a list of scopes to only clear users with those scopes.
+      # @api public
+      def unlogin(*scopes)
+        Warden.on_next_request do |proxy|
+          users = proxy.instance_variable_get(:@users)
+          if scopes.empty?
+            users.clear
+          else
+            scopes.each { |scope| users.delete(scope) }
+          end
+        end
+      end
     end
   end
 end
