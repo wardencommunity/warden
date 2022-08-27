@@ -4,6 +4,20 @@ RSpec.describe Warden::Test::Helpers do
   before{ $captures = [] }
   after{ Warden.test_reset! }
 
+  describe ".included" do
+    it "should prepare Warden for testing" do
+      expect(Warden).to receive(:test_mode!)
+      Class.new { include(Warden::Test::Helpers) }
+    end
+  end
+
+  describe ".extended" do
+    it "should prepare Warden for testing" do
+      expect(Warden).to receive(:test_mode!)
+      Object.new.extend(Warden::Test::Helpers)
+    end
+  end
+
   it "should log me in as a user" do
     user = "A User"
     login_as user
