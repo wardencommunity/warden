@@ -1060,6 +1060,12 @@ describe "dynamic default_strategies" do
       ::Warden.asset_paths = @asset_regex
     end
 
+    around do |example|
+      asset_paths = ::Warden.asset_paths
+      example.run
+      ::Warden.instance_variable_set(:@asset_paths, asset_paths)
+    end
+
     it "should return true if PATH_INFO is in asset list" do
       env = env_with_params('/assets/fun.gif')
       setup_rack(success_app).call(env)
