@@ -9,4 +9,5 @@ gem 'pry'
 group :test do
   gem 'rspec', '~> 3'
   gem 'rack-test'
+  gem 'rack-session'
 end
