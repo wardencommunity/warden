@@ -22,4 +22,9 @@ Gem::Specification.new do |spec|
   end
   spec.require_paths = ["lib"]
   spec.add_dependency "rack", ">= 2.2.3"
+
+  spec.add_development_dependency "rake"
+  spec.add_development_dependency "rspec", "~> 3"
+  spec.add_development_dependency "rack-test"
+  spec.add_development_dependency "rack-session"
 end
