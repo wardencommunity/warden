@@ -300,7 +300,7 @@ RSpec.describe Warden::Manager do
         result = @app.call(env_with_params)
         expect(result.status).to eq(201)
         expect(result.body).to eq(['body'])
-        expect(result.header['Content-Type']).to eq('text/plain')
+        expect(result.headers['Content-Type']).to eq('text/plain')
       end
     end
 
