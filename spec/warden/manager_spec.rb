@@ -1,5 +1,5 @@
-# encoding: utf-8
 # frozen_string_literal: true
+# encoding: utf-8
 RSpec.describe Warden::Manager do
   it "should insert a Proxy object into the rack env" do
     env = env_with_params
@@ -39,7 +39,7 @@ RSpec.describe Warden::Manager do
           throw(:warden)
         end
         setup_rack(app).call(env)
-        expect(env["warden.options"][:message]).to eq("The Fails Strategy Has Failed You")
+        expect(env["warden.options"][:messages]).to eq(["The Fails Strategy Has Failed You"])
       end
 
       it "should render the failure app when there's a failure" do
@@ -174,7 +174,7 @@ RSpec.describe Warden::Manager do
       it "should redirect with a message" do
         RAS.add(:foobar) do
           def authenticate!
-            redirect!("/foo/bar", {:foo => "bar"}, :message => "custom redirection message")
+            redirect!("/foo/bar", {:foo => "bar"}, :messages => ["custom redirection message"])
           end
         end
         result = @app.call(env_with_params)

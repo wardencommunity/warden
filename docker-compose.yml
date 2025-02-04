@@ -1,0 +1,6 @@
+name: warden
+
+services:
+  # docker compose run --rm gem [rspec [path to spec file]]
+  gem:
+    image: wardencommunity/warden:latest

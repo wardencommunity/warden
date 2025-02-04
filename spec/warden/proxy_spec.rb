@@ -1,5 +1,5 @@
-# encoding: utf-8
 # frozen_string_literal: true
+# encoding: utf-8
 
 require 'rack/session'
 
@@ -645,7 +645,7 @@ RSpec.describe Warden::Proxy do
     end
   end
 
-  describe "messages" do
+  describe "message" do
     it "should allow access to the failure message" do
       failure = lambda do |e|
         [401, {"Content-Type" => "text/plain"}, [e['warden'].message]]
@@ -654,10 +654,34 @@ RSpec.describe Warden::Proxy do
         e['warden'].authenticate! :failz
       end
       result = setup_rack(app, :failure_app => failure).call(@env)
-      expect(result.last).to eq(["The Fails Strategy Has Failed You"])
+      expect(result.last).to eq([["The Fails Strategy Has Failed You"]])
+    end
+
+    it "should deprecate accessing the failure message" do
+      failure = lambda do |e|
+        [401, {"Content-Type" => "text/plain"}, [e['warden'].message]]
+      end
+      app = lambda do |e|
+        e['warden'].authenticate! :failz
+      end
+      expect {
+        setup_rack(app, :failure_app => failure).call(@env)
+      }.to output(/NOTE: Warden::Proxy#message is deprecated; use messages instead. It will be removed on or after 2026-01./).to_stderr
     end
 
     it "should allow access to the success message" do
+      success = lambda do |e|
+        [200, {"Content-Type" => "text/plain"}, [e['warden'].messages]]
+      end
+      app = lambda do |e|
+        e['warden'].authenticate! :pass_with_message
+        success.call(e)
+      end
+      result = setup_rack(app).call(@env)
+      expect(result.last).to eq([["The Success Strategy Has Accepted You"]])
+    end
+
+    it "should deprecate accessing the success message" do
       success = lambda do |e|
         [200, {"Content-Type" => "text/plain"}, [e['warden'].message]]
       end
@@ -665,13 +689,47 @@ RSpec.describe Warden::Proxy do
         e['warden'].authenticate! :pass_with_message
         success.call(e)
       end
-      result = setup_rack(app).call(@env)
-      expect(result.last).to eq(["The Success Strategy Has Accepted You"])
+      expect {
+        setup_rack(app).call(@env)
+      }.to output(/NOTE: Warden::Proxy#message is deprecated; use messages instead. It will be removed on or after 2026-01./).to_stderr
     end
 
     it "should not die when accessing a message from a source where no authentication has occurred" do
       app = lambda do |e|
         [200, {"Content-Type" => "text/plain"}, [e['warden'].message]]
+      end
+      result = setup_rack(app).call(@env)
+      expect(result[2]).to eq([nil])
+    end
+  end
+
+  describe "messages" do
+    it "should allow access to the failure messages" do
+      failure = lambda do |e|
+        [401, {"Content-Type" => "text/plain"}, [e['warden'].messages]]
+      end
+      app = lambda do |e|
+        e['warden'].authenticate! :failz
+      end
+      result = setup_rack(app, :failure_app => failure).call(@env)
+      expect(result.last).to eq([["The Fails Strategy Has Failed You"]])
+    end
+
+    it "should allow access to the success message" do
+      success = lambda do |e|
+        [200, {"Content-Type" => "text/plain"}, [e['warden'].messages]]
+      end
+      app = lambda do |e|
+        e['warden'].authenticate! :pass_with_message
+        success.call(e)
+      end
+      result = setup_rack(app).call(@env)
+      expect(result.last).to eq([["The Success Strategy Has Accepted You"]])
+    end
+
+    it "should not die when accessing a message from a source where no authentication has occurred" do
+      app = lambda do |e|
+        [200, {"Content-Type" => "text/plain"}, [e['warden'].messages]]
       end
       result = setup_rack(app).call(@env)
       expect(result[2]).to eq([nil])

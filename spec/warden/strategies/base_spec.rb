@@ -1,5 +1,5 @@
-# encoding: utf-8
 # frozen_string_literal: true
+# encoding: utf-8
 require 'spec_helper'
 
 describe Warden::Strategies::Base do
@@ -69,12 +69,12 @@ describe Warden::Strategies::Base do
   it "should allow you to set a message" do
     RAS.add(:foobar) do
       def authenticate!
-        self.message = "foo message"
+        self.messages = ["foo message"]
       end
     end
     strategy = RAS[:foobar].new(env_with_params)
     strategy._run!
-    expect(strategy.message).to eq("foo message")
+    expect(strategy.messages).to eq(["foo message"])
   end
 
   it "should provide access to the errors" do
@@ -112,7 +112,6 @@ describe Warden::Strategies::Base do
       str._run!
       expect(str).not_to be_halted
     end
-
   end
 
   describe "pass" do
@@ -172,13 +171,38 @@ describe Warden::Strategies::Base do
       str = RAS[:foobar].new(env_with_params)
       str._run!
       expect(str.headers["Location"]).to eq("/foo/bar?foo=bar")
-      expect(str.message).to eq("You are being redirected foo")
+      expect(str.messages).to eq(["You are being redirected foo"])
+    end
+
+    it "should warn when using message instead of messages" do
+      RAS.add(:foobar) do
+        def authenticate!
+          redirect!("/foo/bar", {:foo => "bar"}, :message => "You are being redirected foo")
+        end
+      end
+
+      expect {
+        str = RAS[:foobar].new(env_with_params)
+        str._run!
+      }.to output(/NOTE: Sending :message to redirect! is deprecated, use :messages instead./).to_stderr
+    end
+
+    it "should allow you to set messages" do
+      RAS.add(:foobar) do
+        def authenticate!
+          redirect!("/foo/bar", {:foo => "bar"}, :messages => "You are being redirected foo")
+        end
+      end
+      str = RAS[:foobar].new(env_with_params)
+      str._run!
+      expect(str.headers["Location"]).to eq("/foo/bar?foo=bar")
+      expect(str.messages).to eq(["You are being redirected foo"])
     end
 
     it "should set the action as :redirect" do
       RAS.add(:foobar) do
         def authenticate!
-          redirect!("/foo/bar", {:foo => "bar"}, :message => "foo")
+          redirect!("/foo/bar", {:foo => "bar"}, :messages => "foo")
         end
       end
       str = RAS[:foobar].new(env_with_params)
@@ -188,7 +212,6 @@ describe Warden::Strategies::Base do
   end
 
   describe "failure" do
-
     before(:each) do
       RAS.add(:hard_fail) do
         def authenticate!
@@ -217,7 +240,7 @@ describe Warden::Strategies::Base do
 
     it "should allow you to set a message when failing hard" do
       @hard._run!
-      expect(@hard.message).to eq("You are not cool enough")
+      expect(@hard.messages).to eq(["You are not cool enough"])
     end
 
     it "should set the action as :failure when failing hard" do
@@ -237,7 +260,7 @@ describe Warden::Strategies::Base do
 
     it "should allow you to set a message when failing soft" do
       @soft._run!
-      expect(@soft.message).to eq("You are too soft")
+      expect(@soft.messages).to eq(["You are too soft"])
     end
 
     it "should set the action as :failure when failing soft" do
@@ -267,7 +290,7 @@ describe Warden::Strategies::Base do
 
     it "should allow you to set a message when succeeding" do
       @str._run!
-      expect(@str.message).to eq("Welcome to the club!")
+      expect(@str.messages).to eq(["Welcome to the club!"])
     end
 
     it "should store the user" do
@@ -310,4 +333,36 @@ describe Warden::Strategies::Base do
     end
   end
 
+  describe "add_message" do
+    before do
+      RAS.add(:foobar) do
+        def authenticate!
+          success!("foo")
+        end
+      end
+    end
+
+    let(:multiple_messages) { ['This is message one', 'This is message two'] }
+    let(:single_message) { 'That is a success!' }
+    let(:strategy) { RAS[:foobar].new(env_with_params) }
+
+    it "should allow adding a single message" do
+      strategy.add_message(single_message)
+
+      expect(strategy.messages).to eql([single_message])
+    end
+
+    it "should allow adding a list of messages" do
+      strategy.add_message(multiple_messages)
+
+      expect(strategy.messages).to eql(multiple_messages)
+    end
+
+    it "should append messages" do
+      strategy.add_message(multiple_messages)
+      strategy.add_message(single_message)
+
+      expect(strategy.messages).to eql(multiple_messages | [single_message])
+    end
+  end
 end

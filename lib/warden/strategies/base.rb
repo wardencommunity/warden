@@ -1,5 +1,5 @@
-# encoding: utf-8
 # frozen_string_literal: true
+# encoding: utf-8
 module Warden
   module Strategies
     # A strategy is a place where you can put logic related to authentication. Any strategy inherits
@@ -30,7 +30,7 @@ module Warden
     #
     class Base
       # :api: public
-      attr_accessor :user, :message
+      attr_accessor :user, :messages
 
       # :api: private
       attr_accessor :result, :custom_response
@@ -126,7 +126,7 @@ module Warden
       def success!(user, message = nil)
         halt!
         @user = user
-        @message = message
+        add_message message
         @result = :success
       end
 
@@ -136,14 +136,14 @@ module Warden
       # :api: public
       def fail!(message = "Failed to Login")
         halt!
-        @message = message
+        add_message message
         @result = :failure
       end
 
       # Causes the strategy to fail, but not halt.  The strategies will cascade after this failure and warden will check the next strategy.  The last strategy to fail will have it's message displayed.
       # :api: public
       def fail(message = "Failed to Login")
-        @message = message
+        add_message message
         @result = :failure
       end
 
@@ -163,7 +163,12 @@ module Warden
         headers["Location"] << "?" << Rack::Utils.build_query(params) unless params.empty?
         headers["Content-Type"] = opts[:content_type] || 'text/plain'
 
-        @message = opts[:message] || "You are being redirected to #{headers["Location"]}"
+        if opts.key?(:message)
+          warn "NOTE: Sending :message to redirect! is deprecated, use :messages instead."
+          opts[:messages] = opts.delete(:message)
+        end
+
+        add_message opts[:messages] || "You are being redirected to #{headers["Location"]}"
         @result = :redirect
 
         headers["Location"]
@@ -177,6 +182,9 @@ module Warden
         @result = :custom
       end
 
+      def add_message(messages)
+        @messages = Array(@messages) | Array(messages)
+      end
     end # Base
   end # Strategies
 end # Warden

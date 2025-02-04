@@ -1,5 +1,5 @@
-# encoding: utf-8
 # frozen_string_literal: true
+# encoding: utf-8
 require 'warden/hooks'
 require 'warden/config'
 
@@ -118,14 +118,19 @@ module Warden
       proxy  = env['warden']
       result = options[:result] || proxy.result
 
+      if options.key?(:message)
+        warn "NOTE: Sending :message to redirect! is deprecated, use :messages instead"
+        options[:messages] = Array(options.delete(:message))
+      end
+
       case result
       when :redirect
-        body = proxy.message || "You are being redirected to #{proxy.headers['Location']}"
-        [proxy.status, proxy.headers, [body]]
+        body = proxy.messages || ["You are being redirected to #{proxy.headers['Location']}"]
+        [proxy.status, proxy.headers, Array(body)]
       when :custom
         proxy.custom_response
       else
-        options[:message] ||= proxy.message
+        options[:messages] ||= proxy.messages
         call_failure_app(env, options)
       end
     end

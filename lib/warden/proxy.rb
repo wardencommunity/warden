@@ -1,5 +1,5 @@
-# encoding: utf-8
 # frozen_string_literal: true
+# encoding: utf-8
 
 module Warden
   class UserNotSet < RuntimeError; end
@@ -288,9 +288,16 @@ module Warden
 
     # Proxy through to the authentication strategy to find out the message that was generated.
     # :api: public
-    def message
-      winning_strategy && winning_strategy.message
+    def messages
+      winning_strategy && winning_strategy.messages
     end
+
+    def message
+      messages
+    end
+
+    extend Gem::Deprecate
+    deprecate :message, :messages, 2026, 1
 
     # Provides a way to return a 401 without warden deferring to the failure app
     # The result is a direct passthrough of your own response
