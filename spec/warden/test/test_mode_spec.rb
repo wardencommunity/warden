@@ -63,6 +63,13 @@ RSpec.describe Warden::Test::WardenHelpers do
     expect($captures).to eq([])
   end
 
+  it "should clear _test_users when test is reset" do
+    Warden._test_users[:default] = ["A User", { event: :authentication }]
+    expect(Warden._test_users).not_to be_empty
+    Warden.test_reset!
+    expect(Warden._test_users).to be_empty
+  end
+
   context "asset requests" do
     it "should not execute on_next_request blocks if this is an asset request" do
       app = setup_rack(@app)
