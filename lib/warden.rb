@@ -29,13 +29,15 @@ module Warden
   # This will provide a number of methods.
   # Warden.on_next_request(&blk) - captures a block which is yielded the warden proxy on the next request
   # Warden.test_reset! - removes any captured blocks that would have been executed on the next request
+  # Warden.skip_background_requests = true - keeps captured blocks queued while browser background
+  #   requests (fetch/XHR) go through, so that only a page load consumes them
   #
   # Warden.test_reset! should be called in after blocks for rspec, or teardown methods for Test::Unit
   def self.test_mode!
     unless Warden::Test::WardenHelpers === Warden
       Warden.extend Warden::Test::WardenHelpers
       Warden::Manager.on_request do |proxy|
-        unless proxy.asset_request?
+        unless proxy.asset_request? || Warden._skip_background_request?(proxy.env)
           while blk = Warden._on_next_request.shift
             blk.call(proxy)
           end

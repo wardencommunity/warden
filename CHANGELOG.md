@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+* Add `Warden.skip_background_requests` test mode option to keep `on_next_request` blocks queued while browser background requests (fetch/XHR) go through, so that only a page load consumes them
+
 ## Version 1.2.9 / 2020-08-31
 * Avoid warning on uninitialized instance variable (#188)
 * Bump rack to 2.2.3 (#190)

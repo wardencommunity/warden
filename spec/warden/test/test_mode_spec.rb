@@ -71,4 +71,61 @@ RSpec.describe Warden::Test::WardenHelpers do
       expect($captures).to eq([])
     end
   end
+
+  context "background requests" do
+    after do
+      Warden.skip_background_requests = false
+    end
+
+    def background_request_env(path = "/search.json")
+      env_with_params(path, {}, 'HTTP_SEC_FETCH_MODE' => 'cors', 'HTTP_ACCEPT' => 'application/json, */*')
+    end
+
+    def page_load_env(path = "/")
+      env_with_params(path, {}, 'HTTP_SEC_FETCH_MODE' => 'navigate', 'HTTP_ACCEPT' => 'text/html,application/xhtml+xml')
+    end
+
+    it "should execute on_next_request blocks on background requests by default" do
+      app = setup_rack(@app)
+      Warden.on_next_request{|_w| $captures << :first }
+      app.call(background_request_env)
+      expect($captures).to eq([:first])
+    end
+
+    it "should keep on_next_request blocks queued until a page load when skip_background_requests is enabled" do
+      Warden.skip_background_requests = true
+      app = setup_rack(@app)
+      Warden.on_next_request{|_w| $captures << :first }
+      app.call(background_request_env)
+      expect($captures).to eq([])
+      app.call(page_load_env)
+      expect($captures).to eq([:first])
+    end
+
+    it "should execute on_next_request blocks on browser requests asking for html" do
+      Warden.skip_background_requests = true
+      app = setup_rack(@app)
+      Warden.on_next_request{|_w| $captures << :first }
+      app.call(page_load_env)
+      expect($captures).to eq([:first])
+    end
+
+    it "should execute on_next_request blocks on requests without Sec-Fetch-Mode" do
+      Warden.skip_background_requests = true
+      app = setup_rack(@app)
+      Warden.on_next_request{|_w| $captures << :first }
+      app.call(env_with_params("/api/things", {}, 'HTTP_ACCEPT' => 'application/json'))
+      expect($captures).to eq([:first])
+    end
+
+    it "should accept a callable to customize the detection" do
+      Warden.skip_background_requests = lambda{|env| env['PATH_INFO'] == "/background" }
+      app = setup_rack(@app)
+      Warden.on_next_request{|_w| $captures << :first }
+      app.call(env_with_params("/background"))
+      expect($captures).to eq([])
+      app.call(env_with_params("/regular"))
+      expect($captures).to eq([:first])
+    end
+  end
 end
