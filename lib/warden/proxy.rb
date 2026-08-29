@@ -168,6 +168,7 @@ module Warden
     #
     # :api: public
     def set_user(user, opts = {})
+      opts = opts.dup
       scope = (opts[:scope] ||= @config.default_scope)
 
       # Get the default options from the master configuration for the given scope
@@ -215,7 +216,7 @@ module Warden
     #
     # :api: public
     def user(argument = {})
-      opts  = argument.is_a?(Hash) ? argument : { :scope => argument }
+      opts  = argument.is_a?(Hash) ? argument.dup : { :scope => argument }
       scope = (opts[:scope] ||= @config.default_scope)
 
       if @users.has_key?(scope)
