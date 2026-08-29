@@ -39,7 +39,9 @@ module Warden
       end
 
       def each
-        errors.map.each do |_k,v|
+        return enum_for(:each) unless block_given?
+
+        errors.each_value do |v|
           next if blank?(v)
           yield(v)
         end
@@ -51,6 +53,10 @@ module Warden
 
       def method_missing(meth, *args, &block)
         errors.send(meth, *args, &block)
+      end
+
+      def respond_to_missing?(meth, include_private = false)
+        errors.respond_to?(meth, include_private) || super
       end
 
       private
