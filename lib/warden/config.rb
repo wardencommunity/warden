@@ -72,6 +72,7 @@ module Warden
     # A short hand way to set up a particular scope
     # :api: public
     def scope_defaults(scope, opts = {})
+      opts = opts.dup
       if strategies = opts.delete(:strategies)
         default_strategies(strategies, :scope => scope)
       end
