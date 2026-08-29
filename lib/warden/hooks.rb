@@ -53,6 +53,7 @@ module Warden
     def after_set_user(options = {}, method = :push, &block)
       raise BlockNotGiven unless block_given?
 
+      options = options.dup
       if options.key?(:only)
         options[:event] = options.delete(:only)
       elsif options.key?(:except)
