@@ -39,6 +39,13 @@ module Warden
           while blk = Warden._on_next_request.shift
             blk.call(proxy)
           end
+          Warden._test_users.each_value do |(user, opts)|
+            opts = opts.dup
+            scope = opts[:scope] || proxy.config.default_scope
+            unless proxy.session_serializer.stored?(scope)
+              proxy.set_user(user, opts)
+            end
+          end
         end
       end
     end

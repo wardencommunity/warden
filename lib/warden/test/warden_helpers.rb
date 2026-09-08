@@ -31,6 +31,7 @@ module Warden
       # @api public
       def test_reset!
         _on_next_request.clear
+        _test_users.clear
       end
 
       # A container for the on_next_request items.
@@ -38,6 +39,14 @@ module Warden
       def _on_next_request
         @_on_next_request ||= []
         @_on_next_request
+      end
+
+      # A persistent store of test users keyed by scope.
+      # Unlike _on_next_request, these survive across multiple requests,
+      # preventing race conditions with background requests.
+      # @api private
+      def _test_users
+        @_test_users ||= {}
       end
     end
   end

@@ -16,10 +16,8 @@ module Warden
       # @see Warden::Proxy#set_user
       # @api public
       def login_as(user, opts = {})
-        Warden.on_next_request do |proxy|
-          opts[:event] ||= :authentication
-          proxy.set_user(user, opts)
-        end
+        opts[:event] ||= :authentication
+        Warden._test_users[opts[:scope]] = [user, opts]
       end
 
       # Logs out a user from the session.
@@ -28,6 +26,11 @@ module Warden
       # @see Warden::Proxy#logout
       # @api public
       def logout(*scopes)
+        if scopes.empty?
+          Warden._test_users.clear
+        else
+          scopes.each { |s| Warden._test_users.delete(s) }
+        end
         Warden.on_next_request do |proxy|
           proxy.logout(*scopes)
         end
