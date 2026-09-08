@@ -17,6 +17,7 @@ module Warden
     # configure the Warden::Manager.
     # :api: public
     def initialize(app, options={})
+      options = options.dup
       default_strategies = options.delete(:default_strategies)
 
       @app, @config = app, Warden::Config.new(options)
