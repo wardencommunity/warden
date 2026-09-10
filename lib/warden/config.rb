@@ -32,7 +32,7 @@ module Warden
       end
     end
 
-    hash_accessor :failure_app, :default_scope, :intercept_401
+    hash_accessor :failure_app, :default_scope, :intercept_401, :legacy_env_key
 
     def initialize(other={})
       merge!(other)
@@ -40,6 +40,7 @@ module Warden
       self[:scope_defaults]     ||= {}
       self[:default_strategies] ||= {}
       self[:intercept_401] = true unless key?(:intercept_401)
+      self[:legacy_env_key] = true unless key?(:legacy_env_key)
     end
 
     def initialize_copy(other)

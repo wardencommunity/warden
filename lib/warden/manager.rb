@@ -28,11 +28,14 @@ module Warden
     # If this is downstream from another warden instance, don't do anything.
     # :api: private
     def call(env) # :nodoc:
-      return @app.call(env) if env['warden'] && env['warden'].manager != self
+      proxy = env[Proxy::ENV_WARDEN_PROXY]
+      return @app.call(env) if proxy && proxy.manager != self
 
-      env['warden'] = Proxy.new(env, self)
+      proxy = env[Proxy::ENV_WARDEN_PROXY] = Proxy.new(env, self)
+      env[Proxy::ENV_WARDEN_LEGACY] = proxy if config[:legacy_env_key]
+
       result = catch(:warden) do
-        env['warden'].on_request
+        proxy.on_request
         @app.call(env)
       end
 
@@ -96,14 +99,22 @@ module Warden
 
     def handle_chain_result(status, result, env)
       if status == 401 && intercept_401?(env)
+        close_body(result)
         process_unauthenticated(env)
       else
         result
       end
     end
 
+    # The intercepted response is discarded, so its body must be closed.
+    # :api: private
+    def close_body(result)
+      body = result.is_a?(Array) ? result[2] : result
+      body.close if body.respond_to?(:close)
+    end
+
     def intercept_401?(env)
-      config[:intercept_401] && !env['warden'].custom_failure?
+      config[:intercept_401] && !env[Proxy::ENV_WARDEN_PROXY].custom_failure?
     end
 
     # When a request is unauthenticated, here's where the processing occurs.
@@ -115,7 +126,7 @@ module Warden
         opts[:action] || 'unauthenticated'
       end
 
-      proxy  = env['warden']
+      proxy  = env[Proxy::ENV_WARDEN_PROXY]
       result = options[:result] || proxy.result
 
       case result
