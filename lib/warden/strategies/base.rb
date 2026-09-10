@@ -1,5 +1,7 @@
 # encoding: utf-8
 # frozen_string_literal: true
+require 'rack'
+
 module Warden
   module Strategies
     # A strategy is a place where you can put logic related to authentication. Any strategy inherits
@@ -29,6 +31,9 @@ module Warden
     #      Warden::Strategies.add(:foo, MyStrategy)
     #
     class Base
+      # :api: private
+      HEADERS_CLASS = defined?(::Rack::Headers) ? ::Rack::Headers : ::Hash
+
       # :api: public
       attr_accessor :user, :message
 
@@ -43,7 +48,7 @@ module Warden
       # :api: private
       def initialize(env, scope=nil) # :nodoc:
         @env, @scope = env, scope
-        @status, @headers = nil, {}
+        @status, @headers = nil, HEADERS_CLASS.new
         @halted, @performed = false, false
         @result = nil
       end
@@ -77,7 +82,7 @@ module Warden
       # Provides access to the headers hash for setting custom headers
       # :api: public
       def headers(header = {})
-        @headers ||= {}
+        @headers ||= HEADERS_CLASS.new
         @headers.merge! header
         @headers
       end
