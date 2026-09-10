@@ -28,11 +28,14 @@ module Warden
     # If this is downstream from another warden instance, don't do anything.
     # :api: private
     def call(env) # :nodoc:
-      return @app.call(env) if env['warden'] && env['warden'].manager != self
+      proxy = env[Proxy::ENV_WARDEN_PROXY]
+      return @app.call(env) if proxy && proxy.manager != self
 
-      env['warden'] = Proxy.new(env, self)
+      proxy = env[Proxy::ENV_WARDEN_PROXY] = Proxy.new(env, self)
+      env[Proxy::ENV_WARDEN_LEGACY] = proxy if config[:legacy_env_key]
+
       result = catch(:warden) do
-        env['warden'].on_request
+        proxy.on_request
         @app.call(env)
       end
 
@@ -111,7 +114,7 @@ module Warden
     end
 
     def intercept_401?(env)
-      config[:intercept_401] && !env['warden'].custom_failure?
+      config[:intercept_401] && !env[Proxy::ENV_WARDEN_PROXY].custom_failure?
     end
 
     # When a request is unauthenticated, here's where the processing occurs.
@@ -123,7 +126,7 @@ module Warden
         opts[:action] || 'unauthenticated'
       end
 
-      proxy  = env['warden']
+      proxy  = env[Proxy::ENV_WARDEN_PROXY]
       result = options[:result] || proxy.result
 
       case result

@@ -90,7 +90,7 @@ module Warden
       # Access to the errors object.
       # :api: public
       def errors
-        @env['warden'].errors
+        (@env[Warden::Proxy::ENV_WARDEN_PROXY] || @env[Warden::Proxy::ENV_WARDEN_LEGACY]).errors
       end
 
       # Cause the processing of the strategies to stop and cascade no further

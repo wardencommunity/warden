@@ -45,7 +45,7 @@ describe 'Rack::Lint compliance' do
 
   it 'does not raise for a successful authentication' do
     app = lint_app do |e|
-      Warden.proxy(e).authenticate!(:pass)
+      e['warden.proxy'].authenticate!(:pass)
       [200, { 'content-type' => 'text/plain' }, ['OK']]
     end
     response = Rack::MockRequest.new(app).get('/')
@@ -54,7 +54,7 @@ describe 'Rack::Lint compliance' do
 
   it 'does not raise when a strategy calls fail! and throws :warden' do
     app = lint_app do |e|
-      Warden.proxy(e).authenticate!(:failz)
+      e['warden.proxy'].authenticate!(:failz)
       raise 'should not reach here'
     end
     response = Rack::MockRequest.new(app).get('/')
@@ -63,7 +63,7 @@ describe 'Rack::Lint compliance' do
 
   it 'does not raise for redirect! with permanent: true' do
     app = lint_app do |e|
-      Warden.proxy(e).authenticate!(:lint_redirect)
+      e['warden.proxy'].authenticate!(:lint_redirect)
       raise 'should not reach here'
     end
     response = Rack::MockRequest.new(app).get('/')
@@ -74,7 +74,7 @@ describe 'Rack::Lint compliance' do
 
   it 'does not raise for custom!' do
     app = lint_app do |e|
-      Warden.proxy(e).authenticate!(:lint_custom)
+      e['warden.proxy'].authenticate!(:lint_custom)
       raise 'should not reach here'
     end
     response = Rack::MockRequest.new(app).get('/')
@@ -91,7 +91,7 @@ describe 'Rack::Lint compliance' do
   end
 
   describe 'legacy_env_key: false' do
-    it 'does not populate env["warden"] and exposes Warden.proxy(env)' do
+    it 'does not populate env["warden"] and exposes env["warden.proxy"]' do
       seen_env = nil
       app = lint_app do |e|
         seen_env = e
@@ -99,7 +99,7 @@ describe 'Rack::Lint compliance' do
       end
       Rack::MockRequest.new(app).get('/')
       expect(seen_env.key?('warden')).to eq(false)
-      expect(Warden.proxy(seen_env)).to be_a(Warden::Proxy)
+      expect(seen_env['warden.proxy']).to be_a(Warden::Proxy)
     end
   end
 

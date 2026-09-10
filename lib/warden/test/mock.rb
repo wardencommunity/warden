@@ -16,7 +16,7 @@ module Warden
       # @api public
       def warden
         @warden ||= begin
-          env['warden']
+          env[Warden::Proxy::ENV_WARDEN_PROXY]
         end
       end
 
