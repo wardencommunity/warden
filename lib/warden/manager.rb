@@ -96,10 +96,18 @@ module Warden
 
     def handle_chain_result(status, result, env)
       if status == 401 && intercept_401?(env)
+        close_body(result)
         process_unauthenticated(env)
       else
         result
       end
+    end
+
+    # The intercepted response is discarded, so its body must be closed.
+    # :api: private
+    def close_body(result)
+      body = result.is_a?(Array) ? result[2] : result
+      body.close if body.respond_to?(:close)
     end
 
     def intercept_401?(env)
